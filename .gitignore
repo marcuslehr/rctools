@@ -10,4 +10,3 @@ tests/testthat/local-token.R
 tests/testthat/local-token.Rdata
 # OSX-generated files
 .DS_Store
-sample_data
