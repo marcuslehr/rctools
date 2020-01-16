@@ -10,7 +10,6 @@
 #' @param labels Logical. Indicates if the data export and form access rights are
 #'   converted to factor objects.
 #' @param ... Arguments to be passed to other methods.
-#' @param bundle A \code{redcap_bundle} object.  
 #' @param error_handling An option for how to handle errors returned by the API.
 #'   see \code{\link{redcap_error}}
 #'
@@ -62,39 +61,16 @@
 #'
 #' Additional details on API parameters are found on the package wiki at
 #' \url{https://github.com/nutterb/redcapAPI/wiki/REDCap-API-Parameters}
-#'
-#' @export
 
-exportUsers <- function(rcon, ...) UseMethod("exportUsers")
-
-#' @rdname exportUsers
-#' @export
-
-exportUsers.redcapDbConnection <- function(rcon, dates=TRUE, labels=TRUE, ...){
-  message("Please accept my apologies.  The exportUsers method for redcapDbConnection objects\n",
-          "has not yet been written.  Please consider using the API.")
-}
-
-#' @rdname exportUsers
-#' @export
-
-exportUsers.redcapApiConnection <- function(rcon, dates=TRUE, labels=TRUE, ...,
-                                            bundle = getOption("redcap_bundle"),
-                                            error_handling = getOption("redcap_error_handling")){
-  if (!is.na(match("proj", names(list(...)))))
-  {
-    message("The 'proj' argument is deprecated.  Please use 'bundle' instead")
-    bundle <- list(...)[["proj"]]
-  }
+exportUsers <- function(rcon, dates=TRUE, labels=TRUE, ...,
+                        error_handling = getOption("redcap_error_handling")){
   
   coll <- checkmate::makeAssertCollection()
   
-  massert(~ rcon + bundle,
+  massert(~ rcon,
           fun = checkmate::assert_class,
-          classes = list(rcon = "redcapApiConnection",
-                         bundle = "redcapBundle"),
-          null.ok = list(rcon = FALSE, 
-                         bundle = TRUE),
+          classes = list(rcon = "redcapApiConnection"),
+          null.ok = list(rcon = FALSE),
           fixed = list(add = coll))
   
   massert(~ dates + labels,
@@ -120,62 +96,81 @@ exportUsers.redcapApiConnection <- function(rcon, dates=TRUE, labels=TRUE, ...,
   
   if (x$status_code != 200) redcap_error(x, error_handling)
   
-  x <- utils::read.csv(text = as.character(x),
-                       stringsAsFactors = FALSE,
-                       na.strings = "")
+  col_types <- readr::cols(
+    username                      = readr::col_character(),
+    email                         = readr::col_character(),
+    firstname                     = readr::col_character(),
+    lastname                      = readr::col_character(),
+    expiration                    = readr::col_date(),
+    data_access_group             = readr::col_character(),
+    data_access_group_id          = readr::col_character(),
+    design                        = readr::col_logical(),
+    user_rights                   = readr::col_logical(),
+    data_access_groups            = readr::col_logical(),
+    data_export                   = readr::col_character(),
+    reports                       = readr::col_logical(),
+    stats_and_charts              = readr::col_logical(),
+    manage_survey_participants    = readr::col_logical(),
+    calendar                      = readr::col_logical(),
+    data_import_tool              = readr::col_logical(),
+    data_comparison_tool          = readr::col_logical(),
+    logging                       = readr::col_logical(),
+    file_repository               = readr::col_logical(),
+    data_quality_create           = readr::col_logical(),
+    data_quality_execute          = readr::col_logical(),
+    api_export                    = readr::col_logical(),
+    api_import                    = readr::col_logical(),
+    mobile_app                    = readr::col_logical(),
+    mobile_app_download_data      = readr::col_logical(),
+    record_create                 = readr::col_logical(),
+    record_rename                 = readr::col_logical(),
+    record_delete                 = readr::col_logical(),
+    lock_records_all_forms        = readr::col_logical(),
+    lock_records                  = readr::col_logical(),
+    lock_records_customization    = readr::col_logical(),
+    forms                         = readr::col_character()
+  )
+  
+  x <- readr::read_csv(
+                file      = x$content,
+                col_types = col_types
+              )
+  attr(x, "spec") <- NULL
+  
+  users <- dplyr::select(x, -forms)
+  
+  FormAccess <- x %>%
+    dplyr::select(.data$username, .data$forms) %>%
+    tidyr::separate_rows(.data$forms, sep = ",") %>%
+    tidyr::separate(
+              col     = forms,
+              into    = c("form_name", "permission"),
+              sep     = ":",
+              convert = FALSE
+            )
                              
   #* convert expiration date to POSIXct class
-  if (dates) x$expiration <- as.POSIXct(x$expiration, format="%Y-%m-%d")
+  if (dates) users$expiration <- as.POSIXct(users$expiration, format="%Y-%m-%d")
   
   #* convert data export and form editing privileges to factors
   if (labels){
-    x$data_export <- 
+    users$data_export <- 
       factor(x$data_export, 
              levels = c(0, 2, 1), 
-             labels = c("No access", "De-identified", "Full data set"))
+             labels = c("No access", "De-identified", "Full data set")
+             )
     
-    meta_data <- 
-      if (is.null(bundle$meta_data)) 
-        exportMetaData(rcon)
-      else 
-        bundle$meta_data
-    
-    form_names <- unique(meta_data$form)
-
-    FormAccess <- x$forms
-    FormAccess <- lapply(FormAccess, 
-                         FUN = strsplit, 
-                         split = ",")
-    FormAccess <- lapply(FormAccess,
-                         FUN = function(x){
-                           data.frame(form_access = x[[1]],
-                                      stringsAsFactors = FALSE)
-                         })
-    FormAccess <- lapply(FormAccess,
-                         FUN = tidyr::separate,
-                         col = form_access,
-                         into = c("form", "access"),
-                         sep = "[:]")
-    FormAccess <- lapply(FormAccess,
-                         FUN = function(x){
-                           x$form <- paste0("form_", x$form)
-                           x$access <- factor(x$access,
-                                              levels = c(0, 2, 1, 3),
-                                              labels = c("No access", "Read only", 
-                                                         "view records/responses and edit records",
-                                                         "Edit survey responses"))
-                           x
-                         }) 
-    FormAccess <- lapply(FormAccess,
-                         FUN = tidyr::spread,
-                         key = form,
-                         value = access)
-    FormAccess <- do.call("rbind", FormAccess)
-
-    x <- cbind(x, FormAccess)
+    FormAccess$permission <- 
+      factor(FormAccess$permission, 
+             levels = c(0, 2, 1, 3), 
+             labels = c("No access", "Read only", 
+                        "Edit records", "Edit survey responses")
+             )
   }
-  
-  x
+  list(
+    Users            = users,
+    Form_Permissions = FormAccess
+  )
 }
 
 utils::globalVariables(c("form_access", "form", "access"))

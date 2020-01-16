@@ -1,4 +1,4 @@
-#' @name exportReports 
+#' @name rc_exportReports 
 #' @title Export Reports from a REDCap Database
 #' 
 #' @description Exports reports from a REDCap Database and formats data if requested
@@ -49,32 +49,10 @@
 #' 
 #' @export
 
-exportReports <- function(rcon, report_id, factors=TRUE, labels=TRUE, 
-                          dates=TRUE, checkboxLabels=FALSE, ...)
-  UseMethod("exportReports")
-
-#' @rdname exportReports
-#' @export
-
-exportReports.redcapDbConnection <- function(rcon, report_id, factors=TRUE, labels=TRUE, 
-                                             dates=TRUE, checkboxLabels=FALSE, ...){
-  message("Please accept my apologies.  The exportMappings method for redcapDbConnection objects\n",
-          "has not yet been written.  Please consider using the API.")          
-}
-
-#' @rdname exportReports
-#' @export
-
-exportReports.redcapApiConnection <- function(rcon, report_id, factors = TRUE, labels = TRUE, 
-                                              dates = TRUE, checkboxLabels = FALSE, ...,
-                                              bundle = getOption("redcap_bundle"),
-                                              error_handling = getOption("redcap_error_handling")){
-  
-  if (!is.na(match("proj", names(list(...)))))
-  {
-    message("The 'proj' argument is deprecated.  Please use 'bundle' instead")
-    bundle <- list(...)[["proj"]]
-  }
+rc_exportReports <- function(rcon, report_id, factors = TRUE, labels = TRUE, 
+                              dates = TRUE, checkboxLabels = FALSE, ...,
+                              bundle = getOption("redcap_bundle"),
+                              error_handling = getOption("redcap_error_handling")){
   
   if (!is.numeric(report_id)) report_id <- as.numeric(report_id)
   
@@ -104,22 +82,18 @@ exportReports.redcapApiConnection <- function(rcon, report_id, factors = TRUE, l
   checkmate::reportAssertions(coll)
   
   #* Secure the meta data.
-  meta_data <- 
-    if (is.null(bundle$meta_data)) 
-      exportMetaData(rcon) 
+   
+  if (is.null(bundle$meta_data)) 
+    message("bundle$meta_data not found. Please supply a bundle object containing $meta_data from rc_exportBundle()")
   else 
-    bundle$meta_data
+   meta_data <- bundle$meta_data
   
   #* for purposes of the export, we don't need the descriptive fields. 
   #* Including them makes the process more error prone, so we'll ignore them.
   meta_data <- meta_data[!meta_data$field_type %in% "descriptive", ]  
   
   #* Secure the REDCap version
-  version <- 
-    if (is.null(bundle$version))
-      exportVersion(rcon)
-  else
-    bundle$version
+  if (!is.null(bundle$version)) version <- bundle$version
   
   body <- list(token = rcon$token, 
                content = 'report',
@@ -139,8 +113,11 @@ exportReports.redcapApiConnection <- function(rcon, report_id, factors = TRUE, l
 
   #* synchronize underscore codings between records and meta data
   #* Only affects calls in REDCap versions earlier than 5.5.21
-  if (utils::compareVersion(version, "6.0.0") == -1) 
-    meta_data <- syncUnderscoreCodings(x, meta_data)
+  try(
+    if (utils::compareVersion(version, "6.0.0") == -1) {
+      meta_data <- syncUnderscoreCodings(x, meta_data)
+    },
+    silent = T)
   
 
   x <- fieldToVar(records = x, 
@@ -163,8 +140,8 @@ exportReports.redcapApiConnection <- function(rcon, report_id, factors = TRUE, l
     field_names <- field_names[field_names %in% meta_data$field_name]
 
     suffixed <- checkbox_suffixes(fields = field_names,
-                                  meta_data = meta_data, 
-                                  version = version)
+                                  meta_data = meta_data 
+                                  )
 
     x[suffixed$name_suffix] <-
       mapply(nm = suffixed$name_suffix,

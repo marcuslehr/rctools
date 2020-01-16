@@ -8,11 +8,10 @@
 #'   
 #' @param fields The current field names of interest
 #' @param meta_data The meta data data frame.
-#' @param version The REDCap version number.
 #' 
 #' @export
 
-checkbox_suffixes <- function(fields, meta_data, version)
+checkbox_suffixes <- function(fields, meta_data)
 {
   name_suffix <- sapply(X = fields, 
                         FUN = manual_checkbox_suffixes, 

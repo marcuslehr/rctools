@@ -1,4 +1,4 @@
-#' @name importRecords
+#' @name rc_importRecords
 #' @title Import Records to a REDCap Database
 #' 
 #' @description Imports records from a \code{data.frame} to a REDCap Database
@@ -62,40 +62,13 @@
 #'
 #' @export
 
-importRecords <- function(rcon, data,
-                          overwriteBehavior=c('normal', 'overwrite'),
-                          returnContent=c('count', 'ids', 'nothing'),
-                          returnData=FALSE, logfile="", ...) 
+rc_importRecords <- function(rcon, data,
+                                    overwriteBehavior = c('normal', 'overwrite'),
+                                    returnContent = c('count', 'ids', 'nothing'),
+                                    returnData = FALSE, logfile = "", 
+                                    ...,
+                                    bundle = NULL, batch.size=-1)
 {
-  UseMethod("importRecords")
-}
-
-#' @rdname importRecords
-#' @export
-
-importRecords.redcapDbConnection <- function(rcon, data,
-                                             overwriteBehavior=c('normal', 'overwrite'),
-                                             returnContent=c('count', 'ids', 'nothing'),
-                                             returnData=FALSE, logfile="", ...){
-  message("Please accept my apologies.  The importRecords method for redcapDbConnection objects\n",
-          "has not yet been written.  Please consider using the API.")
-}
-
-#' @rdname importRecords
-#' @export
-
-importRecords.redcapApiConnection <- function(rcon, data,
-                                              overwriteBehavior = c('normal', 'overwrite'),
-                                              returnContent = c('count', 'ids', 'nothing'),
-                                              returnData = FALSE, logfile = "", 
-                                              ...,
-                                              bundle = NULL, batch.size=-1)
-{
-  if (!is.na(match("proj", names(list(...)))))
-  {
-    message("The 'proj' argument is deprecated.  Please use 'bundle' instead")
-    bundle <- list(...)[["proj"]]
-  }
   
   coll <- checkmate::makeAssertCollection()
   
@@ -131,22 +104,19 @@ importRecords.redcapApiConnection <- function(rcon, data,
   
   checkmate::reportAssertions(coll)
   
-  meta_data <- 
-    if (is.null(bundle$meta_data)) 
-      exportMetaData(rcon) 
-    else 
-      bundle$meta_data
+  if (is.null(bundle$meta_data))
+    message("bundle$meta_data not found. Please supply a bundle object containing $meta_data from rc_exportBundle()")
+  else
+    meta_data <- bundle$meta_data
   
-  version <- 
-    if (is.null(bundle$version))
-      exportVersion(rcon)
-    else 
-      bundle$version
-
-  if (utils::compareVersion(version, "5.5.21") == -1 )
-    meta_data <- syncUnderscoreCodings(data, 
-                                       meta_data, 
-                                       export = FALSE)
+  if (!is.null(bundle$version)) version <- bundle$version
+  
+  try(
+    if (utils::compareVersion(version, "5.5.21") == -1 )
+      meta_data <- syncUnderscoreCodings(data, 
+                                         meta_data, 
+                                         export = FALSE),
+    silent = T)
   
   suffixed <- checkbox_suffixes(fields = meta_data$field_name,
                                 meta_data = meta_data, 

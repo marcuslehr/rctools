@@ -1,5 +1,4 @@
 #' @name parseBranchingLogic
-#' @export parseBranchingLogic
 #' 
 #' @title Parse Branching Logic
 #' @description Branching logic from the REDCap Data Dictionary is parsed into
@@ -27,17 +26,27 @@
 parseBranchingLogic <- function(l){
   l <- tolower(l)
   l <- gsub("\\n", " ", l)
-  l <- gsub(" or ", " | ", l)
-  l <- gsub(" and ", " & ", l)
-  l <- gsub("([a-z,0-9,_])\\((?<=\\()(.*?)(?=\\))\\)", 
-            "\\1___\\2", 
-            l, 
-            perl = TRUE)
-  l <- gsub("([[]|[]])", "", l)
-  l <- gsub("[=]", " == ", l)
-  l <- gsub("[!] [=]", " !", l)
-  l <- gsub("[<] [=]", " <", l)
-  l <- gsub("[>] [=]", " >", l)
-  l <- gsub("[<][>]", "!=", l)
+  
+  # Format operators
+  logic <- gsub(" or ", " | ", logic)
+  logic <- gsub(" and ", " & ", logic)
+  logic <- gsub("[=]", " == ", logic)
+  logic <- gsub("[!] [=]", " !", logic)
+  logic <- gsub("[<] [=]", " <", logic)
+  logic <- gsub("[>] [=]", " >", logic)
+  logic <- gsub("[<][>]", "!=", logic)
+  
+  # Format checkbox names
+  logic <- gsub("([a-z,0-9,_])\\((?<=\\()(.*?)(?=\\))\\)",
+                "\\1___\\2",
+                logic,
+                perl = TRUE)
+  
+  # Need to format smart variables here
+  
+  # Remove brackets
+  logic <- gsub("([[]|[]])", "", logic)
+  
+  # Create list of expressions
   lapply(l, function(x) ifelse(x=="", NA, parse(text=x)))
 }
