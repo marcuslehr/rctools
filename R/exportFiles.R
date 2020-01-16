@@ -54,8 +54,6 @@
 #' 
 #' Additional details on API parameters are found on the package wiki at
 #' \url{https://github.com/nutterb/redcapAPI/wiki/REDCap-API-Parameters}
-#' 
-#' @export
 
 exportFiles <- function(rcon, record, field, event, dir, filePrefix=TRUE, ...,
                         bundle = getOption("redcap_bundle"))
