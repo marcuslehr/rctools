@@ -37,8 +37,7 @@
 #' 
 #' Additional details on API parameters are found on the package wiki at
 #' \url{https://github.com/nutterb/redcapAPI/wiki/REDCap-API-Parameters}
-#' 
-#' @export 
+ 
 
 exportMappings <- function(rcon, arms, ...) UseMethod("exportMappings")
 

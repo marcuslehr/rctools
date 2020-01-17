@@ -1,29 +1,25 @@
-Package: redcapAPI
+Package: rctools
 Type: Package
-Title: Interface to 'REDCap'
-Version: 2.3
+Title: Tools for REDCap API and data manipulation
+Version: 0.1
 Authors@R: c(
+    person("Marcus", "Lehr", email = "marcus.j.lehr@gmail.com", 
+           role = c("aut","cre","ctb")),
     person("Benjamin", "Nutter", email = "benjamin.nutter@gmail.com", 
-           role = c("aut", "ctb", "cre")),
+           role = "ctb"),
     person("Stephen", "Lane", role = "ctb"),
     person("Will", "Beasley", role = "ctb"),
     person("Jeffrey", "Horner", role = "ctb"),
     person("Will", "Gray", role = "ctb"),
-    person("Jeremy", "Stephens", role = "ctb"), 
-    person("Marcus", "Lehr", role = "ctb", email = "marcus.j.lehr@gmail.com"))
-Maintainer: Benjamin Nutter <benjamin.nutter@gmail.com>
-Description: Access data stored in 'REDCap' databases using the Application
-    Programming Interface (API).  'REDCap' (Research Electronic Data CAPture;
-    <https://projectredcap.org>) is
-    a web application for building and managing online surveys and databases
-    developed at Vanderbilt University.  The API allows users to access data
-    and project meta data (such as the data dictionary) from the web
-    programmatically.  The 'redcapAPI' package facilitates the process of
-    accessing data with options to prepare an analysis-ready data set
-    consistent with the definitions in a database's data dictionary.
+    person("Jeremy", "Stephens", role = "ctb"))   
+Maintainer: Marcus Lehr <marcus.j.lehr@gmail.com>
+Description: Access data stored in 'REDCap' databases via API and perform common
+    data manipulations. 'REDCap' (Research Electronic Data CAPture;
+    <https://projectredcap.org>) is a web application for building and managing 
+    online surveys and databases developed at Vanderbilt University.
 License: GPL-2
 Depends:
-    R (>= 3.0.0)
+    R (>= 3.6.1)
 Imports:
     checkmate,
     chron,
@@ -33,10 +29,10 @@ Imports:
     lubridate,
     readr,
     stringr,
-    tidyr
+    tidyr,
+    dplyr,
+    magrittr,
+    reshape2
 LazyLoad: yes
-URL: https://github.com/nutterb/redcapAPI/wiki,
-    https://github.com/nutterb/redcapAPI,
-    https://projectredcap.org
-BugReports: https://github.com/nutterb/redcapAPI/issues
-RoxygenNote: 7.0.2
+URL: https://github.com/chillywings/redcapAPI
+RoxygenNote: 7.0.1

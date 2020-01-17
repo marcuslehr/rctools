@@ -12,8 +12,7 @@ deleteArms(rcon, arms, ...)
 
 \method{deleteArms}{redcapApiConnection}(
   rcon,
-  records,
-  arms = NULL,
+  arms,
   ...,
   error_handling = getOption("redcap_error_handling")
 )

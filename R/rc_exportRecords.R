@@ -1,4 +1,4 @@
-#' @name exportRecords
+#' @name rc_exportRecords
 #' 
 #' @title Export Records from a REDCap Database
 #' @description Exports records from a REDCap Database, allowing for 
@@ -164,31 +164,7 @@
 #' 
 #' @export
 
-exportRecords <-
-  function(rcon, factors = TRUE, fields = NULL, forms = NULL, records = NULL,
-           events = NULL, labels = TRUE, dates = TRUE,
-           survey = TRUE, dag = TRUE, checkboxLabels = FALSE, 
-           colClasses = NA, ...)
-    
-    UseMethod("exportRecords")
-
-#' @rdname exportRecords
-#' @export
-#' 
-exportRecords.redcapDbConnection <- 
-  function(rcon, factors = TRUE, fields = NULL, forms = NULL, records = NULL,
-           events = NULL, labels = TRUE, dates = TRUE,
-           survey = TRUE, dag = TRUE, checkboxLabels = FALSE, 
-           colClasses = NA, ...)
-  {
-    message("Please accept my apologies.  The exportRecords method for redcapDbConnection objects\n",
-            "has not yet been written.  Please consider using the API.")
-  }
-
-#' @rdname exportRecords
-#' @export
-
-exportRecords.redcapApiConnection <- 
+rc_exportRecords <-
   function(rcon, factors = TRUE, fields = NULL, forms = NULL,
            records = NULL, events = NULL, labels = TRUE, dates = TRUE,
            survey = TRUE, dag = TRUE, checkboxLabels = FALSE,
@@ -196,13 +172,8 @@ exportRecords.redcapApiConnection <-
            batch.size = -1,
            bundle = getOption("redcap_bundle"),
            error_handling = getOption("redcap_error_handling"),
-           form_complete_auto = TRUE)
+           form_complete_auto = FALSE)
 {
-  if (!is.na(match("proj", names(list(...)))))
-  {
-    message("The 'proj' argument is deprecated.  Please use 'bundle' instead")
-    bundle <- list(...)[["proj"]]
-  }
 
   if (is.numeric(records)) records <- as.character(records)
 
@@ -235,29 +206,25 @@ exportRecords.redcapApiConnection <-
   checkmate::reportAssertions(coll)
 
   #* Secure the meta data.
-  meta_data <-
     if (is.null(bundle$meta_data))
-      exportMetaData(rcon)
+      message("bundle$meta_data not found. Please supply a bundle object containing $meta_data from rc_exportBundle()")
     else
-      bundle$meta_data
+      meta_data <- bundle$meta_data
 
   #* for purposes of the export, we don't need the descriptive fields.
   #* Including them makes the process more error prone, so we'll ignore them.
   meta_data <- meta_data[!meta_data$field_type %in% "descriptive", ]
 
   #* Secure the events table
-  events_list <-
+  
     if (is.null(bundle$events))
-      exportEvents(rcon)
+      message("bundle$events not found. Please supply a bundle object containing $events data from rc_exportBundle()")
     else
-      bundle$events
+      events_list <- bundle$events
 
   #* Secure the REDCap version
-  version <-
-    if (is.null(bundle$version))
-      exportVersion(rcon)
-    else
-      bundle$version
+    if (!is.null(bundle$version)) version <- bundle$version
+      
 
   form_complete_fields <-
     sprintf("%s_complete",
@@ -321,8 +288,8 @@ exportRecords.redcapApiConnection <-
       # The subset prevents `[form]_complete` fields from
       # being included here.
       fields = field_names[field_names %in% meta_data$field_name],
-      meta_data = meta_data,
-      version = version)
+      meta_data = meta_data
+      )
 
   # Identify the forms from which the chosen fields are found
   included_form <-
@@ -368,8 +335,11 @@ exportRecords.redcapApiConnection <-
 
   #* synchronize underscore codings between records and meta data
   #* Only affects calls in REDCap versions earlier than 5.5.21
-  if (utils::compareVersion(version, "6.0.0") == -1)
-    meta_data <- syncUnderscoreCodings(x, meta_data)
+  try(
+    if (utils::compareVersion(version, "6.0.0") == -1) {
+          meta_data <- syncUnderscoreCodings(x, meta_data)
+          },
+    silent = T)
 
   x <- fieldToVar(records = x,
                   meta_data = meta_data,
