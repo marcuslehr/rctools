@@ -1,17 +1,14 @@
-#' @name redcapConnection
-#' @export redcapConnection
+#' @name rc_connect
+#' @export 
 #' 
 #' @title Connect to a REDCap Database
 #' @description Creates an object of class \code{redcapApiConnection} for 
-#' using the REDCap API [or a direct connection through an SQL server]
+#' use with other functions to connect to the REDCap API.
 #' 
 #' @param url URL for a REDCap database API.  Check your institution's REDCap 
 #'   documentation for this address.  Either \code{url} or \code{conn} must 
 #'   be specified.
 #' @param token REDCap API token
-#' @param conn The database connection to be used. If used, \code{project}
-#'   must also be used.
-#' @param project The project ID in the REDCap tables.
 #' @param config A list to be passed to \code{httr::POST}.  This allows the 
 #'   user to set additional configurations for the API calls, such as 
 #'   certificates, ssl version, etc. For the majority of users, this does 
@@ -65,21 +62,20 @@
 #' 
 #' @examples
 #' \dontrun{
-#' rcon <- redcapConnection(url=[YOUR_REDCAP_URL], token=[API_TOKEN])
+#' rcon <- rc_connect(url=[YOUR_REDCAP_URL], token=[API_TOKEN])
 #' 
 #' options(redcap_api_url=[YOUR_REDCAP_URL])
-#' rcon <- redcapConnection(token=[API_TOKEN])
+#' rcon <- rc_connect(token=[API_TOKEN])
 #' 
-#' exportRecords(rcon)
+#' rc_exportRecords(rcon)
 #' }
 #' 
 
-redcapConnection <-
-function(url=getOption('redcap_api_url'),token,conn,project, 
-         config=httr::config())
+rc_connect <-
+function(url=getOption('redcap_api_url'),token,config=httr::config())
 {
-   if (is.na(url) && missing(conn))
-      stop("Need one of url or conn")
+   if (is.na(url))
+      stop("You must supply a URL for the REDCap API")
    if (!is.na(url))
    {
       if (missing(token))
@@ -88,17 +84,6 @@ function(url=getOption('redcap_api_url'),token,conn,project,
          structure(
             list(url=url,token=token, config=config),
             class='redcapApiConnection'
-         )
-      )
-   }
-   else
-   {
-      if (missing(project))
-         stop("Need a project_id specified in project variable")
-      return(
-         structure(
-            list(conn=conn,project=project),
-            class='redcapDbConnection'
          )
       )
    }

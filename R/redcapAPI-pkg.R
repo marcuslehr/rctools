@@ -31,8 +31,8 @@
 #' Vanderbilt University.  Their work in developing the \code{redcap} 
 #' package (\url{http://github.com/vubiostat/redcap}) 
 #' was invaluable in helping me understand the API.  A few of their functions 
-#' (\code{redcapConnection}, 
-#' \code{fieldToVar}, \code{exportMetaData}, and \code{exportRecords}) are 
+#' (\code{rc_connect}, 
+#' \code{fieldToVar}, \code{exportMetaData}, and \code{rc_exportRecords}) are 
 #' included in \code{redcapAPI} largely unaltered.
 #' 
 #' Many thanks also go to Will Beasley of University of Oklahoma for his 

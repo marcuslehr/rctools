@@ -9,7 +9,7 @@
 #' @param records A raw data export from REDCap.
 #' @param varRoots A vector of root names which are common and unique to all of the associated
 #' technical replicates.
-#' @param bundle A bundle object created by \code{exportBundle} containing project metadata.
+#' @param bundle A bundle object created by \code{rc_exportBundle} containing project metadata.
 #'
 #' @author Marcus Lehr
 #' @export

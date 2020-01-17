@@ -4,7 +4,7 @@
 #' @description Exports records from a REDCap Database, allowing for 
 #'   subsets of subjects, fields, records, and events.
 #'   
-#' @param rcon A REDCap connection object as created by \code{redcapConnection}.
+#' @param rcon A REDCap connection object as created by \code{rc_connect}.
 #' @param dataFile For the offline version, a character string giving the location
 #'   of the dataset downloaded from REDCap.  Note that this should be the raw
 #'   (unlabeled) data set.
@@ -51,7 +51,7 @@
 #'   is the label assigned to the level in the data dictionary. 
 #'   This option is only available after REDCap version 6.0.  See Checkbox Variables
 #'   for more on how this interacts with the \code{factors} argument.
-#' @param bundle A \code{redcapBundle} object as created by \code{exportBundle}.
+#' @param bundle A \code{redcapBundle} object as created by \code{rc_exportBundle}.
 #' @param colClasses A (named) vector of colum classes passed to 
 #'   \code{\link[utils]{read.csv}} calls. 
 #'   Useful to force the interpretation of a column in a specific type and 
@@ -429,7 +429,7 @@ batched <- function(rcon, body, batch.size, id, colClasses, error_handling)
   {
     warning("The record IDs in this project appear to be de-identified. ",
             "Subject data may not match across batches. ",
-            "See 'Deidentified Batched Calls' in '?exportRecords'")
+            "See 'Deidentified Batched Calls' in '?rc_exportRecords'")
   }
   
   #* Determine batch numbers for the IDs.

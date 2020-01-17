@@ -1,4 +1,4 @@
 library(testthat)
-library(redcapAPI)
+library(rctools)
 
-test_check("redcapAPI")
+test_check("rctools")
