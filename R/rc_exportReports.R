@@ -3,7 +3,7 @@
 #' 
 #' @description Exports reports from a REDCap Database and formats data if requested
 #' 
-#' @param rcon A REDCap connection object as created by \code{redcapConnection}.
+#' @param rcon A REDCap connection object as created by \code{rc_connect}.
 #' @param report_id Integer.  Gives the report id of the desired report. 
 #' This is located on the Report Builder page of the user interface on REDCap.
 #' @param factors Logical.  Determines if categorical data from the database 
@@ -15,7 +15,7 @@
 #'   If \code{TRUE}, they are applied as ""/"[field_labe]" where [field_label] 
 #'   is the label assigned to the level in the data dictionary. This option 
 #'   is only available after REDCap version 6.0.
-#' @param bundle A \code{redcapBundle} object as created by \code{exportBundle}.
+#' @param bundle A \code{redcapBundle} object as created by \code{rc_exportBundle}.
 #' @param ... Additional arguments to be passed between methods.
 #' @param error_handling An option for how to handle errors returned by the API.
 #'   see \code{\link{redcap_error}}

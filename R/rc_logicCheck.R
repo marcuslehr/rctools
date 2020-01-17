@@ -6,7 +6,7 @@
 #' branching logic exist in the project metadata. It will also warn of faulty logic
 #' concerning \code{[event-name] = 'event_name'} conditions.
 #'
-#' @param bundle A bundle object created by \code{exportBundle} containing project metadata.
+#' @param bundle A bundle object created by \code{rc_exportBundle} containing project metadata.
 #'
 #' @author Marcus Lehr
 #' @export
@@ -15,7 +15,7 @@ rc_logicCheck <- function(bundle) {
 
   if (is.null(bundle[["meta_data"]])) {
     message("[['meta_data']] not found in bundle object. Please add it using
-            bundle[['meta_data']] = exportBundle(rcon, meta_data = T)")
+            bundle[['meta_data']] = rc_exportBundle(rcon, meta_data = T)")
   } else {
     validate_events(bundle)
     validate_variables(bundle)

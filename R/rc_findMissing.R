@@ -16,7 +16,7 @@
 #' @param completionField The REDCap variable which indicates whether or not a subject
 #' has completed the study. This should be indicated by a 'Yes' or a '1' (i.e. a Yes/No
 #' field in REDCap).
-#' @param bundle A bundle object created by \code{exportBundle} containing project metadata.
+#' @param bundle A bundle object created by \code{rc_exportBundle} containing project metadata.
 #'
 #' @importFrom magrittr '%>%'
 #'

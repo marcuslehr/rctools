@@ -20,7 +20,7 @@
 #'   For this reason, it is often preferable to have these kinds of errors return 
 #'   \code{NULL} so that the program doesn't crash if it doesn't need to (one such 
 #'   instance where it doesn't need to crash is when \code{exportEvents} is called
-#'   within \code{exportRecords}; the \code{events} argument is irrelevant to a 
+#'   within \code{rc_exportRecords}; the \code{events} argument is irrelevant to a 
 #'   classic project and the error can safely be ignored.
 #'   
 #'   The other common type of error that does not need to be fatal is when a 

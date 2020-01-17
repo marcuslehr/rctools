@@ -9,7 +9,7 @@
 #'
 #' @param rcon A recapConnection object.
 #' @param proj A redcapProjectInfo object.
-#' @param batch.size Batch size parameter for \code{exportRecords}
+#' @param batch.size Batch size parameter for \code{rc_exportRecords}
 #' @param records a filename pointing to the raw records download from REDCap
 #' @param meta_data a filename pointing to the data dictionary download from REDCap
 #' @param excludeMissingForms If all of the fields in a form are missing, would
@@ -41,7 +41,7 @@ missingSummary <- function(rcon,
                                  excludeMissingForms = TRUE, ...,
                                  proj=NULL, batch.size=-1){
 
-  records <- exportRecords(rcon, factors=FALSE, labels=TRUE,
+  records <- rc_exportRecords(rcon, factors=FALSE, labels=TRUE,
                            dates=FALSE, survey=FALSE, dag=TRUE,
                            batch.size=batch.size)
   #   records.orig <- records

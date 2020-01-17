@@ -6,8 +6,6 @@
 #' @param x an object of class \code{redcapFactor}
 #' @param drop \code{logical}. If \code{TRUE}, unused levels are dropped.
 #' @param ... additional arguments to pass to other methods
-#' 
-#' @export
 
 `[.redcapFactor` <- function(x, ..., drop = FALSE){
   redcap_labels <- attr(x, "redcapLabels")
@@ -30,7 +28,6 @@
 }
 
 #' @rdname Extraction
-#' @export
 
 print.redcapFactor <- function(x, ...){
   attr(x, "redcapLabels") <- NULL

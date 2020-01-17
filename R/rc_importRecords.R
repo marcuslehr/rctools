@@ -3,10 +3,10 @@
 #' 
 #' @description Imports records from a \code{data.frame} to a REDCap Database
 #'
-#' @param rcon A REDCap connection object as created by \code{redcapConnection}.
+#' @param rcon A REDCap connection object as created by \code{rc_connect}.
 #' @param data A \code{data.frame} to be imported to the REDCap project.
 #' @param bundle A \code{redcapBundle} object as created by
-#'   \code{exportBundle}.
+#'   \code{rc_exportBundle}.
 #' @param overwriteBehavior Character string.  'normal' prevents blank
 #'   fields from overwriting populated fields.  'overwrite' causes blanks to
 #'   overwrite data in the REDCap database.
@@ -31,7 +31,7 @@
 #' A record of imports through the API is recorded in the Logging section
 #' of the project.
 #'
-#' \code{importRecords} prevents the most common import errors by testing the
+#' \code{rc_importRecords} prevents the most common import errors by testing the
 #' data before attempting the import.  Namely
 #' \enumerate{
 #'   \item Check that all variables in \code{data} exist in the REDCap data dictionary.

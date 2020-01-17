@@ -3,13 +3,11 @@
 #' 
 #' @description Checkbox variables return one vector of data for each option defined
 #'   in the variable.  The variables are returned with the suffix \code{___[option]}.
-#'   \code{exportRecords} needs these suffixes in order to retrieve all of the 
+#'   \code{rc_exportRecords} needs these suffixes in order to retrieve all of the 
 #'   variables and to apply the correct labels.
 #'   
 #' @param fields The current field names of interest
 #' @param meta_data The meta data data frame.
-#' 
-#' @export
 
 checkbox_suffixes <- function(fields, meta_data)
 {
