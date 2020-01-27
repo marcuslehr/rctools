@@ -5,39 +5,31 @@
 \title{Export Reports from a REDCap Database}
 \usage{
 rc_exportReports(
-  rcon,
   report_id,
-  factors = TRUE,
-  labels = TRUE,
-  dates = TRUE,
-  checkboxLabels = FALSE,
+  url = getOption("redcap_bundle")$redcap_url,
+  token = getOption("redcap_token"),
+  meta_data = getOption("redcap_bundle")$meta_data,
+  format = TRUE,
   ...,
-  bundle = getOption("redcap_bundle"),
   error_handling = getOption("redcap_error_handling")
 )
 }
 \arguments{
-\item{rcon}{A REDCap connection object as created by \code{redcapConnection}.}
-
 \item{report_id}{Integer.  Gives the report id of the desired report. 
 This is located on the Report Builder page of the user interface on REDCap.}
 
-\item{factors}{Logical.  Determines if categorical data from the database 
-is returned as numeric codes or labelled factors.}
+\item{url}{A url address to connect to the REDCap API}
 
-\item{labels}{Logical.  Determines if the variable labels are applied to the data frame.}
+\item{token}{A REDCap API token}
 
-\item{dates}{Logical. Determines if date variables are converted to POSIXlt format during the download.}
+\item{meta_data}{REDCap project metadata (aka data dictionary). By default, 
+$meta_data is expected in a REDCap bundle object, as created by \code{rc_setup}.
+Otherwise, a data.frame containing the metadata must be supplied.}
 
-\item{checkboxLabels}{Logical. Determines the format of labels in checkbox 
-variables.  If \code{FALSE} labels are applies as "Unchecked"/"Checked".  
-If \code{TRUE}, they are applied as ""/"[field_labe]" where [field_label] 
-is the label assigned to the level in the data dictionary. This option 
-is only available after REDCap version 6.0.}
+\item{format}{Logical.  Determines whether the data will be formatted with
+\code{rc_formatRecords} (Default = TRUE)}
 
-\item{...}{Additional arguments to be passed between methods.}
-
-\item{bundle}{A \code{redcapBundle} object as created by \code{exportBundle}.}
+\item{...}{Additional arguments to be passed to \code{rc_formatRecords}}
 
 \item{error_handling}{An option for how to handle errors returned by the API.
 see \code{\link{redcap_error}}}
@@ -78,4 +70,6 @@ None
 
 \author{
 Benjamin Nutter
+
+Marcus Lehr
 }

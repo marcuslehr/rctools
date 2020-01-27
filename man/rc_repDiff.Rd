@@ -4,7 +4,7 @@
 \alias{rc_repDiff}
 \title{Report differences between technical replicates}
 \usage{
-rc_repDiff(records, varRoots, bundle = NULL)
+rc_repDiff(records, varRoots, meta_data = getOption("redcap_bundle")$meta_data)
 }
 \arguments{
 \item{records}{A raw data export from REDCap.}
@@ -12,7 +12,9 @@ rc_repDiff(records, varRoots, bundle = NULL)
 \item{varRoots}{A vector of root names which are common and unique to all of the associated
 technical replicates.}
 
-\item{bundle}{A bundle object created by \code{exportBundle} containing project metadata.}
+\item{meta_data}{REDCap project metadata (aka data dictionary). By default, 
+$meta_data is expected in a REDCap bundle object, as created by \code{rc_setup}.
+Otherwise, a data.frame containing the metadata must be supplied.}
 }
 \description{
 Take differences for each sequential pair of replicate variables

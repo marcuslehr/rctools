@@ -20,7 +20,7 @@ Validates the variables in a data frame prior to attempting
   an import to REDCap
 }
 \details{
-\code{validateImport} is called internally by \code{importRecords} and is 
+\code{validateImport} is called internally by \code{rc_importRecords} and is 
 not available to the user.
 
 Each variable is validated by matching they type of variable with the type 

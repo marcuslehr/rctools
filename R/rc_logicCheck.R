@@ -6,17 +6,26 @@
 #' branching logic exist in the project metadata. It will also warn of faulty logic
 #' concerning \code{[event-name] = 'event_name'} conditions.
 #'
-#' @param bundle A bundle object created by \code{rc_exportBundle} containing project metadata.
+#' @param meta_data REDCap project metadata (aka data dictionary). By default, 
+#' $meta_data is expected in a REDCap bundle object, as created by \code{rc_setup}.
+#' Otherwise, a data.frame containing the metadata must be supplied.
 #'
 #' @author Marcus Lehr
 #' @export
 
-rc_logicCheck <- function(bundle) {
+rc_logicCheck <- function(meta_data = getOption("redcap_bundle")$meta_data,
+                          events = getOption("redcap_bundle")$events) {
 
-  if (is.null(bundle[["meta_data"]])) {
-    message("[['meta_data']] not found in bundle object. Please add it using
-            bundle[['meta_data']] = rc_exportBundle(rcon, meta_data = T)")
+  if (is.null(meta_data)) {
+    stop("$meta_data not found in REDCap bundle. Please create a REDCap bundle containing
+    $meta_data with rc_setup() or supply meta_data via a data.frame")
+  } else if (is.null(events)) {
+    stop("$events not found in REDCap bundle. Please create a REDCap bundle containing
+    $events with rc_setup() or supply event data via a data.frame")
   } else {
+    bundle = list(meta_data = meta_data,
+                  events = events)
+    
     validate_events(bundle)
     validate_variables(bundle)
     validate_event_logic(bundle)

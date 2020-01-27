@@ -1,7 +1,7 @@
 Package: rctools
 Type: Package
 Title: Tools for REDCap API and data manipulation
-Version: 0.1
+Version: 0.2
 Authors@R: c(
     person("Marcus", "Lehr", email = "marcus.j.lehr@gmail.com", 
            role = c("aut","cre","ctb")),
@@ -35,4 +35,4 @@ Imports:
     reshape2
 LazyLoad: yes
 URL: https://github.com/chillywings/redcapAPI
-RoxygenNote: 7.0.1
+RoxygenNote: 7.0.2

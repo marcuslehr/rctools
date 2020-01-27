@@ -7,7 +7,8 @@
 #' @title Report of Missing Values
 #' @description Returns a data frame of subject events with missing values.
 #'
-#' @param rcon A recapConnection object.
+#' @param url A url address to connect to the REDCap API
+#' @param token A REDCap API token
 #' @param proj A redcapProjectInfo object.
 #' @param batch.size Batch size parameter for \code{rc_exportRecords}
 #' @param records a filename pointing to the raw records download from REDCap
@@ -37,16 +38,18 @@
 #' @author Benjamin Nutter
 #'
 
-missingSummary <- function(rcon,
+missingSummary <- function(url = getOption("redcap_bundle")$redcap_url,
+token = getOption("redcap_token"),
+
                                  excludeMissingForms = TRUE, ...,
                                  proj=NULL, batch.size=-1){
 
-  records <- rc_exportRecords(rcon, factors=FALSE, labels=TRUE,
+  records <- rc_exportRecords(url, token, factors=FALSE, labels=TRUE,
                            dates=FALSE, survey=FALSE, dag=TRUE,
                            batch.size=batch.size)
   #   records.orig <- records
 
-  meta_data <- exportMetaData(rcon)
+  meta_data <- exportMetaData(url, token)
   meta_data <- meta_data[meta_data$field_type != "descriptive", ]
 
   form_names <- unique(meta_data$form_name)

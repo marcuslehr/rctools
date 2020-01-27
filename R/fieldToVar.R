@@ -15,7 +15,7 @@
 #'   "Checked" or using the checkbox label.  Only applicable when \code{factors = TRUE}
 #' 
 #' @details This function is called internally by \code{rc_exportRecords} and 
-#'   \code{rc_exportReports}.  it is not available to the user.
+#'   \code{rc_exportReports}. It is not available to the user.
 #'   
 #' @author Jeffrey Horner
 

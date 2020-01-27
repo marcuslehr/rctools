@@ -5,21 +5,23 @@
 \title{Import Records to a REDCap Database}
 \usage{
 rc_importRecords(
-  rcon,
-  data,
+  record_data,
+  url = getOption("redcap_bundle")$redcap_url,
+  token = getOption("redcap_token"),
   overwriteBehavior = c("normal", "overwrite"),
   returnContent = c("count", "ids", "nothing"),
   returnData = FALSE,
   logfile = "",
-  ...,
-  bundle = NULL,
+  bundle = getOption("redcap_bundle"),
   batch.size = -1
 )
 }
 \arguments{
-\item{rcon}{A REDCap connection object as created by \code{redcapConnection}.}
+\item{record_data}{A \code{data.frame} to be imported to the REDCap project.}
 
-\item{data}{A \code{data.frame} to be imported to the REDCap project.}
+\item{url}{A url address to connect to the REDCap API}
+
+\item{token}{A REDCap API token}
 
 \item{overwriteBehavior}{Character string.  'normal' prevents blank
 fields from overwriting populated fields.  'overwrite' causes blanks to
@@ -41,10 +43,8 @@ accounted for.}
 log of errors and warnings about the data.
 If \code{""}, the log is printed to the console.}
 
-\item{...}{Arguments to be passed to other methods.}
-
 \item{bundle}{A \code{redcapBundle} object as created by
-\code{exportBundle}.}
+\code{rc_setup}.}
 
 \item{batch.size}{Specifies size of batches.  A negative value
 indicates no batching.}
@@ -56,10 +56,10 @@ Imports records from a \code{data.frame} to a REDCap Database
 A record of imports through the API is recorded in the Logging section
 of the project.
 
-\code{importRecords} prevents the most common import errors by testing the
+\code{rc_importRecords} prevents the most common import errors by testing the
 data before attempting the import.  Namely
 \enumerate{
-  \item Check that all variables in \code{data} exist in the REDCap data dictionary.
+  \item Check that all variables in \code{record_data} exist in the REDCap data dictionary.
   \item Check that the study id variable exists
   \item Force the study id variable to the first position in the data frame (with a warning)
   \item Remove calculated fields (with a warning)

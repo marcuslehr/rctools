@@ -3,20 +3,18 @@
 #' 
 #' @description Exports reports from a REDCap Database and formats data if requested
 #' 
-#' @param rcon A REDCap connection object as created by \code{rc_connect}.
+#' @param url A url address to connect to the REDCap API
+#' @param token A REDCap API token
 #' @param report_id Integer.  Gives the report id of the desired report. 
 #' This is located on the Report Builder page of the user interface on REDCap.
-#' @param factors Logical.  Determines if categorical data from the database 
-#' is returned as numeric codes or labelled factors.
-#' @param labels Logical.  Determines if the variable labels are applied to the data frame.
-#' @param dates Logical. Determines if date variables are converted to POSIXlt format during the download.
-#' @param checkboxLabels Logical. Determines the format of labels in checkbox 
-#'   variables.  If \code{FALSE} labels are applies as "Unchecked"/"Checked".  
-#'   If \code{TRUE}, they are applied as ""/"[field_labe]" where [field_label] 
-#'   is the label assigned to the level in the data dictionary. This option 
-#'   is only available after REDCap version 6.0.
-#' @param bundle A \code{redcapBundle} object as created by \code{rc_exportBundle}.
-#' @param ... Additional arguments to be passed between methods.
+#' @param meta_data REDCap project metadata (aka data dictionary). By default, 
+#' $meta_data is expected in a REDCap bundle object, as created by \code{rc_setup}.
+#' Otherwise, a data.frame containing the metadata must be supplied.
+#' 
+#' @param format Logical.  Determines whether the data will be formatted with
+#' \code{rc_formatRecords} (Default = TRUE)
+#' @param ... Additional arguments to be passed to \code{rc_formatRecords}
+#' 
 #' @param error_handling An option for how to handle errors returned by the API.
 #'   see \code{\link{redcap_error}}
 #' 
@@ -46,13 +44,22 @@
 #' None
 #' 
 #' @author Benjamin Nutter
+#' @author Marcus Lehr
 #' 
 #' @export
 
-rc_exportReports <- function(rcon, report_id, factors = TRUE, labels = TRUE, 
-                              dates = TRUE, checkboxLabels = FALSE, ...,
-                              bundle = getOption("redcap_bundle"),
-                              error_handling = getOption("redcap_error_handling")){
+rc_exportReports <- function(report_id,
+                             url = getOption("redcap_bundle")$redcap_url,
+                             token = getOption("redcap_token"),
+                             meta_data = getOption("redcap_bundle")$meta_data,
+                             format = TRUE, ...,
+                             error_handling = getOption("redcap_error_handling")){
+  
+  #* Secure the meta data.
+  if (is.null(meta_data)) 
+    stop("$meta_data not found in REDCap bundle. Please create a REDCap bundle containing
+    $meta_data with rc_setup() or supply meta_data via a data.frame")
+  
   
   if (!is.numeric(report_id)) report_id <- as.numeric(report_id)
   
@@ -62,18 +69,15 @@ rc_exportReports <- function(rcon, report_id, factors = TRUE, labels = TRUE,
                                len = 1,
                                add = coll)
   
-  massert(~ rcon + bundle,
+  massert(~ url + token + meta_data,
           fun = checkmate::assert_class,
-          classes = list(rcon = "redcapApiConnection",
-                         bundle = "redcapBundle"),
-          null.ok = list(rcon = FALSE,
-                         bundle = TRUE),
+          classes = list(url = "character", token = "character",
+                         meta_data = "data.frame"),
           fixed = list(add = coll))
   
-  massert(~ factors + labels + dates + checkboxLabels,
-          fun = checkmate::assert_logical,
-          fixed = list(len = 1,
-                       add = coll))
+  checkmate::assert_logical(x = format,
+                            len = 1,
+                            add = coll)
   
   error_handling <- checkmate::matchArg(x = error_handling, 
                                         choices = c("null", "error"),
@@ -81,76 +85,29 @@ rc_exportReports <- function(rcon, report_id, factors = TRUE, labels = TRUE,
   
   checkmate::reportAssertions(coll)
   
-  #* Secure the meta data.
-   
-  if (is.null(bundle$meta_data)) 
-    message("bundle$meta_data not found. Please supply a bundle object containing $meta_data from rc_exportBundle()")
-  else 
-   meta_data <- bundle$meta_data
+  
   
   #* for purposes of the export, we don't need the descriptive fields. 
   #* Including them makes the process more error prone, so we'll ignore them.
   meta_data <- meta_data[!meta_data$field_type %in% "descriptive", ]  
   
-  #* Secure the REDCap version
-  if (!is.null(bundle$version)) version <- bundle$version
   
-  body <- list(token = rcon$token, 
+  body <- list(token = token, 
                content = 'report',
                format = 'csv', 
                returnFormat = 'csv',
                report_id = report_id)
   
-  x <- httr::POST(url = rcon$url, 
-                  body = body, 
-                  config = rcon$config)
+  x <- httr::POST(url = url, 
+                  body = body)
   
   if (x$status_code != 200) redcap_error(x, error_handling)
   
   x <- utils::read.csv(text = as.character(x), 
                        stringsAsFactors = FALSE, 
                        na.strings = "")
-
-  #* synchronize underscore codings between records and meta data
-  #* Only affects calls in REDCap versions earlier than 5.5.21
-  try(
-    if (utils::compareVersion(version, "6.0.0") == -1) {
-      meta_data <- syncUnderscoreCodings(x, meta_data)
-    },
-    silent = T)
   
-
-  x <- fieldToVar(records = x, 
-                  meta_data = meta_data, 
-                  factors = factors, 
-                  dates = dates, 
-                  checkboxLabels = checkboxLabels)
-  
-  
-  if (labels) 
-  {
-    field_names <- names(x)
-    field_names <- unique(sub("___.+$", "", field_names))
-    
-    # For reports, there is not check on the field names, since 
-    # the user may only select fields using the interface.
-    # However, [form]_complete fields do not appear in the 
-    # meta data and need to be removed to avoid an error.
-    # See #108
-    field_names <- field_names[field_names %in% meta_data$field_name]
-
-    suffixed <- checkbox_suffixes(fields = field_names,
-                                  meta_data = meta_data 
-                                  )
-
-    x[suffixed$name_suffix] <-
-      mapply(nm = suffixed$name_suffix,
-             lab = suffixed$label_suffix,
-             FUN = function(nm, lab){
-               labelVector::set_label(x[[nm]], lab)
-             },
-             SIMPLIFY = FALSE)
-  }
+  if (format) x = rc_formatRecords(x, meta_data = meta_data, ...)
   
   x 
   

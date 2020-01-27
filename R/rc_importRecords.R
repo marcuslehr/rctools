@@ -3,10 +3,11 @@
 #' 
 #' @description Imports records from a \code{data.frame} to a REDCap Database
 #'
-#' @param rcon A REDCap connection object as created by \code{rc_connect}.
-#' @param data A \code{data.frame} to be imported to the REDCap project.
+#' @param url A url address to connect to the REDCap API
+#' @param token A REDCap API token
+#' @param record_data A \code{data.frame} to be imported to the REDCap project.
 #' @param bundle A \code{redcapBundle} object as created by
-#'   \code{rc_exportBundle}.
+#'   \code{rc_setup}.
 #' @param overwriteBehavior Character string.  'normal' prevents blank
 #'   fields from overwriting populated fields.  'overwrite' causes blanks to
 #'   overwrite data in the REDCap database.
@@ -25,7 +26,6 @@
 #'   If \code{""}, the log is printed to the console.
 #' @param batch.size Specifies size of batches.  A negative value
 #'   indicates no batching.
-#' @param ... Arguments to be passed to other methods.
 #'
 #' @details
 #' A record of imports through the API is recorded in the Logging section
@@ -34,7 +34,7 @@
 #' \code{rc_importRecords} prevents the most common import errors by testing the
 #' data before attempting the import.  Namely
 #' \enumerate{
-#'   \item Check that all variables in \code{data} exist in the REDCap data dictionary.
+#'   \item Check that all variables in \code{record_data} exist in the REDCap data dictionary.
 #'   \item Check that the study id variable exists
 #'   \item Force the study id variable to the first position in the data frame (with a warning)
 #'   \item Remove calculated fields (with a warning)
@@ -62,21 +62,22 @@
 #'
 #' @export
 
-rc_importRecords <- function(rcon, data,
-                                    overwriteBehavior = c('normal', 'overwrite'),
-                                    returnContent = c('count', 'ids', 'nothing'),
-                                    returnData = FALSE, logfile = "", 
-                                    ...,
-                                    bundle = NULL, batch.size=-1)
+rc_importRecords <- function(record_data,
+                             url = getOption("redcap_bundle")$redcap_url,
+                             token = getOption("redcap_token"),
+                             overwriteBehavior = c('normal', 'overwrite'),
+                             returnContent = c('count', 'ids', 'nothing'),
+                             returnData = FALSE, logfile = "", 
+                             bundle = getOption("redcap_bundle"), batch.size=-1)
 {
   
   coll <- checkmate::makeAssertCollection()
   
-  massert(~ rcon + bundle + data,
+  massert(~ url + token + bundle + record_data,
           fun = checkmate::assert_class,
-          classes = list(rcon = "redcapApiConnection",
+          classes = list(url = "character", token = "character",
                          bundle = "redcapBundle",
-                         data = "data.frame"),
+                         record_data = "data.frame"),
           null.ok = list(bundle = TRUE),
           fixed = list(add = coll))
   
@@ -105,7 +106,7 @@ rc_importRecords <- function(rcon, data,
   checkmate::reportAssertions(coll)
   
   if (is.null(bundle$meta_data))
-    message("bundle$meta_data not found. Please supply a bundle object containing $meta_data from rc_exportBundle()")
+    message("bundle$meta_data not found. Please supply a bundle object containing $meta_data from rc_setup()")
   else
     meta_data <- bundle$meta_data
   
@@ -113,7 +114,7 @@ rc_importRecords <- function(rcon, data,
   
   try(
     if (utils::compareVersion(version, "5.5.21") == -1 )
-      meta_data <- syncUnderscoreCodings(data, 
+      meta_data <- syncUnderscoreCodings(record_data, 
                                          meta_data, 
                                          export = FALSE),
     silent = T)
@@ -128,9 +129,9 @@ rc_importRecords <- function(rcon, data,
     meta_data[meta_data$field_name %in% 
                 sub(pattern = "___[a-z,A-Z,0-9,_]+", 
                     replacement = "", 
-                    x = names(data)), ]
+                    x = names(record_data)), ]
   
-  #** Check that all of the variable names in 'data' exist in REDCap Database
+  #** Check that all of the variable names in 'record_data' exist in REDCap Database
   .checkbox <- meta_data[meta_data$field_type == "checkbox", ]
   
   .opts <- lapply(X = .checkbox$select_choices_or_calculations, 
@@ -155,44 +156,44 @@ rc_importRecords <- function(rcon, data,
   
   #** Remove survey identifiers and data access group fields from data
   w.remove <- 
-    which(names(data) %in% 
+    which(names(record_data) %in% 
             c("redcap_survey_identifier",
               paste0(unique(meta_data$form_name), "_timestamp"),
               "redcap_data_access_group"))
-  if (length(w.remove)) data <- data[-w.remove]
+  if (length(w.remove)) record_data <- record_data[-w.remove]
   
-  if (!all(names(data) %in% c(with_complete_fields, "redcap_event_name", "redcap_repeat_instrument", "redcap_repeat_instance")))
+  if (!all(names(record_data) %in% c(with_complete_fields, "redcap_event_name", "redcap_repeat_instrument", "redcap_repeat_instance")))
   {
     coll$push(paste0("The variables ", 
-                     paste(names(data)[!names(data) %in% with_complete_fields], collapse=", "),
+                     paste(names(record_data)[!names(record_data) %in% with_complete_fields], collapse=", "),
                      " do not exist in the REDCap Data Dictionary"))
   }
   
-  #** Check that the study id exists in data
-  if (!meta_data$field_name[1] %in% names(data))
+  #** Check that the study id exists in record_data
+  if (!meta_data$field_name[1] %in% names(record_data))
   {
     coll$push(paste0("The variable '", 
                      meta_data$field_name[1], 
-                     "' cannot be found in 'data'. ",
+                     "' cannot be found in 'record_data'. ",
                      "Please include this variable and place it in the first column."))
   }
   
   #** If the study id is not in the the first column, move it and print a warning
-  if (meta_data$field_name[1] %in% names(data) && 
-      meta_data$field_name[1] != names(data)[1])
+  if (meta_data$field_name[1] %in% names(record_data) && 
+      meta_data$field_name[1] != names(record_data)[1])
   {
     message("The variable'", meta_data$field_name[1], 
             "' was not in the first column. ",
             "It has been moved to the first column.")
-    w <- which(names(data) == meta_data$field_name[1])
-    data <- data[c(w, (1:length(data))[-w])]
+    w <- which(names(record_data) == meta_data$field_name[1])
+    record_data <- record_data[c(w, (1:length(record_data))[-w])]
   }
   
   #** Confirm that date fields are either character, Date class, or POSIXct
   date_vars <- meta_data$field_name[grepl("date_", meta_data$text_validation_type_or_show_slider_number)]
   
   bad_date_fmt <- 
-    !vapply(X = data[date_vars], 
+    !vapply(X = record_data[date_vars], 
             FUN = function(x) is.character(x) | "Date" %in% class(x) | "POSIXct" %in% class(x),
             FUN.VALUE = logical(1))
   
@@ -212,14 +213,14 @@ rc_importRecords <- function(rcon, data,
             paste(calc_field, collapse="', '"),
             "' are calculated fields and cannot be imported. ",
             "They have been removed from the imported data frame.")
-    data <- data[!names(data) %in% calc_field]
+    record_data <- record_data[!names(record_data) %in% calc_field]
   }
   
   checkmate::reportAssertions(coll)
   
   
   idvars <- 
-    if ("redcap_event_name" %in% names(data)) 
+    if ("redcap_event_name" %in% names(record_data)) 
       c(meta_data$field_name[1], "redcap_event_name") 
   else 
     meta_data$field_name[1]
@@ -232,11 +233,11 @@ rc_importRecords <- function(rcon, data,
   else 
     write(msg, logfile)
   
-  data <- validateImport(data = data,
+  record_data <- validateImport(data = record_data,
                          meta_data = meta_data,
                          logfile = logfile)
   
-  if (returnData) return(data)
+  if (returnData) return(record_data)
   
   #** Format the data for REDCap import
   #** Thanks go to:
@@ -245,16 +246,18 @@ rc_importRecords <- function(rcon, data,
   
   if (batch.size > 0)
   {
-    import_records_batched(rcon = rcon, 
-                           data = data,
+    import_records_batched(url = url,
+						               token = token, 
+                           data = record_data,
                            batch.size = batch.size,
                            overwriteBehavior = overwriteBehavior,
                            returnContent = returnContent)
   }
   else
   {
-    import_records_unbatched(rcon = rcon,
-                             data = data,
+    import_records_unbatched(url = url,
+							               token = token,
+                             data = record_data,
                              overwriteBehavior = overwriteBehavior,
                              returnContent = returnContent)
   }
@@ -264,7 +267,9 @@ rc_importRecords <- function(rcon, data,
 ## UNEXPORTED FUNCTIONS
 #####################################################################
 
-import_records_batched <- function(rcon, data, batch.size, 
+import_records_batched <- function(url = getOption("redcap_bundle")$redcap_url,
+                                   token = getOption("redcap_token"),
+                                   data, batch.size, 
                                    overwriteBehavior,
                                    returnContent)
 {
@@ -297,16 +302,15 @@ import_records_batched <- function(rcon, data, batch.size,
   
   for (i in seq_along(out))
   {
-    httr::POST(url=rcon$url,
-               body=list(token = rcon$token, 
+    httr::POST(url=url,
+               body=list(token = token, 
                          content = 'record', 
                          format = 'csv',
                          type = 'flat', 
                          overwriteBehavior = overwriteBehavior,
                          returnContent = returnContent,
                          returnFormat = 'csv', 
-                         data = out[[i]]),
-               config = rcon$config)
+                         data = out[[i]]))
   }
   
   if (all(unlist(sapply(X = x, 
@@ -328,7 +332,9 @@ import_records_batched <- function(rcon, data, batch.size,
 }
 
 
-import_records_unbatched <- function(rcon, data, overwriteBehavior,
+import_records_unbatched <- function(url = getOption("redcap_bundle")$redcap_url,
+                                     token = getOption("redcap_token"),
+                                     data, overwriteBehavior,
                                      returnContent)
 {
   data[is.na(data)] <- ""
@@ -340,8 +346,8 @@ import_records_unbatched <- function(rcon, data, overwriteBehavior,
     list("Content-Type" = structure(c("text/html", "utf-8"),
                                     .Names = c("", "charset")))
   
-  x <- httr::POST(url=rcon$url,
-                  body=list(token = rcon$token, 
+  x <- httr::POST(url=url,
+                  body=list(token = token, 
                             content = 'record', 
                             format = 'csv',
                             type = 'flat', 
@@ -349,8 +355,7 @@ import_records_unbatched <- function(rcon, data, overwriteBehavior,
                             returnContent = returnContent,
                             returnFormat = 'csv', 
                             dateFormat = "YMD",
-                            data = out), 
-                  config = rcon$config)
+                            data = out))
   
   if (x$status_code == "200") 
     as.character(x) 

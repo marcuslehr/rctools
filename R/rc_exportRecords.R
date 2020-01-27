@@ -4,28 +4,21 @@
 #' @description Exports records from a REDCap Database, allowing for 
 #'   subsets of subjects, fields, records, and events.
 #'   
-#' @param rcon A REDCap connection object as created by \code{rc_connect}.
-#' @param dataFile For the offline version, a character string giving the location
-#'   of the dataset downloaded from REDCap.  Note that this should be the raw
-#'   (unlabeled) data set.
-#' @param metaDataFile A text string giving the location of the data dictionary 
-#'   downloaded from REDCap.
-#' @param factors Logical.  Determines if categorical data from the database is 
-#'   returned as numeric codes or labelled factors. See 'Checkbox Variables'
-#'   for more on how this interacts with the \code{checkboxLabels} argument.
-#' @param labels Logical.  Determines if the variable labels are applied to 
-#'   the data frame.
-#' @param dates Logical. Determines if date variables are converted to POSIXct 
-#'   format during the download.
+#' @param url A url address to connect to the REDCap API
+#' @param token A REDCap API token
+#' @param meta_data REDCap project metadata (aka data dictionary). By default, 
+#' $meta_data is expected in a REDCap bundle object, as created by \code{rc_setup}.
+#' Otherwise, a data.frame containing the metadata must be supplied.
+#' 
+#' @param records A vector of study id's to be returned.  If \code{NULL}, all 
+#'   subjects are returned.
 #' @param fields A character vector of fields to be returned.  If \code{NULL}, 
 #'   all fields are returned.
 #' @param forms A character vector of forms to be returned.  If \code{NULL}, 
 #'   all forms are returned.
-#' @param records A vector of study id's to be returned.  If \code{NULL}, all 
-#'   subjects are returned.
 #' @param events A character vector of events to be returned from a 
 #'   longitudinal database.  If \code{NULL}, all events are returned.
-#' @param survey specifies whether or not to export the survey identifier field 
+#' @param survey Logical. Specifies whether or not to export the survey identifier field 
 #'   (e.g., "redcap_survey_identifier") or survey timestamp fields 
 #'   (e.g., form_name+"_timestamp") when surveys are utilized in the project. 
 #'   If you do not pass in this flag, it will default to "false". If set to 
@@ -35,50 +28,41 @@
 #'   identifier field or survey timestamp fields are imported via API data 
 #'   import, they will simply be ignored since they are not real fields in 
 #'   the project but rather are pseudo-fields.
-#' @param dag specifies whether or not to export the "redcap_data_access_group" 
+#' @param dag Logical. Specifies whether or not to export the "redcap_data_access_group" 
 #'   field when data access groups are utilized in the project. If you do not 
 #'   pass in this flag, it will default to "false". NOTE: This flag is only 
 #'   viable if the user whose token is being used to make the API request is 
 #'   *not* in a data access group. If the user is in a group, then this 
 #'   flag will revert to its default value.
-#' @param batch.size Integer.  Specifies the number of subjects to be included 
-#'   in each batch of a batched export.  Non-positive numbers export the 
-#'   entire project in a single batch. Batching the export may be beneficial 
-#'   to prevent tying up smaller servers.  See details for more explanation.
-#' @param checkboxLabels Logical. Determines the format of labels in checkbox 
-#'   variables.  If \code{FALSE} labels are applies as "Unchecked"/"Checked".  
-#'   If \code{TRUE}, they are applied as ""/"[field_label]" where [field_label] 
-#'   is the label assigned to the level in the data dictionary. 
-#'   This option is only available after REDCap version 6.0.  See Checkbox Variables
-#'   for more on how this interacts with the \code{factors} argument.
-#' @param bundle A \code{redcapBundle} object as created by \code{rc_exportBundle}.
+#'   
+#' @param format Logical.  Determines whether the data will be formatted with
+#' \code{rc_formatRecords} (Default = TRUE)
+#' @param ... Additional arguments to be passed to \code{rc_formatRecords}
+#' 
 #' @param colClasses A (named) vector of colum classes passed to 
 #'   \code{\link[utils]{read.csv}} calls. 
 #'   Useful to force the interpretation of a column in a specific type and 
 #'   avoid an unexpected recast.
-#' @param ... Additional arguments to be passed between methods.
+#' @param batch.size Integer.  Specifies the number of subjects to be included 
+#'   in each batch of a batched export.  Non-positive numbers export the 
+#'   entire project in a single batch. Batching the export may be beneficial 
+#'   to prevent tying up smaller servers.  See details for more explanation.
 #' @param error_handling An option for how to handle errors returned by the API.
 #'   see \code{\link{redcap_error}}
-#' @param form_complete_auto \code{logical(1)}. When \code{TRUE} 
-#'   (default), the \code{[form]_complete} fields for any form 
+#' @param form_complete_auto \code{logical(1)}. When \code{TRUE},
+#'  the \code{[form]_complete} fields for any form 
 #'   from which at least one variable is requested will automatically
-#'   be retrieved.  When \code{FALSE}, these fields must be 
+#'   be retrieved.  When \code{FALSE} (Default), these fields must be 
 #'   explicitly requested.
-#' @param meta_data Deprecated version of \code{metaDataFile}
 #' 
 #' @details
 #' A record of exports through the API is recorded in the Logging section 
 #' of the project.
 #' 
-#' The 'offline' version of the function operates on the raw (unlabeled) data 
-#' file downloaded from REDCap along with the data dictionary.  
-#' This is made available for instances where the API can not be accessed for 
-#' some reason (such as waiting for API approval from the REDCap administrator).
-#' 
-#' It is unnecessary to include "redcap_event_name" in the fields argument.  
-#' This field is automatically exported for any longitudinal database.  
-#' If the user does include it in the fields argument, it is removed quietly 
-#' in the parameter checks.
+#' It is unnecessary to include "redcap_event_name" or the "redcap_repeat" variables
+#' in the fields argument. These fields are automatically exported for any 
+#' longitudinal database. If the user does include them in the fields argument, 
+#' they are removed quietly in the parameter checks.
 #' 
 #' A 'batched' export is one where the export is performed over a series of 
 #' API calls rather than one large call.  For large projects on small servers, 
@@ -95,23 +79,6 @@
 #' Thus, if you are concerned about tying up the server with a large, 
 #' longitudinal project, it would be prudent to use a smaller batch size.
 #' 
-#' @section Checkbox Variables:
-#' 
-#' There are four ways the data from checkbox variables may be 
-#' represented depending on the values of \code{factors} and 
-#' \code{checkboxLabels}. The most common are the first and third 
-#' rows of the table below.  When \code{checkboxLabels = TRUE}, either 
-#' the coded value or the labelled value is returned if the box is 
-#' checked, or an empty string if it is not.
-#' 
-#' \tabular{lll}{
-#' \code{factors} \tab \code{checkboxLabels} \tab Output \cr
-#' \code{FALSE}   \tab \code{FALSE}          \tab 0 / 1 \cr
-#' \code{FALSE}   \tab \code{TRUE}           \tab "" / value \cr
-#' \code{TRUE}    \tab \code{FALSE}          \tab Unchecked / Checked \cr
-#' \code{TRUE}    \tab \code{TRUE}           \tab "" / label 
-#' }
-#' 
 #' @section REDCap API Documentation (6.5.0):
 #' This function allows you to export a set of records for a project
 #' 
@@ -124,7 +91,7 @@
 #' request, you should have "Full Data Set" export rights in the project.
 #' 
 #' @section REDCap Version:
-#' 5.8.2 (Perhaps earlier) 
+#' >= 6.0.0 
 #' 
 #' @section Known REDCap Limitations:
 #' None
@@ -153,7 +120,7 @@
 #' Additional details on API parameters are found on the package wiki at
 #' \url{https://github.com/nutterb/redcapAPI/wiki/REDCap-API-Parameters}
 #' 
-#' This functionality were originally developed by Jeffrey Horner in the \code{redcap} package.
+#' This functionality was originally developed by Jeffrey Horner in the \code{redcap} package.
 #' \url{https://github.com/vubiostat/redcap}
 #' 
 #' See also \code{read_redcap_oneshot} in the \code{REDCapR} package by Will Beasley.
@@ -165,36 +132,42 @@
 #' @export
 
 rc_exportRecords <-
-  function(rcon, factors = TRUE, fields = NULL, forms = NULL,
-           records = NULL, events = NULL, labels = TRUE, dates = TRUE,
-           survey = TRUE, dag = TRUE, checkboxLabels = FALSE,
-           colClasses = NA, ...,
-           batch.size = -1,
+  function(url = getOption("redcap_bundle")$redcap_url,
+           token = getOption("redcap_token"),
            bundle = getOption("redcap_bundle"),
+           records = NULL, fields = NULL, forms = NULL,
+           events = NULL, survey = TRUE, dag = TRUE,
+           format = TRUE, ...,
+           colClasses = NA, batch.size = -1, 
            error_handling = getOption("redcap_error_handling"),
            form_complete_auto = FALSE)
+    
 {
+    
+  if (is.null(bundle)) 
+    stop("A REDCap bundle containing $meta_data and $events is required. Please supply
+    a REDCap bundle as created by rc_setup()")
 
   if (is.numeric(records)) records <- as.character(records)
 
   #* Error Collection Object
   coll <- checkmate::makeAssertCollection()
 
-  checkmate::assert_class(x = rcon,
-                          classes = "redcapApiConnection",
-                          add = coll)
-
-  massert(~ factors + labels + dates + survey + dag + checkboxLabels +
-            form_complete_auto,
+  massert(~ survey + dag + format + form_complete_auto,
           fun = checkmate::assert_logical,
           fixed = list(len = 1,
                        add = coll))
 
-  massert(~ fields + forms + records + events,
+  massert(~ url + token + fields + forms + records + events,
           fun = checkmate::assert_character,
-          fixed = list(null.ok = TRUE,
-                       add = coll))
+          null.ok = list(fields = T, forms = T,
+                         records = T, events = T),
+          fixed = list(add = coll))
 
+  checkmate::assert_class(x = bundle,
+                          classes = "redcapBundle",
+                          add = coll)
+  
   checkmate::assert_integerish(x = batch.size,
                                len = 1,
                                add = coll)
@@ -205,27 +178,34 @@ rc_exportRecords <-
 
   checkmate::reportAssertions(coll)
 
+  
   #* Secure the meta data.
-    if (is.null(bundle$meta_data))
-      message("bundle$meta_data not found. Please supply a bundle object containing $meta_data from rc_exportBundle()")
-    else
-      meta_data <- bundle$meta_data
-
+  
+  if (!is.null(bundle$meta_data))
+    meta_data <- bundle$meta_data
+  else
+    stop("$meta_data not found in bundle object. Please supply a REDCap bundle object, as
+         created by rc_setup(), containing $meta_data")
+  
   #* for purposes of the export, we don't need the descriptive fields.
   #* Including them makes the process more error prone, so we'll ignore them.
   meta_data <- meta_data[!meta_data$field_type %in% "descriptive", ]
 
-  #* Secure the events table
   
-    if (is.null(bundle$events))
-      message("bundle$events not found. Please supply a bundle object containing $events data from rc_exportBundle()")
-    else
-      events_list <- bundle$events
-
-  #* Secure the REDCap version
-    if (!is.null(bundle$version)) version <- bundle$version
-      
-
+  #* Secure the events table
+  if (!is.null(events)) events_list <- bundle$events
+  if (is.null(events_list)) 
+    warning("$events not found in bundle object. The supplied events list cannot be validated.")
+  
+  #* Check that all event names exist in the events list
+  if (!is.null(events) && inherits(events_list, "data.frame"))
+  {
+    bad_events <- events[!events %in% events_list$unique_event_name]
+    if (length(bad_events))
+      coll$push(paste0("The following are not valid event names: ",
+                       paste0(bad_events, collapse = ", ")))
+  }
+  
   form_complete_fields <-
     sprintf("%s_complete",
             unique(meta_data$form_name))
@@ -251,14 +231,7 @@ rc_exportRecords <-
                        paste0(bad_forms, collapse = ", ")))
   }
 
-  #* Check that all event names exist in the events list
-  if (!is.null(events) && inherits(events_list, "data.frame"))
-  {
-    bad_events <- events[!events %in% events_list$unique_event_name]
-    if (length(bad_events))
-      coll$push(paste0("The following are not valid event names: ",
-                       paste0(bad_events, collapse = ", ")))
-  }
+  
 
   checkmate::reportAssertions(coll)
 
@@ -266,7 +239,9 @@ rc_exportRecords <-
   if (!is.null(fields)) #* fields were provided
   {
     # redcap_event_name is automatically included in longitudinal projects
-    field_names <- fields[!fields %in% "redcap_event_name"]
+    field_names <- fields[!fields %in% c("redcap_event_name", 
+                                         "redcap_repeat_instrument", 
+                                         "redcap_repeat_instance")]
   }
   else if (!is.null(forms))
   {
@@ -303,7 +278,7 @@ rc_exportRecords <-
                      sprintf("%s_complete", included_form))
   }
 
-  body <- list(token = rcon$token,
+  body <- list(token = token,
                content = 'record',
                format = 'csv',
                type = 'flat',
@@ -317,7 +292,8 @@ rc_exportRecords <-
   if (!is.null(records)) body[['records']] <- paste0(records, collapse=",")
 
   if (batch.size < 1){
-    x <- unbatched(rcon = rcon,
+    x <- unbatched(url = url,
+				   token = token,
                    body = body,
                    id = meta_data$field_name[1],
                    colClasses = colClasses,
@@ -325,7 +301,8 @@ rc_exportRecords <-
   }
   else
   {
-    x <- batched(rcon = rcon,
+    x <- batched(url = url,
+				 token = token,
                  body = body,
                  batch.size = batch.size,
                  id = meta_data$field_name[1],
@@ -333,46 +310,25 @@ rc_exportRecords <-
                  error_handling = error_handling)
   }
 
-  #* synchronize underscore codings between records and meta data
-  #* Only affects calls in REDCap versions earlier than 5.5.21
-  try(
-    if (utils::compareVersion(version, "6.0.0") == -1) {
-          meta_data <- syncUnderscoreCodings(x, meta_data)
-          },
-    silent = T)
-
-  x <- fieldToVar(records = x,
-                  meta_data = meta_data,
-                  factors = factors,
-                  dates = dates,
-                  checkboxLabels = checkboxLabels)
-
-  if (labels){
-    x[suffixed$name_suffix] <-
-      mapply(nm = suffixed$name_suffix,
-             lab = suffixed$label_suffix,
-             FUN = function(nm, lab){
-               labelVector::set_label(x[[nm]], lab)
-             },
-             SIMPLIFY = FALSE)
-  }
+  if (format) x = rc_formatRecords(x, meta_data = meta_data, ...)
 
   x
 }
 
-
+# Non-exported functions ----------------------------------------------------
 
 #*** UNBATCHED EXPORT
-unbatched <- function(rcon, body, id, colClasses, error_handling)
+unbatched <- function(url = getOption("redcap_bundle")$redcap_url,
+token = getOption("redcap_token"),
+ body, id, colClasses, error_handling)
 {
   colClasses[[id]] <- "character"
   colClasses <- colClasses[!vapply(colClasses,
                                    is.na,
                                    logical(1))]
   
-  x <- httr::POST(url = rcon$url, 
-                  body = body, 
-                  config = rcon$config)
+  x <- httr::POST(url = url, 
+                  body = body)
   
   if (x$status_code != 200) redcap_error(x, error_handling = error_handling)
   
@@ -387,7 +343,9 @@ unbatched <- function(rcon, body, id, colClasses, error_handling)
 
 
 #*** BATCHED EXPORT
-batched <- function(rcon, body, batch.size, id, colClasses, error_handling)
+batched <- function(url = getOption("redcap_bundle")$redcap_url,
+token = getOption("redcap_token"),
+ body, batch.size, id, colClasses, error_handling)
 {
   colClasses[[id]] <- "character"
   colClasses <- colClasses[!vapply(colClasses,
@@ -406,9 +364,8 @@ batched <- function(rcon, body, batch.size, id, colClasses, error_handling)
   #* 1. Get the IDs column
   id_body <- body
   id_body[['fields']] <- id
-  IDs <- httr::POST(url = rcon$url,
-                    body = id_body,
-                    config = rcon$config)
+  IDs <- httr::POST(url = url,
+                    body = id_body)
   
   if (IDs$status_code != 200) redcap_error(IDs, error_handling)
   
@@ -445,9 +402,8 @@ batched <- function(rcon, body, batch.size, id, colClasses, error_handling)
   for (i in unique(batch.number))
   {
     body[['records']] <- paste0(unique_id[batch.number == i], collapse = ",")
-    x <- httr::POST(url = rcon$url, 
-                    body = body, 
-                    config = rcon$config)
+    x <- httr::POST(url = url, 
+                    body = body)
     
     if (x$status_code != 200) redcap_error(x, error_handling = "error")
     

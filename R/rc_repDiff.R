@@ -9,34 +9,28 @@
 #' @param records A raw data export from REDCap.
 #' @param varRoots A vector of root names which are common and unique to all of the associated
 #' technical replicates.
-#' @param bundle A bundle object created by \code{rc_exportBundle} containing project metadata.
+#' @param meta_data REDCap project metadata (aka data dictionary). By default, 
+#' $meta_data is expected in a REDCap bundle object, as created by \code{rc_setup}.
+#' Otherwise, a data.frame containing the metadata must be supplied.
 #'
 #' @author Marcus Lehr
 #' @export
 
-rc_repDiff = function(records, varRoots, bundle = NULL) {
+rc_repDiff = function(records, varRoots, 
+                      meta_data = getOption("redcap_bundle")$meta_data) {
 
 
 # Checks ------------------------------------------------------------------
 
   ## record_id field ---
-
-  if (!is.null(bundle[["meta_data"]])) {
+  
+  if (!is.null(meta_data)) {
     # Ensure record_id field is named appropriately
-    colnames(records)[colnames(records)==bundle[["meta_data"]][1,1]] = 'record_id'
-
+    colnames(records)[colnames(records)==meta_data[1,1]] = 'record_id'
+    
   } else {
-    origID = names(records)[grepl('hnrcid|hnrc_id|record_id', names(records), ignore.case = T)]
-
-    if (length(origID) == 1) {
-      message("[['meta_data']] not found in bundle object. 'record_id' field will be assumed to be: '", origID, "'")
-      names(records)[names(records)==origID] = 'record_id'
-
-    } else if (length(origID != 1)) {
-      names(records)[1] = 'record_id'
-      message("'record_id' field could not be found, it will assumed to be the first column.
-              For better reproducibility, please supply a bundle object containing [['meta_data']]")
-    }
+    message("$meta_data not found in REDCap bundle. 'record_id' field will be assumed to be the first column")
+    names(records)[1] = 'record_id'
   }
 
 # Code --------------------------------------------------------------------

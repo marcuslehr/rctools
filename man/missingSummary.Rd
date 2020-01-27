@@ -8,7 +8,8 @@
 \title{Report of Missing Values}
 \usage{
 missingSummary(
-  rcon,
+  url = getOption("redcap_bundle")$redcap_url,
+  token = getOption("redcap_token"),
   excludeMissingForms = TRUE,
   ...,
   proj = NULL,
@@ -18,7 +19,9 @@ missingSummary(
 missingSummary_offline(records, meta_data, excludeMissingForms = TRUE)
 }
 \arguments{
-\item{rcon}{A recapConnection object.}
+\item{url}{A url address to connect to the REDCap API}
+
+\item{token}{A REDCap API token}
 
 \item{excludeMissingForms}{If all of the fields in a form are missing, would
 you like to assume that they are purposefully missing?  For instance, if
@@ -29,7 +32,7 @@ contain no data and you would not want it in this report.}
 
 \item{proj}{A redcapProjectInfo object.}
 
-\item{batch.size}{Batch size parameter for \code{exportRecords}}
+\item{batch.size}{Batch size parameter for \code{rc_exportRecords}}
 
 \item{records}{a filename pointing to the raw records download from REDCap}
 

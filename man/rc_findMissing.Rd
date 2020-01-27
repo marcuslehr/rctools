@@ -4,7 +4,12 @@
 \alias{rc_findMissing}
 \title{Find missing record data}
 \usage{
-rc_findMissing(records, completionField, bundle = NULL)
+rc_findMissing(
+  records,
+  completionField,
+  meta_data = getOption("redcap_bundle")$meta_data,
+  events = getOption("redcap_bundle")$events
+)
 }
 \arguments{
 \item{records}{A raw data export from REDCap.}
@@ -13,7 +18,13 @@ rc_findMissing(records, completionField, bundle = NULL)
 has completed the study. This should be indicated by a 'Yes' or a '1' (i.e. a Yes/No
 field in REDCap).}
 
-\item{bundle}{A bundle object created by \code{exportBundle} containing project metadata.}
+\item{meta_data}{REDCap project metadata (aka data dictionary). By default, 
+$meta_data is expected in a REDCap bundle object, as created by \code{rc_setup}.
+Otherwise, a data.frame containing the metadata must be supplied.}
+
+\item{events}{REDCap project event metadata. By default, $events is expected in
+the REDCap bundle, as created by \code{rc_setup}. Otherwise, a data.frame containing
+event data must be supplied.}
 }
 \description{
 Finds data points which are ostenibly missing from Redcap records data.

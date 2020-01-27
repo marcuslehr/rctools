@@ -13,8 +13,8 @@ fieldToVar(
 )
 }
 \arguments{
-\item{records}{A data frame of records returned by \code{exportRecords} 
-or \code{exportReports}}
+\item{records}{A data frame of records returned by \code{rc_exportRecords} 
+or \code{rc_exportReports}}
 
 \item{meta_data}{A data frame giving the data dictionary, as returned 
 by \code{exportMetaData}}
@@ -31,8 +31,8 @@ variables are converted to factors}
 Converts a field exported from REDCap into a valid R vector
 }
 \details{
-This function is called internally by \code{exportRecords} and 
-  \code{exportReports}.  it is not available to the user.
+This function is called internally by \code{rc_exportRecords} and 
+  \code{rc_exportReports}. It is not available to the user.
 }
 \author{
 Jeffrey Horner

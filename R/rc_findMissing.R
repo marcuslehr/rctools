@@ -16,52 +16,49 @@
 #' @param completionField The REDCap variable which indicates whether or not a subject
 #' has completed the study. This should be indicated by a 'Yes' or a '1' (i.e. a Yes/No
 #' field in REDCap).
-#' @param bundle A bundle object created by \code{rc_exportBundle} containing project metadata.
+#' @param meta_data REDCap project metadata (aka data dictionary). By default, 
+#' $meta_data is expected in a REDCap bundle object, as created by \code{rc_setup}.
+#' Otherwise, a data.frame containing the metadata must be supplied.
+#' @param events REDCap project event metadata. By default, $events is expected in
+#' the REDCap bundle, as created by \code{rc_setup}. Otherwise, a data.frame containing
+#' event data must be supplied.
 #'
 #' @importFrom magrittr '%>%'
 #'
 #' @author Marcus Lehr
 #' @export
 
-rc_findMissing <- function(records, completionField, bundle = NULL) {
+rc_findMissing <- function(records, completionField, 
+                           meta_data = getOption("redcap_bundle")$meta_data,
+                           events = getOption("redcap_bundle")$events) {
 
 
 # Checks ------------------------------------------------------------------
 
   ## record_id field ---
 
-  if (!is.null(bundle[["meta_data"]])) {
+  if (!is.null(meta_data)) {
     # Ensure record_id field is named appropriately
-    colnames(records)[colnames(records)==bundle[["meta_data"]][1,1]] = 'record_id'
+    colnames(records)[colnames(records)==meta_data[1,1]] = 'record_id'
 
   } else {
-    origID = names(records)[grepl('hnrcid|hnrc_id|record_id', names(records), ignore.case = T)]
-
-    if (length(origID) == 1) {
-      message("[['meta_data']] not found in bundle object. 'record_id' field will be assumed to be: '", origID, "'")
-      names(records)[names(records)==origID] = 'record_id'
-
-    } else if (length(origID != 1)) {
+      message("$meta_data not found in REDCap bundle. 'record_id' field will be assumed to be the first column")
       names(records)[1] = 'record_id'
-      message("'record_id' field could not be found, it will assumed to be the first column.
-              For better reproducibility, please supply a bundle object containing [['meta_data']]")
     }
-  }
 
   ## Event data ---
 
-  if (!is.null(bundle[["events"]])) {
-    events = bundle[["events"]]$unique_event_name
+  if (!is.null(events$unique_event_name)) {
+    events = events$unique_event_name
 
   } else if (!is.null(records$redcap_event_name)) {
 
     #Collect list of events present in data, ensuring event order is preserved
     events = as.character(unique(records$redcap_event_name))
-    message("[['events']] could not be found in bundle object. Event list will be captured from record data.")
+    message("$events could not be found in REDCap bundle. Event list will be captured from record data.")
 
   } else {
-    message("Event data could not be found. Please supply a bundle object containing [['events']]")
-    break
+    stop("Event data could not be found. Please ensure that your data contains the 'redcap_event_name' column.")
   }
 
   ## Completion data ---
@@ -70,13 +67,13 @@ rc_findMissing <- function(records, completionField, bundle = NULL) {
   if (any(names(records)==completionField)) {
     names(records)[names(records)==completionField] = 'study_complete'
   } else {
-    message("Completion field could not be found. Please include a field in the record data indicating
+    stop("Completion field could not be found. Please include a field in the record data indicating
             whether or not a subject has completed the study.")
   }
 
   ## Repeat/checkbox fields ---
   if (any(!is.na(records$redcap_repeat_instance))|any(grepl('___',names(records)))) {
-    message("The logic of this function does not translate to repeat instruments or checkbox fields.
+    warning("The logic of this function does not translate to repeat instruments or checkbox fields.
               All such data will be dropped.")
     records = dplyr::filter(records, is.na(redcap_repeat_instance)) %>%
                 dplyr::select(-redcap_repeat_instrument,-redcap_repeat_instance,

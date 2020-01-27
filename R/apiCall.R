@@ -43,7 +43,7 @@
 #' 
 
 apiCall <- function(url, body, config){
-  x <- tryCatch(httr::POST(url=url, body=body, config=config),
+  x <- tryCatch(httr::POST(url=url, body=body),
                 error = function(cond){
                   if (grepl("GnuTLS recv error [(]-9[)]", cond)){
                     m <- httr::POST(url=url, body=body,

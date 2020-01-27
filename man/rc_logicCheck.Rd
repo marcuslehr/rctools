@@ -4,10 +4,15 @@
 \alias{rc_logicCheck}
 \title{Check branching logic for errors}
 \usage{
-rc_logicCheck(bundle)
+rc_logicCheck(
+  meta_data = getOption("redcap_bundle")$meta_data,
+  events = getOption("redcap_bundle")$events
+)
 }
 \arguments{
-\item{bundle}{A bundle object created by \code{exportBundle} containing project metadata.}
+\item{meta_data}{REDCap project metadata (aka data dictionary). By default, 
+$meta_data is expected in a REDCap bundle object, as created by \code{rc_setup}.
+Otherwise, a data.frame containing the metadata must be supplied.}
 }
 \description{
 Check branching logic for common errors
