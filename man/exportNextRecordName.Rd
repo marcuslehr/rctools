@@ -25,17 +25,17 @@ see \code{\link{redcap_error}}}
 Returns the maximum integer record ID + 1.
 }
 \description{
-To be used by projects with record auto-numbering enabled, 
+To be used by projects with record auto-numbering enabled,
 this method exports the next potential record ID for a project.
 }
 \details{
-It generates the next record name by determining the current maximum numerical 
+It generates the next record name by determining the current maximum numerical
 record ID and then incrementing it by one.
 }
 \section{REDCap API Documentation}{
 
 
-NOTE: This method does not create a new record, but merely determines 
+NOTE: This method does not create a new record, but merely determines
 what the next record name would be.
 }
 

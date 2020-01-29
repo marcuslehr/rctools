@@ -28,41 +28,41 @@ exportFieldNames(
 see \code{\link{redcap_error}}}
 }
 \value{
-A data frame containing three fields: 
+A data frame containing three fields:
 \itemize{
-  \item{\code{original_field_name} }{The field name as recorded in the 
-       data dictionary}
-  \item{\code{choice_value} }{represents the raw coded value for a checkbox 
-       choice. For non-checkbox fields, this will always be \code{NA}.}
-  \item{\code{export_field_name} }{The field name specific to the field.
-       For non-checkbox fields, this is the same as \code{original_field_name}.
-       For checkbox fields, it is the field name appended with 
-       \code{___[choice_value]}.}
+\item{\code{original_field_name} }{The field name as recorded in the
+data data_dictionary}
+\item{\code{choice_value} }{represents the raw coded value for a checkbox
+choice. For non-checkbox fields, this will always be \code{NA}.}
+\item{\code{export_field_name} }{The field name specific to the field.
+For non-checkbox fields, this is the same as \code{original_field_name}.
+For checkbox fields, it is the field name appended with
+\code{___[choice_value]}.}
 }
 }
 \description{
 Retrieve a data frame giving the original (as defined in REDCap)
-  field name, choice values (for checkboxes), and the export field name.
+field name, choice values (for checkboxes), and the export field name.
 }
 \section{REDCap API Documentation}{
 
-This function returns a list of the export/import-specific version of field names for 
-all fields (or for one field, if desired) in a project. This is mostly used for 
-checkbox fields because during data exports and data imports, 
-checkbox fields have a different variable name used than the exact one 
-defined for them in the Online Designer and Data Dictionary, in which 
-*each checkbox option* gets represented as its own export field name in the 
-following format: field_name + triple underscore + converted coded value for the 
-choice. For non-checkbox fields, the export field name will be exactly the same 
-as the original field name. Note: The following field types will be automatically 
-removed from the list returned by this method since they cannot be utilized during 
+This function returns a list of the export/import-specific version of field names for
+all fields (or for one field, if desired) in a project. This is mostly used for
+checkbox fields because during data exports and data imports,
+checkbox fields have a different variable name used than the exact one
+defined for them in the Online Designer and Data data_dictionary, in which
+\emph{each checkbox option} gets represented as its own export field name in the
+following format: field_name + triple underscore + converted coded value for the
+choice. For non-checkbox fields, the export field name will be exactly the same
+as the original field name. Note: The following field types will be automatically
+removed from the list returned by this method since they cannot be utilized during
 the data import process: "calc", "file", and "descriptive".
 
-The list that is returned will contain the three following attributes for each 
-field/choice: "original_field_name", "choice_value", and "export_field_name". 
-The choice_value attribute represents the raw coded value for a checkbox choice. 
-For non-checkbox fields, the choice_value attribute will always be blank/empty. 
-The export_field_name attribute represents the export/import-specific version of 
+The list that is returned will contain the three following attributes for each
+field/choice: "original_field_name", "choice_value", and "export_field_name".
+The choice_value attribute represents the raw coded value for a checkbox choice.
+For non-checkbox fields, the choice_value attribute will always be blank/empty.
+The export_field_name attribute represents the export/import-specific version of
 that field name.
 }
 
@@ -72,10 +72,10 @@ that field name.
 }
 
 \section{Known REDCap Limitations}{
- 
-In 6.5.0, it has been observed that "slider" fields are not returned.  
 
-Signature fields are also not included, but these are effectively the same as 
+In 6.5.0, it has been observed that "slider" fields are not returned.
+
+Signature fields are also not included, but these are effectively the same as
 "file" fields.  This isn't a true limitation, but is documented here just to
 avoid confusion.
 }

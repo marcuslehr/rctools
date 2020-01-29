@@ -14,12 +14,12 @@
 #'   retrieved. Note that if a form name is given, all of the fields on that form
 #'   will be returned, regardless of whether it is included in \code{fields} or 
 #'   not.  Be careful to use the form names in the second column of the data 
-#'   dictionary, and not the display names shown on the webpage.
+#'   data_dictionary, and not the display names shown on the webpage.
 #' @param ... Arguments to be passed to other methods.
 #' @param error_handling An option for how to handle errors returned by the API.
 #'   see \code{\link{redcap_error}}
 #' @param drop_utf8 \code{logical(1)}. In some cases, UTF-8 characters can 
-#'   pose problems for exporting the data dictionary.  Set this to \code{TRUE}
+#'   pose problems for exporting the data data_dictionary.  Set this to \code{TRUE}
 #'   to replace any UTF-8 characters with empty characters.
 #' 
 #' @details A record of this export is placed in the REDCap logging page, 
@@ -33,7 +33,7 @@
 #' 
 #' @section Known REDCap Limitations: 
 #' The API doesn't respond to the \code{fields} and \code{forms} arguments.  It
-#' always returns the full data dictionary.
+#' always returns the full data data_dictionary.
 #' 
 #' @author Jeffrey Horner
 #' 
@@ -48,10 +48,10 @@
 
 
 exportMetaData <- function(url = getOption("redcap_bundle")$redcap_url,
-token = getOption("redcap_token"),
- fields=NULL, forms=NULL,
-                                 error_handling = getOption("redcap_error_handling"), 
-                                 ..., drop_utf8 = FALSE)
+                           token = getOption("redcap_token"),
+                           fields=NULL, forms=NULL,
+                           error_handling = getOption("redcap_error_handling"), 
+                           ..., drop_utf8 = FALSE)
 {
   coll <- checkmate::makeAssertCollection()
   

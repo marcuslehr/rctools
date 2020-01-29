@@ -9,8 +9,8 @@
 #' 
 #' @param url A url address to connect to the REDCap API
 #' @param token A REDCap API token
-#' @param meta_data A text string giving the location of the data 
-#' dictionary downloaded from REDCap.
+#' @param data_dict A text string giving the location of the data 
+#' data_dictionary downloaded from REDCap.
 #' @param random The field name to be randomized.
 #' @param strata Field names by which to stratify the randomization.
 #' @param group A field name giving a group by which randomization should be 
@@ -41,7 +41,7 @@
 #' @param weights An optional vector giving the sampling weights for each of the randomization 
 #'   groups.  There must be one number for each level of the randomization variable.  If named, 
 #'   the names must match the group labels.  If unnamed, the group labels will be assigned in the
-#'   same order they appear in the data dictionary.  The weights will be normalized, so they do
+#'   same order they appear in the data data_dictionary.  The weights will be normalized, so they do
 #'   not need to sum to 1.0.  In other words, \code{weights=c(3, 1)} can indicate a 3:1 sampling
 #'   ratio.
 #' @param ... Arguments to be passed to other methods
@@ -49,7 +49,7 @@
 #' @details Each element in \code{block.size} must be a multiple of the number of groups in the randomized
 #' variable.  
 #' 
-#' The 'offline' version of the function operates on the data dictionary file downloaded from 
+#' The 'offline' version of the function operates on the data data_dictionary file downloaded from 
 #' REDCap.  This is made available for instances where the
 #' API can not be accessed for some reason (such as waiting for API approval 
 #' from the REDCap administrator).
@@ -75,33 +75,33 @@
 #' @export
 
 allocationTable <- function(url = getOption("redcap_bundle")$redcap_url,
-token = getOption("redcap_token"),
- random, strata = NULL, 
-                                  group = NULL, dag.id = NULL, 
-                                  replicates, block.size, 
-                                  block.size.shift = 0,
-                                  seed.dev = NULL, seed.prod = NULL,  
-                                  bundle = NULL, 
-                                  weights = c(1, 1), ...)
+							token = getOption("redcap_token"),
+							random, strata = NULL, 
+						    group = NULL, dag.id = NULL, 
+						    replicates, block.size, 
+						    block.size.shift = 0,
+						    seed.dev = NULL, seed.prod = NULL,  
+						    bundle = NULL, 
+						    weights = c(1, 1), ...)
 {
   
   coll <- checkmate::makeAssertCollection()
   
-  #* Establish the meta_data table
-  meta_data <- 
-    if (is.null(bundle$meta_data)) 
+  #* Establish the data_dict table
+  data_dict <- 
+    if (is.null(bundle$data_dict)) 
       exportMetaData(url, token) 
-    else bundle$meta_data
+    else bundle$data_dict
   
-  #* A utility function to extract the coded values from the meta_data
-  redcapChoices <- function(v, meta_data, raw=TRUE)
+  #* A utility function to extract the coded values from the data_dict
+  redcapChoices <- function(v, data_dict, raw=TRUE)
   {
-    if (meta_data$field_type[meta_data$field_name == v] %in% c("dropdown", "radio")){
-      choice_str <- meta_data$select_choices_or_calculations[meta_data$field_name == v]
+    if (data_dict$field_type[data_dict$field_name == v] %in% c("dropdown", "radio")){
+      choice_str <- data_dict$select_choices_or_calculations[data_dict$field_name == v]
       choice_str <- unlist(strsplit(choice_str, " [|] "))
       return(stringr::str_split_fixed(choice_str, ", ", 2)[, (2-raw)])
     }
-    else if (meta_data$field_type[meta_data$field_name == v] %in% c("yesno", "true_false"))
+    else if (data_dict$field_type[data_dict$field_name == v] %in% c("yesno", "true_false"))
       return(0:1)
     else stop(paste0("'", v, "' is not a valid variable for stratification/randomization"))
   }
@@ -111,7 +111,7 @@ token = getOption("redcap_token"),
   #* 1. Verifying that 'random' is not missing
   #* 2. random, strata and group are characters
   #* 3. random and group have length 1
-  #* 4. all fields in 'random', 'strata', and 'group' exist in meta_data 
+  #* 4. all fields in 'random', 'strata', and 'group' exist in data_dict 
   #* 5. Calculate n_strata
   #* 6. Verify 'replicates' is not missing and is numeric
   #* 7. If 'blocks.size' is missing, set it equal to 'replicates'.
@@ -141,18 +141,18 @@ token = getOption("redcap_token"),
                               null.ok = TRUE,
                               add = coll)
   
-  #* 4. all fields in 'random', 'strata', and 'group' exist in meta_data
+  #* 4. all fields in 'random', 'strata', and 'group' exist in data_dict
   #* Verify that all given fields exist in the database
   checkmate::assert_subset(x = random,
-                           choices = meta_data$field_name,
+                           choices = data_dict$field_name,
                            add = coll)
   
   checkmate::assert_subset(x = strata,
-                           choices = meta_data$field_name,
+                           choices = data_dict$field_name,
                            add = coll)
   
   checkmate::assert_subset(x = group,
-                           choices = meta_data$field_name,
+                           choices = data_dict$field_name,
                            add = coll)
   
   checkmate::reportAssertions(coll)
@@ -160,13 +160,13 @@ token = getOption("redcap_token"),
   
   #* 5. Calculate n_levels
   #* randomization levels
-  random_levels <- redcapChoices(random, meta_data)
-  random_level_names <- redcapChoices(random, meta_data, raw = FALSE)
+  random_levels <- redcapChoices(random, data_dict)
+  random_level_names <- redcapChoices(random, data_dict, raw = FALSE)
   n_levels <- length(random_levels)
   
   #* stratification groups
   strata <- c(strata, group)
-  strata_levels <- lapply(strata, redcapChoices, meta_data)
+  strata_levels <- lapply(strata, redcapChoices, data_dict)
   names(strata_levels) <- strata
   if (!is.null(dag.id)) strata_levels[['redcap_data_access_group']] <- dag.id
   
@@ -354,7 +354,7 @@ token = getOption("redcap_token"),
 
 #' @rdname allocationTable
 #' @param random_levels A vector of the randomization group level names.  Determined from the
-#'   data dictionary.
+#'   data data_dictionary.
 
 makeChoices <- function(random_levels, block.size, weights){
   group.size <- block.size * weights
@@ -372,14 +372,14 @@ makeChoices <- function(random_levels, block.size, weights){
 #' @rdname allocationTable
 #' @export
 
-allocationTable_offline <- function(meta_data, random, strata = NULL, 
+allocationTable_offline <- function(data_dict, random, strata = NULL, 
                                     group = NULL, dag.id = NULL, 
                                     replicates, block.size, 
                                     block.size.shift = 0,
                                     seed.dev = NULL, seed.prod = NULL,  
                                     bundle = NULL, 
                                     weights = c(1, 1), ...){
-  meta_data <- utils::read.csv(meta_data,
+  data_dict <- utils::read.csv(data_dict,
                                stringsAsFactors=FALSE,
                                na.strings = "")
   
@@ -390,7 +390,7 @@ allocationTable_offline <- function(meta_data, random, strata = NULL,
               'branching_logic', 'required_field', 'custom_alignment', 
               'question_number', 'matrix_group_name', 'matrix_ranking',
               'field_annotation')
-  names(meta_data) <- col.names[1:length(col.names)]
+  names(data_dict) <- col.names[1:length(col.names)]
   
   allocationTable.redcapApiConnection(url = NULL,
 									  token = NULL,
@@ -403,7 +403,7 @@ allocationTable_offline <- function(meta_data, random, strata = NULL,
                                       block.size.shift = block.size.shift,
                                       seed.dev = seed.dev,
                                       seed.prod = seed.prod,
-                                      bundle = list(meta_data = meta_data),
+                                      bundle = list(data_dict = data_dict),
                                       weights = weights, 
                                       ...)
 }

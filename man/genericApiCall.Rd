@@ -42,6 +42,6 @@ see \code{\link{redcap_error}}}
 }
 \description{
 Permits users to make generic calls to the REDCap
-  API. This allows use of API methods that do not yet have
-  dedicated support.
+API. This allows use of API methods that do not yet have
+dedicated support.
 }

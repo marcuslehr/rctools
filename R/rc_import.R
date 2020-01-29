@@ -1,4 +1,4 @@
-#' @name rc_importRecords
+#' @name rc_import
 #' @title Import Records to a REDCap Database
 #' 
 #' @description Imports records from a \code{data.frame} to a REDCap Database
@@ -31,10 +31,10 @@
 #' A record of imports through the API is recorded in the Logging section
 #' of the project.
 #'
-#' \code{rc_importRecords} prevents the most common import errors by testing the
+#' \code{rc_import} prevents the most common import errors by testing the
 #' data before attempting the import.  Namely
 #' \enumerate{
-#'   \item Check that all variables in \code{record_data} exist in the REDCap data dictionary.
+#'   \item Check that all variables in \code{record_data} exist in the REDCap data data_dictionary.
 #'   \item Check that the study id variable exists
 #'   \item Force the study id variable to the first position in the data frame (with a warning)
 #'   \item Remove calculated fields (with a warning)
@@ -62,13 +62,13 @@
 #'
 #' @export
 
-rc_importRecords <- function(record_data,
-                             url = getOption("redcap_bundle")$redcap_url,
-                             token = getOption("redcap_token"),
-                             overwriteBehavior = c('normal', 'overwrite'),
-                             returnContent = c('count', 'ids', 'nothing'),
-                             returnData = FALSE, logfile = "", 
-                             bundle = getOption("redcap_bundle"), batch.size=-1)
+rc_import <- function(record_data,
+                       url = getOption("redcap_bundle")$redcap_url,
+                       token = getOption("redcap_token"),
+                       overwriteBehavior = c('normal', 'overwrite'),
+                       returnContent = c('count', 'ids', 'nothing'),
+                       returnData = FALSE, logfile = "", 
+                       bundle = getOption("redcap_bundle"), batch.size=-1)
 {
   
   coll <- checkmate::makeAssertCollection()
@@ -105,34 +105,34 @@ rc_importRecords <- function(record_data,
   
   checkmate::reportAssertions(coll)
   
-  if (is.null(bundle$meta_data))
-    message("bundle$meta_data not found. Please supply a bundle object containing $meta_data from rc_setup()")
+  if (is.null(bundle$data_dict))
+    message("bundle$data_dict not found. Please supply a bundle object containing $data_dict from rc_setup()")
   else
-    meta_data <- bundle$meta_data
+    data_dict <- bundle$data_dict
   
   if (!is.null(bundle$version)) version <- bundle$version
   
   try(
     if (utils::compareVersion(version, "5.5.21") == -1 )
-      meta_data <- syncUnderscoreCodings(record_data, 
-                                         meta_data, 
+      data_dict <- syncUnderscoreCodings(record_data, 
+                                         data_dict, 
                                          export = FALSE),
     silent = T)
   
-  suffixed <- checkbox_suffixes(fields = meta_data$field_name,
-                                meta_data = meta_data, 
+  suffixed <- checkbox_suffixes(fields = data_dict$field_name,
+                                data_dict = data_dict, 
                                 version = version)
   
-  form_names <- unique(meta_data$form_name)
+  form_names <- unique(data_dict$form_name)
   
-  meta_data <- 
-    meta_data[meta_data$field_name %in% 
+  data_dict <- 
+    data_dict[data_dict$field_name %in% 
                 sub(pattern = "___[a-z,A-Z,0-9,_]+", 
                     replacement = "", 
                     x = names(record_data)), ]
   
   #** Check that all of the variable names in 'record_data' exist in REDCap Database
-  .checkbox <- meta_data[meta_data$field_type == "checkbox", ]
+  .checkbox <- data_dict[data_dict$field_type == "checkbox", ]
   
   .opts <- lapply(X = .checkbox$select_choices_or_calculations, 
                   FUN = function(x) unlist(strsplit(x, 
@@ -150,7 +150,7 @@ rc_importRecords <- function(record_data,
                      sep="___")
   
   with_complete_fields <- 
-    c(unique(meta_data$field_name), 
+    c(unique(data_dict$field_name), 
       paste(form_names, "_complete", sep=""), 
       check_var)
   
@@ -158,7 +158,7 @@ rc_importRecords <- function(record_data,
   w.remove <- 
     which(names(record_data) %in% 
             c("redcap_survey_identifier",
-              paste0(unique(meta_data$form_name), "_timestamp"),
+              paste0(unique(data_dict$form_name), "_timestamp"),
               "redcap_data_access_group"))
   if (length(w.remove)) record_data <- record_data[-w.remove]
   
@@ -166,31 +166,31 @@ rc_importRecords <- function(record_data,
   {
     coll$push(paste0("The variables ", 
                      paste(names(record_data)[!names(record_data) %in% with_complete_fields], collapse=", "),
-                     " do not exist in the REDCap Data Dictionary"))
+                     " do not exist in the REDCap Data data_dictionary"))
   }
   
   #** Check that the study id exists in record_data
-  if (!meta_data$field_name[1] %in% names(record_data))
+  if (!data_dict$field_name[1] %in% names(record_data))
   {
     coll$push(paste0("The variable '", 
-                     meta_data$field_name[1], 
+                     data_dict$field_name[1], 
                      "' cannot be found in 'record_data'. ",
                      "Please include this variable and place it in the first column."))
   }
   
   #** If the study id is not in the the first column, move it and print a warning
-  if (meta_data$field_name[1] %in% names(record_data) && 
-      meta_data$field_name[1] != names(record_data)[1])
+  if (data_dict$field_name[1] %in% names(record_data) && 
+      data_dict$field_name[1] != names(record_data)[1])
   {
-    message("The variable'", meta_data$field_name[1], 
+    message("The variable'", data_dict$field_name[1], 
             "' was not in the first column. ",
             "It has been moved to the first column.")
-    w <- which(names(record_data) == meta_data$field_name[1])
+    w <- which(names(record_data) == data_dict$field_name[1])
     record_data <- record_data[c(w, (1:length(record_data))[-w])]
   }
   
   #** Confirm that date fields are either character, Date class, or POSIXct
-  date_vars <- meta_data$field_name[grepl("date_", meta_data$text_validation_type_or_show_slider_number)]
+  date_vars <- data_dict$field_name[grepl("date_", data_dict$text_validation_type_or_show_slider_number)]
   
   bad_date_fmt <- 
     !vapply(X = record_data[date_vars], 
@@ -205,7 +205,7 @@ rc_importRecords <- function(record_data,
   }
   
   #*** Remove calculated fields
-  calc_field <- meta_data$field_name[meta_data$field_type == "calc"]
+  calc_field <- data_dict$field_name[data_dict$field_type == "calc"]
   
   if (length(calc_field) > 0)
   {
@@ -221,9 +221,9 @@ rc_importRecords <- function(record_data,
   
   idvars <- 
     if ("redcap_event_name" %in% names(record_data)) 
-      c(meta_data$field_name[1], "redcap_event_name") 
+      c(data_dict$field_name[1], "redcap_event_name") 
   else 
-    meta_data$field_name[1]
+    data_dict$field_name[1]
   
   msg <- paste0("REDCap Data Import Log: ", Sys.time(),
                 "\nThe following (if any) conditions were noted about the data.\n\n")
@@ -234,7 +234,7 @@ rc_importRecords <- function(record_data,
     write(msg, logfile)
   
   record_data <- validateImport(data = record_data,
-                         meta_data = meta_data,
+                         data_dict = data_dict,
                          logfile = logfile)
   
   if (returnData) return(record_data)

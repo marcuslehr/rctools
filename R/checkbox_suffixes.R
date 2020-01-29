@@ -3,22 +3,22 @@
 #' 
 #' @description Checkbox variables return one vector of data for each option defined
 #'   in the variable.  The variables are returned with the suffix \code{___[option]}.
-#'   \code{rc_exportRecords} needs these suffixes in order to retrieve all of the 
+#'   \code{rc_export} needs these suffixes in order to retrieve all of the 
 #'   variables and to apply the correct labels.
 #'   
 #' @param fields The current field names of interest
-#' @param meta_data The meta data data frame.
+#' @param data_dict The meta data data frame.
 
-checkbox_suffixes <- function(fields, meta_data)
+checkbox_suffixes <- function(fields, data_dict)
 {
   name_suffix <- sapply(X = fields, 
                         FUN = manual_checkbox_suffixes, 
-                        meta_data)
+                        data_dict)
 
   label_suffix <- 
     sapply(X = fields,
            FUN = manual_checkbox_label_suffixes,
-           meta_data)
+           data_dict)
   
   list(name_suffix = unlist(name_suffix),
        label_suffix = unlist(label_suffix))
@@ -28,14 +28,14 @@ checkbox_suffixes <- function(fields, meta_data)
 #* Unexported methods
 
 #* Get full variable names (appends ___[option] to checkboxes)
-manual_checkbox_suffixes <- function(x, meta_data)
+manual_checkbox_suffixes <- function(x, data_dict)
 {
   #* If x is a checkbox variable
-  if (meta_data$field_type[meta_data$field_name %in% x] == "checkbox"){
+  if (data_dict$field_type[data_dict$field_name %in% x] == "checkbox"){
     #* Remove characters between "|" and ","; and between "|" and end of string.
     opts <- gsub(pattern = "(?<=,)(.*?)(?=([|]|$))", 
                  replacement = "", 
-                 x = meta_data$select_choices_or_calculations[meta_data$field_name %in% x], 
+                 x = data_dict$select_choices_or_calculations[data_dict$field_name %in% x], 
                  perl = TRUE)
     #* Split by "|" then remove any commas or spaces
     opts <- strsplit(x = opts, 
@@ -50,22 +50,22 @@ manual_checkbox_suffixes <- function(x, meta_data)
 }
 
 #* Get full variable label (appends ": [option label]" for checkboxes)
-manual_checkbox_label_suffixes <- function(x, meta_data)
+manual_checkbox_label_suffixes <- function(x, data_dict)
 {
   #* If x is a checkbox variable
-  if (meta_data$field_type[meta_data$field_name %in% x] == "checkbox"){
+  if (data_dict$field_type[data_dict$field_name %in% x] == "checkbox"){
     #* Select choices
-    opts <- meta_data$select_choices_or_calculations[meta_data$field_name %in% x]
+    opts <- data_dict$select_choices_or_calculations[data_dict$field_name %in% x]
     #* Remove choice numbers, split, then remove spaces
     opts <- gsub("\\d,", "", opts)
     opts <- strsplit(x = opts,
                      split = "[|]")[[1]]
     opts <- gsub("(^ *| *$)", "", opts)
     #* Assemble labels
-    paste0(meta_data$field_label[meta_data$field_name %in% x], ": ", opts)
+    paste0(data_dict$field_label[data_dict$field_name %in% x], ": ", opts)
   }
   else 
   {
-    meta_data$field_label[meta_data$field_name %in% x]
+    data_dict$field_label[data_dict$field_name %in% x]
   }
 }

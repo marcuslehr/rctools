@@ -21,11 +21,11 @@
 #'   
 #' @param url A url address to connect to the REDCap API
 #' @param token A REDCap API token
-#' @param create.option Logical. Indicates whether the REDCap bundle should be
+#' @param create_option Logical. Indicates whether the REDCap bundle should be
 #' saved to an option.
-#' @param return.object Logical. Indicates whether the REDCap bundle should be
+#' @param return_object Logical. Indicates whether the REDCap bundle should be
 #' returned as an object.
-#' @param meta_data Logical.  Indicates if the meta data (data dictionary) 
+#' @param data_dict Logical.  Indicates if the meta data (data data_dictionary) 
 #'   should be exported.
 #' @param users Logical. Indicates if the users table should be exported.
 #' @param instruments Logical. Indicates if the instruments table should be exported.
@@ -48,8 +48,8 @@
 #' 
 #' @export
 
-rc_setup <- function(url,token, create.option=TRUE, return.object=TRUE,
-                      meta_data=FALSE, users=FALSE, instruments=FALSE,
+rc_setup <- function(url,token, create_option=TRUE, return_object=FALSE,
+                      data_dict=FALSE, users=FALSE, instruments=FALSE,
                       events=FALSE, arms=FALSE, mappings=FALSE,
                       proj_info=FALSE, version=FALSE,
                       dates=TRUE, labels=TRUE
@@ -63,7 +63,7 @@ rc_setup <- function(url,token, create.option=TRUE, return.object=TRUE,
                       add = coll)
           )
 
-  massert(~ dates + labels + meta_data + users + instruments + 
+  massert(~ dates + labels + data_dict + users + instruments + 
             events + arms + mappings + version + proj_info,
           fun = checkmate::assert_logical,
           fixed = list(len = 1,
@@ -72,8 +72,8 @@ rc_setup <- function(url,token, create.option=TRUE, return.object=TRUE,
   
   checkmate::reportAssertions(coll)
   
-  if (!any(meta_data, users, instruments, events, arms, mappings, proj_info, version)) {
-    meta_data=TRUE
+  if (!any(data_dict, users, instruments, events, arms, mappings, proj_info, version)) {
+    data_dict=TRUE
     users=TRUE
     instruments=TRUE
     events=TRUE
@@ -91,7 +91,7 @@ rc_setup <- function(url,token, create.option=TRUE, return.object=TRUE,
     structure(
       list(
     		redcap_url = url,
-        meta_data = if (meta_data) exportMetaData(url, token) else NULL,
+        data_dict = if (data_dict) exportMetaData(url, token) else NULL,
         users = if (users) userData$Users else NULL,
         form_perm = if (users) userData$Form_Permissions else NULL,
         instruments = if (instruments) exportInstruments(url, token) else NULL,
@@ -106,13 +106,13 @@ rc_setup <- function(url,token, create.option=TRUE, return.object=TRUE,
   
   options(redcap_token = token)
   
-  if (create.option==T) {
+  if (create_option==T) {
     options(redcap_bundle = bundle)
     message("Project metadata has been saved as an option. You can access it via getOption('redcap_bundle')")
-    if (return.object==F)
+    if (return_object==F)
       message("Option data will not persist across R sessions, consider saving bundle data as an object for
               use in future sessions via saveRDS() or save.image()")
   }
   
-  if (return.object==T) return(bundle)
+  if (return_object==T) return(bundle)
 }

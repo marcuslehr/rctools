@@ -30,25 +30,25 @@ converted to factor objects.}
 see \code{\link{redcap_error}}}
 }
 \value{
-Returns a data frame. The number of columns in the data frame will depend on your 
+Returns a data frame. The number of columns in the data frame will depend on your
 version of REDCap.
 \itemize{
-  \item{\code{username }}{User name}
-  \item{\code{email }}{The user's e-mail address}
-  \item{\code{firstname }}{The user's first name}
-  \item{\code{lastname }}{The user's last name}
-  \item{\code{expiration }}{The expiration date of the user's access to the project}
-  \item{\code{data_access_group }}{The data access group the user is assigned to}
-  \item{\code{data_export }}{The user's data export rights. 0=no access, 
-    2=De-Identified, 1=Full Data Set}
-  \item{\code{mobile_app }}{(6.5.0+) Flag for if the user has permissions for the 
-    mobile application}
-  \item{\code{mobile_app_download_data }}{(6.5.0+) Flag for if the user may download
-    data from the mobile app}
+\item{\code{username }}{User name}
+\item{\code{email }}{The user's e-mail address}
+\item{\code{firstname }}{The user's first name}
+\item{\code{lastname }}{The user's last name}
+\item{\code{expiration }}{The expiration date of the user's access to the project}
+\item{\code{data_access_group }}{The data access group the user is assigned to}
+\item{\code{data_export }}{The user's data export rights. 0=no access,
+2=De-Identified, 1=Full Data Set}
+\item{\code{mobile_app }}{(6.5.0+) Flag for if the user has permissions for the
+mobile application}
+\item{\code{mobile_app_download_data }}{(6.5.0+) Flag for if the user may download
+data from the mobile app}
 }
 
-The data frame will have one additional column for each form giving the user's 
-form-level permissions in the project.  0=no access, 2=read only, 
+The data frame will have one additional column for each form giving the user's
+form-level permissions in the project.  0=no access, 2=read only,
 1=view records/responses and
 edit records (survey responses are read-only), 3 = edit survey responses
 }
@@ -85,7 +85,12 @@ Please refer to your institution's API documentation.
 
 Additional details on API parameters are found on the package wiki at
 \url{https://github.com/nutterb/redcapAPI/wiki/REDCap-API-Parameters}
+
+Adopted code from \code{redcap-users-export} in the \href{https://github.com/OuhscBbmc/REDCapR}{REDCapR}
+package by Will Beasley to reshape form permissions data.
 }
 \author{
 Benjamin Nutter
+
+Marcus Lehr
 }

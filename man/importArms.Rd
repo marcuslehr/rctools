@@ -18,12 +18,12 @@ importArms(
 
 \item{token}{A REDCap API token}
 
-\item{arms_data}{A \code{data.frame} with two columns.  The first column 
+\item{arms_data}{A \code{data.frame} with two columns.  The first column
 is an integer-like value with the name \code{arm_num}. The second is
 a character value with the name \code{name}.}
 
-\item{override}{\code{logical(1)}. When \code{TRUE}, the action is to 
-delete all of the arms in the project and import the contents of 
+\item{override}{\code{logical(1)}. When \code{TRUE}, the action is to
+delete all of the arms in the project and import the contents of
 \code{arms_data}.  The default setting is \code{FALSE}, which only
 allows arms to be renamed or added.}
 
@@ -36,20 +36,20 @@ see \code{\link{redcap_error}}}
 No value is returned.
 }
 \description{
-Import Arms into a project or to rename existing Arms in a 
-  project. You may use the parameter \code{override = TRUE} as a 'delete 
-  all + import' action in order to erase all existing Arms in the 
-  project while importing new Arms. Notice: Because of the 'override' 
-  parameter's destructive nature, this method may only use 
-  \code{override = TRUE} for projects in Development status.
+Import Arms into a project or to rename existing Arms in a
+project. You may use the parameter \code{override = TRUE} as a 'delete
+all + import' action in order to erase all existing Arms in the
+project while importing new Arms. Notice: Because of the 'override'
+parameter's destructive nature, this method may only use
+\code{override = TRUE} for projects in Development status.
 }
 \section{REDCap API Documentation}{
 
-This method allows you to import Arms into a project or to rename 
-existing Arms in a project. You may use the parameter override=1 as a 
-'delete all + import' action in order to erase all existing Arms in the 
-project while importing new Arms. Notice: Because of the 'override' 
-parameter's destructive nature, this method may only use override=1 
+This method allows you to import Arms into a project or to rename
+existing Arms in a project. You may use the parameter override=1 as a
+'delete all + import' action in order to erase all existing Arms in the
+project while importing new Arms. Notice: Because of the 'override'
+parameter's destructive nature, this method may only use override=1
 for projects in Development status.
 
 NOTE: This only works for longitudinal projects.

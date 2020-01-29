@@ -1,7 +1,7 @@
 makeRedcapFactor <- function(x, coding, factors, var_name)
 {
   if (is.na(coding)){
-    warning(sprintf("- No coding available for variable `%s`. Data is left in raw form.\n      This may indicate an problem in the Data Dictionary.\n", var_name))
+    warning(sprintf("- No coding available for variable `%s`. Data is left in raw form.\n      This may indicate an problem in the Data data_dictionary.\n", var_name))
     return(x)
   }
   # parses the string "0, Birth \\n 1, Death \\n 2, Unknown" into a

@@ -4,9 +4,8 @@
 #' @title Convert a REDCap Data Field to an R Vector
 #' @description Converts a field exported from REDCap into a valid R vector
 #' 
-#' @param records A data frame of records returned by \code{rc_exportRecords} 
-#'   or \code{rc_exportReports}
-#' @param meta_data A data frame giving the data dictionary, as returned 
+#' @param records A data frame of records returned by \code{rc_export} 
+#' @param data_dict A data frame giving the data data_dictionary, as returned 
 #'   by \code{exportMetaData}
 #' @param factors Logical, determines if checkbox, radio button, dropdown and yesno
 #'   variables are converted to factors
@@ -14,12 +13,12 @@
 #' @param checkboxLabels Logical, determines if checkbox variables are labeled as
 #'   "Checked" or using the checkbox label.  Only applicable when \code{factors = TRUE}
 #' 
-#' @details This function is called internally by \code{rc_exportRecords} and 
-#'   \code{rc_exportReports}. It is not available to the user.
+#' @details This function is called internally by \code{rc_export}. It is not 
+#' available to the user.
 #'   
 #' @author Jeffrey Horner
 
-fieldToVar <- function(records, meta_data, factors = TRUE, 
+fieldToVar <- function(records, data_dict, factors = TRUE, 
                        dates = TRUE, checkboxLabels = FALSE)
 { 
   for (i in seq_along(records))
@@ -30,10 +29,10 @@ fieldToVar <- function(records, meta_data, factors = TRUE,
     
     
     
-    field_text_type <- meta_data$text_validation_type_or_show_slider_number[meta_data$field_name == field_base]
-    field_type <- meta_data$field_type[meta_data$field_name == field_base]
+    field_text_type <- data_dict$text_validation_type_or_show_slider_number[data_dict$field_name == field_base]
+    field_type <- data_dict$field_type[data_dict$field_name == field_base]
     
-    #* If the variable isn't in the data dictionary (usually it's a field added by REDCap,
+    #* If the variable isn't in the data data_dictionary (usually it's a field added by REDCap,
     #* such as redcap_event_name, instrument_complete, etc), give it a generic name to
     #* pass to switch.
     if (!length(field_type)) 
@@ -50,7 +49,7 @@ fieldToVar <- function(records, meta_data, factors = TRUE,
     # autocomplete was added to the text_validation... column for
     # dropdown menus with the autocomplete feature.
     # field_type[is.na(field_type)] <- 
-    #   meta_data$field_type[meta_data$field_name == field_base]
+    #   data_dict$field_type[data_dict$field_name == field_base]
     field_type[field_type == "text" & 
                  !is.na(field_text_type)] <- field_text_type
 
@@ -107,19 +106,19 @@ fieldToVar <- function(records, meta_data, factors = TRUE,
              "integer" = suppressWarnings(as.numeric(records[[i]])),
              "select" = 
                makeRedcapFactor(x = records[[i]],
-                                coding = meta_data$select_choices_or_calculations[meta_data$field_name == field_base],
+                                coding = data_dict$select_choices_or_calculations[data_dict$field_name == field_base],
                                 factors = factors, 
-                                var_name = meta_data$field_name[meta_data$field_name == field_base]),
+                                var_name = data_dict$field_name[data_dict$field_name == field_base]),
              "radio" = 
                makeRedcapFactor(x = records[[i]],
-                                coding = meta_data$select_choices_or_calculations[meta_data$field_name == field_base],
+                                coding = data_dict$select_choices_or_calculations[data_dict$field_name == field_base],
                                 factors = factors, 
-                                var_name = meta_data$field_name[meta_data$field_name == field_base]),
+                                var_name = data_dict$field_name[data_dict$field_name == field_base]),
              "dropdown" = 
                makeRedcapFactor(x = records[[i]],
-                                coding = meta_data$select_choices_or_calculations[meta_data$field_name == field_base],
+                                coding = data_dict$select_choices_or_calculations[data_dict$field_name == field_base],
                                 factors = factors, 
-                                var_name = meta_data$field_name),
+                                var_name = data_dict$field_name),
              "yesno" = makeRedcapYN(records[[i]], 
                                     factors),
              "truefalse" = 
@@ -133,7 +132,7 @@ fieldToVar <- function(records, meta_data, factors = TRUE,
               {
                 makeRedcapCheckbox(x = records[[i]],
                                    suffix = gsub("^.+___", "", names(records)[i]),
-                                   coding = meta_data$select_choices_or_calculations[meta_data$field_name == field_base],
+                                   coding = data_dict$select_choices_or_calculations[data_dict$field_name == field_base],
                                    factors = factors,
                                    checkboxLabels = checkboxLabels)
               },
@@ -142,7 +141,7 @@ fieldToVar <- function(records, meta_data, factors = TRUE,
                makeRedcapFactor(x = records[[i]],
                                 coding = "0, Incomplete | 1, Unverified | 2, Complete",
                                 factors, 
-                                var_name = meta_data$field_name[meta_data$field_name == field_base])
+                                var_name = data_dict$field_name[data_dict$field_name == field_base])
              },
              records[[i]]
       ) # End switch

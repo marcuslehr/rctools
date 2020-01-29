@@ -56,12 +56,17 @@
 #' edit records (survey responses are read-only), 3 = edit survey responses
 #'
 #' @author Benjamin Nutter
+#' @author Marcus Lehr
 #'
 #' @references
 #' Please refer to your institution's API documentation.
 #'
 #' Additional details on API parameters are found on the package wiki at
 #' \url{https://github.com/nutterb/redcapAPI/wiki/REDCap-API-Parameters}
+#' 
+#' Adopted code from \code{redcap-users-export} in the [REDCapR](https://github.com/OuhscBbmc/REDCapR)
+#' package by Will Beasley to reshape form permissions data. 
+
 
 exportUsers <- function(url = getOption("redcap_bundle")$redcap_url,
 token = getOption("redcap_token"),

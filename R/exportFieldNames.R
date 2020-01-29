@@ -18,7 +18,7 @@
 #' all fields (or for one field, if desired) in a project. This is mostly used for 
 #' checkbox fields because during data exports and data imports, 
 #' checkbox fields have a different variable name used than the exact one 
-#' defined for them in the Online Designer and Data Dictionary, in which 
+#' defined for them in the Online Designer and Data data_dictionary, in which 
 #' *each checkbox option* gets represented as its own export field name in the 
 #' following format: field_name + triple underscore + converted coded value for the 
 #' choice. For non-checkbox fields, the export field name will be exactly the same 
@@ -47,7 +47,7 @@
 #' A data frame containing three fields: 
 #' \itemize{
 #'   \item{\code{original_field_name} }{The field name as recorded in the 
-#'        data dictionary}
+#'        data data_dictionary}
 #'   \item{\code{choice_value} }{represents the raw coded value for a checkbox 
 #'        choice. For non-checkbox fields, this will always be \code{NA}.}
 #'   \item{\code{export_field_name} }{The field name specific to the field.
@@ -99,16 +99,16 @@ token = getOption("redcap_token"),
                returnFormat = 'csv')
   
   ## Get project metadata
-  meta_data <- 
-    if(is.null(bundle$meta_data))
+  data_dict <- 
+    if(is.null(bundle$data_dict))
       exportMetaData(url, token) 
     else 
-      bundle$meta_data
+      bundle$data_dict
 
   ## Field was provided
   if(!is.null(fields)){
     ## verify field exists
-    if(is.character(fields) && all((fields %in% meta_data$field_name)))
+    if(is.character(fields) && all((fields %in% data_dict$field_name)))
     {
       if (length(fields) == 1)
         body[['field']] <- paste0(fields, collapse = ",")
@@ -119,7 +119,7 @@ token = getOption("redcap_token"),
     } 
     else 
     {
-      bad_fields <- fields[!fields %in% meta_data$field_name]
+      bad_fields <- fields[!fields %in% data_dict$field_name]
       stop(message("Non-existent field(s): ", 
                    paste0(bad_fields, collapse = ", ")))
     }

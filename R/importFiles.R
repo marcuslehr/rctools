@@ -73,13 +73,13 @@ token = getOption("redcap_token"),
     coll$push(paste0("No file found at '", file, "'"))
   
   #* make sure 'field' exist in the project and are 'file' fields
-  if (is.null(bundle$meta_data)) 
-    meta_data <- exportMetaData(url, token)
+  if (is.null(bundle$data_dict)) 
+    data_dict <- exportMetaData(url, token)
   
-  if (!field %in% meta_data$field_name) 
+  if (!field %in% data_dict$field_name) 
     coll$push(paste("'", field, "' does not exist in the project.", sep=""))
   
-  if (meta_data$field_type[meta_data$field_name == field] != "file")
+  if (data_dict$field_type[data_dict$field_name == field] != "file")
     coll$push(paste0("'", field, "' is not of field type 'file'"))
   
   #* make sure 'event' exists in the project
@@ -92,7 +92,7 @@ token = getOption("redcap_token"),
   }
   
   if (!overwrite){
-    fileThere <- rc_exportRecords(url, token, 
+    fileThere <- rc_export(url, token, 
                                records = record, 
                                fields = field, 
                                events = event)

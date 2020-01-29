@@ -1,14 +1,18 @@
-#' @name rc_exportRecords
+#' @name rc_export
 #' 
 #' @title Export Records from a REDCap Database
 #' @description Exports records from a REDCap Database, allowing for 
-#'   subsets of subjects, fields, records, and events.
+#'   subsets of subjects, fields, records, and events. By default, all
+#'   records will be exported. If a report ID is supplied, only data
+#'   from that report will be exported. 
+#'   
+#' @param report_id Numeric. ID number for a report created in REDCap. 
 #'   
 #' @param url A url address to connect to the REDCap API
 #' @param token A REDCap API token
-#' @param meta_data REDCap project metadata (aka data dictionary). By default, 
-#' $meta_data is expected in a REDCap bundle object, as created by \code{rc_setup}.
-#' Otherwise, a data.frame containing the metadata must be supplied.
+#' @param bundle A \code{redcapBundle} object as created by \code{rc_setup}. 
+#'   For the purposes of this function, the data dictionary and events data 
+#'   may be required.
 #' 
 #' @param records A vector of study id's to be returned.  If \code{NULL}, all 
 #'   subjects are returned.
@@ -34,10 +38,15 @@
 #'   viable if the user whose token is being used to make the API request is 
 #'   *not* in a data access group. If the user is in a group, then this 
 #'   flag will revert to its default value.
+#' @param form_complete_auto \code{logical(1)}. When \code{TRUE},
+#'  the \code{[form]_complete} fields for any form 
+#'   from which at least one variable is requested will automatically
+#'   be retrieved.  When \code{FALSE} (Default), these fields must be 
+#'   explicitly requested.  
 #'   
 #' @param format Logical.  Determines whether the data will be formatted with
-#' \code{rc_formatRecords} (Default = TRUE)
-#' @param ... Additional arguments to be passed to \code{rc_formatRecords}
+#' \code{rc_format} (Default = TRUE)
+#' @param ... Additional arguments to be passed to \code{rc_format}
 #' 
 #' @param colClasses A (named) vector of colum classes passed to 
 #'   \code{\link[utils]{read.csv}} calls. 
@@ -49,11 +58,6 @@
 #'   to prevent tying up smaller servers.  See details for more explanation.
 #' @param error_handling An option for how to handle errors returned by the API.
 #'   see \code{\link{redcap_error}}
-#' @param form_complete_auto \code{logical(1)}. When \code{TRUE},
-#'  the \code{[form]_complete} fields for any form 
-#'   from which at least one variable is requested will automatically
-#'   be retrieved.  When \code{FALSE} (Default), these fields must be 
-#'   explicitly requested.
 #' 
 #' @details
 #' A record of exports through the API is recorded in the Logging section 
@@ -79,9 +83,7 @@
 #' Thus, if you are concerned about tying up the server with a large, 
 #' longitudinal project, it would be prudent to use a smaller batch size.
 #' 
-#' @section REDCap API Documentation (6.5.0):
-#' This function allows you to export a set of records for a project
-#' 
+#' @section 
 #' Note about export rights (6.0.0+): Please be aware that Data Export user rights will be 
 #' applied to this API request. For example, if you have "No Access" data export rights 
 #' in the project, then the API data export will fail and return an error. And if you 
@@ -92,9 +94,6 @@
 #' 
 #' @section REDCap Version:
 #' >= 6.0.0 
-#' 
-#' @section Known REDCap Limitations:
-#' None
 #' 
 #' @section Deidentified Batched Calls:
 #' Batched calls to the API are not a feature of the REDCap API, but may be imposed 
@@ -113,6 +112,7 @@
 #' calls to the API (ie, \code{batch.size = -1})
 #' 
 #' @author Jeffrey Horner
+#' @author Marcus Lehr
 #' 
 #' @references
 #' Please refer to your institution's API documentation.
@@ -131,196 +131,264 @@
 #' 
 #' @export
 
-rc_exportRecords <-
-  function(url = getOption("redcap_bundle")$redcap_url,
-           token = getOption("redcap_token"),
-           bundle = getOption("redcap_bundle"),
-           records = NULL, fields = NULL, forms = NULL,
-           events = NULL, survey = TRUE, dag = TRUE,
-           format = TRUE, ...,
-           colClasses = NA, batch.size = -1, 
-           error_handling = getOption("redcap_error_handling"),
-           form_complete_auto = FALSE)
-    
-{
-    
-  if (is.null(bundle)) 
-    stop("A REDCap bundle containing $meta_data and $events is required. Please supply
-    a REDCap bundle as created by rc_setup()")
-
+rc_export <- function(report_id = NULL,
+                       url = getOption("redcap_bundle")$redcap_url,
+                       token = getOption("redcap_token"),
+                       bundle = getOption("redcap_bundle"),
+                       records = NULL, fields = NULL, forms = NULL,
+                       events = NULL, survey = TRUE, dag = TRUE,
+                       form_complete_auto = FALSE,
+                       format = TRUE, ...,
+                       colClasses = NA, batch.size = -1, 
+                       error_handling = getOption("redcap_error_handling")
+                       ) {
+  
+  # Initial coercions
+  if (is.null(url) & !is.null(bundle)) url = bundle$redcap_url 
+  
   if (is.numeric(records)) records <- as.character(records)
-
+  
+  
   #* Error Collection Object
   coll <- checkmate::makeAssertCollection()
-
-  massert(~ survey + dag + format + form_complete_auto,
-          fun = checkmate::assert_logical,
-          fixed = list(len = 1,
-                       add = coll))
-
+  
   massert(~ url + token + fields + forms + records + events,
           fun = checkmate::assert_character,
           null.ok = list(fields = T, forms = T,
                          records = T, events = T),
           fixed = list(add = coll))
-
-  checkmate::assert_class(x = bundle,
-                          classes = "redcapBundle",
-                          add = coll)
   
-  checkmate::assert_integerish(x = batch.size,
-                               len = 1,
-                               add = coll)
-
-  error_handling <- checkmate::matchArg(x = error_handling,
-                                        choices = c("null", "error"),
-                                        add = coll)
-
-  checkmate::reportAssertions(coll)
-
+  checkmate::assert_logical(x = format,
+                              len = 1,
+                              add = coll)
   
-  #* Secure the meta data.
-  
-  if (!is.null(bundle$meta_data))
-    meta_data <- bundle$meta_data
-  else
-    stop("$meta_data not found in bundle object. Please supply a REDCap bundle object, as
-         created by rc_setup(), containing $meta_data")
-  
-  #* for purposes of the export, we don't need the descriptive fields.
-  #* Including them makes the process more error prone, so we'll ignore them.
-  meta_data <- meta_data[!meta_data$field_type %in% "descriptive", ]
+  # checkmate::reportAssertions(coll)
+    
 
-  
-  #* Secure the events table
-  if (!is.null(events)) events_list <- bundle$events
-  if (is.null(events_list)) 
-    warning("$events not found in bundle object. The supplied events list cannot be validated.")
-  
-  #* Check that all event names exist in the events list
-  if (!is.null(events) && inherits(events_list, "data.frame"))
-  {
-    bad_events <- events[!events %in% events_list$unique_event_name]
-    if (length(bad_events))
-      coll$push(paste0("The following are not valid event names: ",
-                       paste0(bad_events, collapse = ", ")))
+# Export Report -----------------------------------------------------------
+
+    if (!is.null(report_id)) {
+      
+      # Error checking
+      # coll <- checkmate::makeAssertCollection()
+      
+      checkmate::assert_integerish(x = report_id,
+                                   len = 1,
+                                   add = coll)
+      
+      if (format & !is.null(bundle$data_dict)) {
+        data_dict = bundle$data_dict
+        checkmate::assert_class(x = data_dict,
+                                classes = 'data.frame',
+                                add = coll)
+      } 
+      if (format & is.null(bundle$data_dict)) stop("When `format=TRUE`, $data_dict must be supplied in REDCap bundle")
+        
+        
+      error_handling <- checkmate::matchArg(x = error_handling, 
+                                            choices = c("null", "error"),
+                                            add = coll)
+      checkmate::reportAssertions(coll)
+      
+      # Create body for POST
+      body <- list(token = token, 
+                   content = 'report',
+                   format = 'csv', 
+                   returnFormat = 'csv',
+                   report_id = report_id)
+      
+      # Export data
+      x <- httr::POST(url = url, 
+                      body = body)
+      
+      # Report errors
+      if (x$status_code != 200) redcap_error(x, error_handling)
+      
+      # Convert data to data.frame
+      x <- utils::read.csv(text = as.character(x), 
+                           stringsAsFactors = FALSE, 
+                           na.strings = "")
+    }
+    
+
+# Export Records ----------------------------------------------------------
+
+    else {    
+    
+      # Error checking
+      if (is.null(bundle)) 
+        stop("A REDCap bundle containing $data_dict and $events is required. Please supply
+      a REDCap bundle as created by rc_setup()")
+      
+      # coll <- checkmate::makeAssertCollection()
+      
+      massert(~ survey + dag + form_complete_auto,
+              fun = checkmate::assert_logical,
+              fixed = list(len = 1,
+                           add = coll))
+      
+      checkmate::assert_class(x = bundle,
+                              classes = "redcapBundle",
+                              add = coll)
+      
+      checkmate::assert_integerish(x = batch.size,
+                                   len = 1,
+                                   add = coll)
+      
+      error_handling <- checkmate::matchArg(x = error_handling,
+                                            choices = c("null", "error"),
+                                            add = coll)
+      
+      # checkmate::reportAssertions(coll)
+    
+    
+      #* Secure the data dictionary
+      if (!is.null(bundle$data_dict))
+        data_dict <- bundle$data_dict
+      else
+        stop("$data_dict not found in bundle object. Please supply a REDCap bundle object, as
+           created by rc_setup(), containing $data_dict")
+    
+      #* for purposes of the export, we don't need the descriptive fields.
+      #* Including them makes the process more error prone, so we'll ignore them.
+      data_dict <- data_dict[!data_dict$field_type %in% "descriptive", ]
+      
+      
+      #* Secure the events table
+      # events_list = NULL
+      if (!is.null(events) & !is.null(bundle$events))
+        events_list <- bundle$events
+      
+      if (!is.null(events) & is.null(bundle$events)) 
+        warning("$events not found in bundle object. The supplied events list cannot be validated.")
+      
+      
+      #* Check that all event names exist in the events list
+      if (!is.null(events) && inherits(events_list, "data.frame"))
+      {
+        bad_events <- events[!events %in% events_list$unique_event_name]
+        if (length(bad_events))
+          coll$push(paste0("The following are not valid event names: ",
+                           paste0(bad_events, collapse = ", ")))
+      }
+    
+      form_complete_fields <-
+        sprintf("%s_complete",
+                unique(data_dict$form_name))
+      form_complete_fields <-
+        form_complete_fields[!is.na(form_complete_fields)]
+      
+      #* Check that all fields exist in the meta data
+      if (!is.null(fields))
+      {
+        bad_fields <- fields[!fields %in% c(data_dict$field_name,
+                                            form_complete_fields)]
+        if (length(bad_fields))
+          coll$push(paste0("The following are not valid field names: ",
+                           paste0(bad_fields, collapse = ", ")))
+      }
+      
+      #* Check that all form names exist in the meta data
+      if (!is.null(forms))
+      {
+        bad_forms <- forms[!forms %in% data_dict$form_name]
+        if (length(bad_forms))
+          coll$push(paste0("The following are not valid form names: ",
+                           paste0(bad_forms, collapse = ", ")))
+      }
+    
+      checkmate::reportAssertions(coll)
+      
+    
+      #* Create the vector of field names
+      if (!is.null(fields)) #* fields were provided
+      {
+        # redcap_event_name is automatically included in longitudinal projects
+        field_names <- fields[!fields %in% c("redcap_event_name", 
+                                             "redcap_repeat_instrument", 
+                                             "redcap_repeat_instance")]
+      }
+      else if (!is.null(forms))
+      {
+        field_names <- data_dict$field_name[data_dict$form_name %in% forms]
+      }
+      else
+        #* fields were not provided, default to all fields.
+        field_names <- data_dict$field_name
+      
+      #* Expand 'field_names' to include fields from specified forms.
+      if (!is.null(forms))
+        field_names <-
+        unique(c(field_names,
+                 data_dict$field_name[data_dict$form_name %in% forms]))
+    
+    
+      suffixed <-
+        checkbox_suffixes(
+          # The subset prevents `[form]_complete` fields from
+          # being included here.
+          fields = field_names[field_names %in% data_dict$field_name],
+          data_dict = data_dict
+        )
+      
+      # Identify the forms from which the chosen fields are found
+      included_form <-
+        unique(
+          data_dict$form_name[data_dict$field_name %in% field_names]
+        )
+      
+      # Add the form_name_complete column to the export
+      if (form_complete_auto){
+        field_names <- c(field_names,
+                         sprintf("%s_complete", included_form))
+      }
+      
+      body <- list(token = token,
+                   content = 'record',
+                   format = 'csv',
+                   type = 'flat',
+                   exportSurveyFields = tolower(survey),
+                   exportDataAccessGroups = tolower(dag),
+                   returnFormat = 'csv')
+      
+      
+      body[['fields']] <- paste0(field_names, collapse=",")
+      if (!is.null(forms)) body[['forms']] <- paste0(forms, collapse=",")
+      if (!is.null(events)) body[['events']] <- paste0(events, collapse=",")
+      if (!is.null(records)) body[['records']] <- paste0(records, collapse=",")
+      
+      if (batch.size < 1) {
+        x <- unbatched(url = url,
+                       token = token,
+                       body = body,
+                       id = data_dict$field_name[1],
+                       colClasses = colClasses,
+                       error_handling = error_handling)
+      } else {
+        x <- batched(url = url,
+                     token = token,
+                     body = body,
+                     batch.size = batch.size,
+                     id = data_dict$field_name[1],
+                     colClasses = colClasses,
+                     error_handling = error_handling)
+        }
+      }
+
+# Format ------------------------------------------------------------------
+
+    
+    if (format) x = rc_format(x, data_dict = data_dict, ...)
+    
+    x
   }
-  
-  form_complete_fields <-
-    sprintf("%s_complete",
-            unique(meta_data$form_name))
-  form_complete_fields <-
-    form_complete_fields[!is.na(form_complete_fields)]
-
-  #* Check that all fields exist in the meta data
-  if (!is.null(fields))
-  {
-    bad_fields <- fields[!fields %in% c(meta_data$field_name,
-                                        form_complete_fields)]
-    if (length(bad_fields))
-      coll$push(paste0("The following are not valid field names: ",
-                       paste0(bad_fields, collapse = ", ")))
-  }
-
-  #* Check that all form names exist in the meta data
-  if (!is.null(forms))
-  {
-    bad_forms <- forms[!forms %in% meta_data$form_name]
-    if (length(bad_forms))
-      coll$push(paste0("The following are not valid form names: ",
-                       paste0(bad_forms, collapse = ", ")))
-  }
-
-  
-
-  checkmate::reportAssertions(coll)
-
-  #* Create the vector of field names
-  if (!is.null(fields)) #* fields were provided
-  {
-    # redcap_event_name is automatically included in longitudinal projects
-    field_names <- fields[!fields %in% c("redcap_event_name", 
-                                         "redcap_repeat_instrument", 
-                                         "redcap_repeat_instance")]
-  }
-  else if (!is.null(forms))
-  {
-    field_names <- meta_data$field_name[meta_data$form_name %in% forms]
-  }
-  else
-    #* fields were not provided, default to all fields.
-    field_names <- meta_data$field_name
-
-  #* Expand 'field_names' to include fields from specified forms.
-  if (!is.null(forms))
-    field_names <-
-    unique(c(field_names,
-             meta_data$field_name[meta_data$form_name %in% forms]))
-
-
-  suffixed <-
-    checkbox_suffixes(
-      # The subset prevents `[form]_complete` fields from
-      # being included here.
-      fields = field_names[field_names %in% meta_data$field_name],
-      meta_data = meta_data
-      )
-
-  # Identify the forms from which the chosen fields are found
-  included_form <-
-    unique(
-      meta_data$form_name[meta_data$field_name %in% field_names]
-    )
-
-  # Add the form_name_complete column to the export
-  if (form_complete_auto){
-    field_names <- c(field_names,
-                     sprintf("%s_complete", included_form))
-  }
-
-  body <- list(token = token,
-               content = 'record',
-               format = 'csv',
-               type = 'flat',
-               exportSurveyFields = tolower(survey),
-               exportDataAccessGroups = tolower(dag),
-               returnFormat = 'csv')
-
-  body[['fields']] <- paste0(field_names, collapse=",")
-  if (!is.null(forms)) body[['forms']] <- paste0(forms, collapse=",")
-  if (!is.null(events)) body[['events']] <- paste0(events, collapse=",")
-  if (!is.null(records)) body[['records']] <- paste0(records, collapse=",")
-
-  if (batch.size < 1){
-    x <- unbatched(url = url,
-				   token = token,
-                   body = body,
-                   id = meta_data$field_name[1],
-                   colClasses = colClasses,
-                   error_handling = error_handling)
-  }
-  else
-  {
-    x <- batched(url = url,
-				 token = token,
-                 body = body,
-                 batch.size = batch.size,
-                 id = meta_data$field_name[1],
-                 colClasses = colClasses,
-                 error_handling = error_handling)
-  }
-
-  if (format) x = rc_formatRecords(x, meta_data = meta_data, ...)
-
-  x
-}
 
 # Non-exported functions ----------------------------------------------------
 
 #*** UNBATCHED EXPORT
 unbatched <- function(url = getOption("redcap_bundle")$redcap_url,
-token = getOption("redcap_token"),
- body, id, colClasses, error_handling)
+                      token = getOption("redcap_token"),
+                      body, id, colClasses, error_handling)
 {
   colClasses[[id]] <- "character"
   colClasses <- colClasses[!vapply(colClasses,
@@ -344,8 +412,8 @@ token = getOption("redcap_token"),
 
 #*** BATCHED EXPORT
 batched <- function(url = getOption("redcap_bundle")$redcap_url,
-token = getOption("redcap_token"),
- body, batch.size, id, colClasses, error_handling)
+                    token = getOption("redcap_token"),
+                    body, batch.size, id, colClasses, error_handling)
 {
   colClasses[[id]] <- "character"
   colClasses <- colClasses[!vapply(colClasses,
@@ -386,7 +454,7 @@ token = getOption("redcap_token"),
   {
     warning("The record IDs in this project appear to be de-identified. ",
             "Subject data may not match across batches. ",
-            "See 'Deidentified Batched Calls' in '?rc_exportRecords'")
+            "See 'Deidentified Batched Calls' in '?rc_export'")
   }
   
   #* Determine batch numbers for the IDs.
@@ -397,7 +465,7 @@ token = getOption("redcap_token"),
   #* Make a list to hold each of the batched calls
   #* Borrowed from http://stackoverflow.com/a/8099431/1017276
   batch_list <- vector("list", max(batch.number))
-
+  
   #* 5. Read batches
   for (i in unique(batch.number))
   {

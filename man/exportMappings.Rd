@@ -29,18 +29,18 @@ see \code{\link{redcap_error}}}
 Retrieve a data frame giving the events-form mapping for a project.
 }
 \details{
-The data frame that is returned shows the arm number, unique 
+The data frame that is returned shows the arm number, unique
 event name, and forms mapped in a project.
 
 When this function is called for a classic project, a character string is
- returned giving the API error message, '400: You cannot export form-event 
- mappings for classic projects' but without casting an error in R. This is 
- by design and allows more flexible error checks in certain functions.
+returned giving the API error message, '400: You cannot export form-event
+mappings for classic projects' but without casting an error in R. This is
+by design and allows more flexible error checks in certain functions.
 }
 \section{REDCap API Documentation}{
 
-This function allows you to export the instrument-event mappings for a project 
-(i.e., how the data collection instruments are designated for certain events in a 
+This function allows you to export the instrument-event mappings for a project
+(i.e., how the data collection instruments are designated for certain events in a
 longitudinal project).
 
 NOTE: this only works for longitudinal projects
@@ -52,7 +52,7 @@ NOTE: this only works for longitudinal projects
 }
 
 \section{Known REDCap Limitations}{
- 
+
 None
 }
 

@@ -1,4 +1,4 @@
-#' @name rc_findMissing
+#' @name rc_missing
 #'
 #' @title Find missing record data
 #' @description  Finds data points which are ostenibly missing from Redcap records data.
@@ -6,18 +6,18 @@
 #' record then it is expected to exist for all records. If an entire event is empty for
 #' a given record, none of the variables will be flagged unless there is data for that
 #' record in the following event. Additionally, if the subject is marked as having
-#' completed the study (i.e. \code{completionField == 'Yes'|1}), then empty events for
+#' completed the study (i.e. \code{completion_field == 'Yes'|1}), then empty events for
 #' that subject will not be discarded.
 #'
 #' The logic of this function does not extend to checkbox variables or repeat instruments.
 #' If present in the record data, they will be dropped.
 #'
-#' @param records A raw data export from REDCap.
-#' @param completionField The REDCap variable which indicates whether or not a subject
+#' @param record_data A raw data export from REDCap.
+#' @param completion_field The REDCap variable which indicates whether or not a subject
 #' has completed the study. This should be indicated by a 'Yes' or a '1' (i.e. a Yes/No
 #' field in REDCap).
-#' @param meta_data REDCap project metadata (aka data dictionary). By default, 
-#' $meta_data is expected in a REDCap bundle object, as created by \code{rc_setup}.
+#' @param data_dict REDCap project data data_dictionary. By default, 
+#' $data_dict is expected in a REDCap bundle object, as created by \code{rc_setup}.
 #' Otherwise, a data.frame containing the metadata must be supplied.
 #' @param events REDCap project event metadata. By default, $events is expected in
 #' the REDCap bundle, as created by \code{rc_setup}. Otherwise, a data.frame containing
@@ -28,8 +28,8 @@
 #' @author Marcus Lehr
 #' @export
 
-rc_findMissing <- function(records, completionField, 
-                           meta_data = getOption("redcap_bundle")$meta_data,
+rc_missing <- function(record_data, completion_field, 
+                           data_dict = getOption("redcap_bundle")$data_dict,
                            events = getOption("redcap_bundle")$events) {
 
 
@@ -37,13 +37,13 @@ rc_findMissing <- function(records, completionField,
 
   ## record_id field ---
 
-  if (!is.null(meta_data)) {
+  if (!is.null(data_dict)) {
     # Ensure record_id field is named appropriately
-    colnames(records)[colnames(records)==meta_data[1,1]] = 'record_id'
+    colnames(record_data)[colnames(record_data)==data_dict[1,1]] = 'record_id'
 
   } else {
-      message("$meta_data not found in REDCap bundle. 'record_id' field will be assumed to be the first column")
-      names(records)[1] = 'record_id'
+      message("$data_dict not found in REDCap bundle. 'record_id' field will be assumed to be the first column")
+      names(record_data)[1] = 'record_id'
     }
 
   ## Event data ---
@@ -51,10 +51,10 @@ rc_findMissing <- function(records, completionField,
   if (!is.null(events$unique_event_name)) {
     events = events$unique_event_name
 
-  } else if (!is.null(records$redcap_event_name)) {
+  } else if (!is.null(record_data$redcap_event_name)) {
 
     #Collect list of events present in data, ensuring event order is preserved
-    events = as.character(unique(records$redcap_event_name))
+    events = as.character(unique(record_data$redcap_event_name))
     message("$events could not be found in REDCap bundle. Event list will be captured from record data.")
 
   } else {
@@ -64,18 +64,18 @@ rc_findMissing <- function(records, completionField,
   ## Completion data ---
 
   # Would be good to test for a single result here
-  if (any(names(records)==completionField)) {
-    names(records)[names(records)==completionField] = 'study_complete'
+  if (any(names(record_data)==completion_field)) {
+    names(record_data)[names(record_data)==completion_field] = 'study_complete'
   } else {
     stop("Completion field could not be found. Please include a field in the record data indicating
             whether or not a subject has completed the study.")
   }
 
   ## Repeat/checkbox fields ---
-  if (any(!is.na(records$redcap_repeat_instance))|any(grepl('___',names(records)))) {
-    warning("The logic of this function does not translate to repeat instruments or checkbox fields.
+  if (any(!is.na(record_data$redcap_repeat_instance))|any(grepl('___',names(record_data)))) {
+    message("The logic of this function does not translate to repeat instruments or checkbox fields.
               All such data will be dropped.")
-    records = dplyr::filter(records, is.na(redcap_repeat_instance)) %>%
+    record_data = dplyr::filter(record_data, is.na(redcap_repeat_instance)) %>%
                 dplyr::select(-redcap_repeat_instrument,-redcap_repeat_instance,
                               -dplyr::contains('___'))
   }
@@ -84,22 +84,22 @@ rc_findMissing <- function(records, completionField,
 # Setup -------------------------------------------------------------------
 
   # Grab completion data then remove '_complete' fields from data
-  completionData = dplyr::select(records, record_id, study_complete) %>% na.omit()
+  completionData = dplyr::select(record_data, record_id, study_complete) %>% na.omit()
   # completionData$record_id = as.character(completionData$record_id)
-  records = dplyr::select(records, -dplyr::contains('complete'))
+  record_data = dplyr::select(record_data, -dplyr::contains('complete'))
 
   # Convert data to long format. Globally empty events and IDs will be lost
   meltVars = c('record_id','redcap_event_name')
-  data = suppressWarnings(
-              reshape2::melt(records, id.vars = meltVars, na.rm = T) %>% dplyr::as_tibble() %>%
+  record_data = suppressWarnings(
+              reshape2::melt(record_data, id.vars = meltVars, na.rm = T) %>% dplyr::as_tibble() %>%
                       dplyr::filter(!value == '') %>% droplevels()
                           )
 
   # Filter events for those remaining in data
-  events = events[events %in% data$redcap_event_name]
+  events = events[events %in% record_data$redcap_event_name]
 
   # Collecting IDs outside the loop allows capturing of (non-globally) empty events
-  IDs = as.character(unique(data$record_id))
+  IDs = as.character(unique(record_data$record_id))
 
 
 
@@ -116,7 +116,7 @@ rc_findMissing <- function(records, completionField,
   missingDataAll = data.frame()
   for (e in events) {
     #Filter data for an event and capture variables that are present
-    eventData = dplyr::filter(data, redcap_event_name == e)
+    eventData = dplyr::filter(record_data, redcap_event_name == e)
 
     # Any vars empty for this entire event are dropped
     vars = as.character(unique(eventData$variable)) # rc_variables was a backup from pooling.
@@ -142,14 +142,17 @@ rc_findMissing <- function(records, completionField,
     ## Filter missingData to remove values from empty events which do not have data in a following event
     expectedEvents = data.frame(record_id = sort(rep(IDs, length(events))) %>% as.numeric(),
                                 redcap_event_name = events)
-    dataWide = reshape2::dcast(data, record_id+redcap_event_name~variable)
-    dataWideFull = dplyr::full_join(expectedEvents, dataWide, by = meltVars)
+    dataWide = reshape2::dcast(record_data, record_id+redcap_event_name~variable)
+    dataWideFull = suppressWarnings(
+                      dplyr::full_join(expectedEvents, dataWide, by = meltVars)
+                   )
 
-    logic = dataWideFull %>%
-      dplyr::mutate(var_sums = rowSums(!is.na(.))-2) %>% dplyr::group_by(record_id) %>%
-      dplyr::mutate(datafollowing = ifelse(test = dplyr::lead(var_sums) != 0, yes = T, no = F)) %>%
-      dplyr::left_join(., completionData, by = 'record_id') %>%
-      dplyr::select(record_id, redcap_event_name, var_sums, datafollowing, study_complete)
+    logic = suppressWarnings(dataWideFull %>%
+              dplyr::mutate(var_sums = rowSums(!is.na(.))-2) %>% dplyr::group_by(record_id) %>%
+              dplyr::mutate(datafollowing = ifelse(test = dplyr::lead(var_sums) != 0, yes = T, no = F)) %>%
+              dplyr::left_join(., completionData, by = 'record_id') %>%
+              dplyr::select(record_id, redcap_event_name, var_sums, datafollowing, study_complete)
+            )
 
 
     missingData = suppressWarnings(
@@ -159,11 +162,11 @@ rc_findMissing <- function(records, completionField,
                     dplyr::select(record_id, redcap_event_name, variable)
                   )
 
-    if (!is.null(bundle[['meta_data']])) {
+    if (!is.null(bundle[['data_dict']])) {
 
       # Add form names for ease of locating in Redcap
-      instrVarMap = data.frame(variable = bundle[['meta_data']]$field_name,
-                               form_name = bundle[['meta_data']]$form_name)
+      instrVarMap = data.frame(variable = bundle[['data_dict']]$field_name,
+                               form_name = bundle[['data_dict']]$form_name)
       missingData = suppressWarnings(
                     dplyr::left_join(missingData, instrVarMap, by = 'variable') %>%
                       dplyr::select(record_id, redcap_event_name, form_name, variable)
@@ -172,7 +175,8 @@ rc_findMissing <- function(records, completionField,
 
     return(missingData)
 
-  } else {
+  } 
+  else {
     message("No missing data were found.")
     return(missingDataAll)
   }

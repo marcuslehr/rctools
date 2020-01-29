@@ -23,17 +23,17 @@ see \code{\link{redcap_error}}}
 }
 \description{
 Version numbers are returned as a character string.
-  This feature is available for REDCap 6.0.0 and higher.
+This feature is available for REDCap 6.0.0 and higher.
 }
 \details{
 If this function is used in a version of REDCap that does not
-  support the Export Version Number function, the character string
-  \code{'5.12.2'} is returned. This is done solely for the convenience 
-  of always returning a value that can be compared against other versions.
+support the Export Version Number function, the character string
+\code{'5.12.2'} is returned. This is done solely for the convenience
+of always returning a value that can be compared against other versions.
 }
 \section{REDCap API Documentation (6.5.0)}{
 
-This method returns the current REDCap version number as plain text 
+This method returns the current REDCap version number as plain text
 (e.g., 4.13.18, 5.12.2, 6.0.0).
 }
 

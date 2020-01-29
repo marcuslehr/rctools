@@ -36,7 +36,7 @@ supplied for a longitudinal project, the API will return an error message.}
 see \code{\link{redcap_error}}}
 }
 \description{
-This function allows you to remove a document that has been 
+This function allows you to remove a document that has been
 attached to an individual record
 }
 \references{

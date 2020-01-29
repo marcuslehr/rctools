@@ -2,7 +2,7 @@
 #'
 #' REDCap is a database development tool built on MySQL.  Visit 
 #' \url{project-redcap.org} for more information.  REDCap
-#' provides an API through which data, the data dictionary, files, and
+#' provides an API through which data, the data data_dictionary, files, and
 #'  project information can be accessed.  The 
 #' \code{redcapAPI} package facilitates the use of these functions and 
 #' simplifies the work needed to prepare data for 
@@ -32,7 +32,7 @@
 #' package (\url{http://github.com/vubiostat/redcap}) 
 #' was invaluable in helping me understand the API.  A few of their functions 
 #' (\code{rc_connect}, 
-#' \code{fieldToVar}, \code{exportMetaData}, and \code{rc_exportRecords}) are 
+#' \code{fieldToVar}, \code{exportMetaData}, and \code{rc_export}) are 
 #' included in \code{redcapAPI} largely unaltered.
 #' 
 #' Many thanks also go to Will Beasley of University of Oklahoma for his 

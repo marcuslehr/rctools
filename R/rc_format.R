@@ -1,4 +1,4 @@
-#' @name rc_formatRecords
+#' @name rc_format
 #'
 #' @title Format records data
 #' @description  Uses REDCap project metadata to format records data.
@@ -7,7 +7,7 @@
 #' checkbox labels.
 #' 
 #' @param record_data A raw data export from REDCap.
-#' @param meta_data REDCap project metadata (aka data dictionary). By default, a 
+#' @param data_dict REDCap project data data_dictionary. By default, a 
 #' REDCap bundle object, as created by \code{rc_setup}, will be looked for.
 #' Otherwise, a data.frame containing the metadata must be supplied.
 #' @param completionField The REDCap variable which indicates whether or not a subject
@@ -28,7 +28,7 @@
 #' @param checkboxLabels Logical. Determines the format of labels in checkbox 
 #'   variables.  If \code{FALSE} labels are applies as "Unchecked"/"Checked".  
 #'   If \code{TRUE}, they are applied as ""/"[field_label]" where [field_label] 
-#'   is the label assigned to the level in the data dictionary. 
+#'   is the label assigned to the level in the data data_dictionary. 
 #'   This option is only available after REDCap version 6.0.  See Checkbox Variables
 #'   for more on how this interacts with the \code{factors} argument.
 #'   
@@ -55,13 +55,13 @@
 #' @author Marcus Lehr
 #' @export
 
-rc_formatRecords <- function(record_data, meta_data = getOption("redcap_bundle")$meta_data, 
+rc_format <- function(record_data, data_dict = getOption("redcap_bundle")$data_dict, 
                               factors = TRUE, labels = TRUE, dates = TRUE,
                               checkboxLabels = FALSE, fields = NULL, forms=NULL,
                               ...)
 {
 
-  if (is.null(meta_data)) 
+  if (is.null(data_dict)) 
   stop("Project metadata must be supplied. Please create a bundle object
        with rc_setup() or supply the metadata via a data.frame")
   
@@ -78,7 +78,7 @@ rc_formatRecords <- function(record_data, meta_data = getOption("redcap_bundle")
           fixed = list(null.ok = TRUE,
                        add = coll))
   
-  massert(~ record_data + meta_data,
+  massert(~ record_data + data_dict,
           fun = checkmate::assert_class,
           fixed = list(classes = "data.frame",
                        add = coll))
@@ -86,7 +86,7 @@ rc_formatRecords <- function(record_data, meta_data = getOption("redcap_bundle")
   checkmate::reportAssertions(coll)
   
   
-  if (length(meta_data) != 18) warning("meta_data has an unexpected number of columns. Please supply metadata 
+  if (length(data_dict) != 18) warning("data_dict has an unexpected number of columns. Please supply metadata 
                                        exactly as produced by REDCap")
   
   col.names=c('field_name', 'form_name', 'section_header', 
@@ -97,16 +97,16 @@ rc_formatRecords <- function(record_data, meta_data = getOption("redcap_bundle")
               'question_number', 'matrix_group_name', 'matrix_ranking',
               'field_annotation')
   
-  names(meta_data) <- col.names[1:length(col.names)]
+  names(data_dict) <- col.names[1:length(col.names)]
   
   #* for purposes of the export, we don't need the descriptive fields. 
   #* Including them makes the process more error prone, so we'll ignore them.
-  meta_data <- meta_data[!meta_data$field_type %in% "descriptive", ]  
+  data_dict <- data_dict[!data_dict$field_type %in% "descriptive", ]  
   
   #* Check that all fields exist in the meta data
   if (!is.null(fields)) 
   {
-    bad_fields <- fields[!fields %in% meta_data$field_name]
+    bad_fields <- fields[!fields %in% data_dict$field_name]
     if (length(bad_fields))
       coll$push(paste0("The following are not valid field names: ",
                        paste0(bad_fields, collapse = ", ")))
@@ -115,7 +115,7 @@ rc_formatRecords <- function(record_data, meta_data = getOption("redcap_bundle")
   #* Check that all form names exist in the meta data
   if (!is.null(forms))
   {
-    bad_forms <- forms[!forms %in% meta_data$form_name]
+    bad_forms <- forms[!forms %in% data_dict$form_name]
     if (length(bad_forms))
       coll$push(paste0("The following are not valid form names: ",
                        paste0(bad_forms, collapse = ", ")))
@@ -125,7 +125,7 @@ rc_formatRecords <- function(record_data, meta_data = getOption("redcap_bundle")
   
   
   record_data <- fieldToVar(records = record_data, 
-                            meta_data = meta_data, 
+                            data_dict = data_dict, 
                             factors = factors, 
                             dates = dates, 
                             checkboxLabels = checkboxLabels)
@@ -142,22 +142,22 @@ rc_formatRecords <- function(record_data, meta_data = getOption("redcap_bundle")
     }
     else if (!is.null(forms))
     {
-      field_names <- meta_data$field_name[meta_data$form_name %in% forms]
+      field_names <- data_dict$field_name[data_dict$form_name %in% forms]
     }
     else
       #* fields were not provided, default to all fields in record data.
-      field_names <- meta_data$field_name[meta_data$field_name %in% names(record_data)]
+      field_names <- data_dict$field_name[data_dict$field_name %in% names(record_data)]
     
     #* Expand 'field_names' to include fields from specified forms.    
     if (!is.null(forms)) 
     {
       field_names <- 
         unique(c(field_names, 
-                 meta_data$field_name[meta_data$form_name %in% forms]))
+                 data_dict$field_name[data_dict$form_name %in% forms]))
     }
     
     suffixed <- checkbox_suffixes(fields = field_names,
-                                  meta_data = meta_data)
+                                  data_dict = data_dict)
     
     record_data[suffixed$name_suffix] <-
       mapply(nm = suffixed$name_suffix,

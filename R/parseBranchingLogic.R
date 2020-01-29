@@ -1,14 +1,14 @@
 #' @name parseBranchingLogic
 #' 
 #' @title Parse Branching Logic
-#' @description Branching logic from the REDCap Data Dictionary is parsed into
+#' @description Branching logic from the REDCap Data data_dictionary is parsed into
 #'   R Code and returned as expressions.  These can be evaluated if desired
 #'   and allow the user to determine if missing values are truly missing or
 #'   not required because the branching logic prevented the variable from being
 #'   presented.
 #'   
 #' @param l A vector of REDCap branching logic statements.  These are usually
-#'   passed as the vector \code{meta_data$branching_logic}.  
+#'   passed as the vector \code{data_dict$branching_logic}.  
 #'   
 #' @details For a study, I was asked to identify which subjects had missing 
 #'   values so that remaining data could be collected.  The initial pass of 

@@ -38,11 +38,11 @@ deleteRecords(
 
 \item{records}{a vector of record names to be deleted.}
 
-\item{arms}{\code{integerish}, the arm number of the arm in which the 
-record(s) should be deleted. (This can only be used if the project is 
-longitudinal with more than one arm.) NOTE: If the arm parameter is not 
-provided, the specified records will be deleted from all arms in which 
-they exist. Whereas, if arm is provided, they will only be deleted from 
+\item{arms}{\code{integerish}, the arm number of the arm in which the
+record(s) should be deleted. (This can only be used if the project is
+longitudinal with more than one arm.) NOTE: If the arm parameter is not
+provided, the specified records will be deleted from all arms in which
+they exist. Whereas, if arm is provided, they will only be deleted from
 the specified arm.}
 
 \item{...}{Additional arguments to pass to other methods.}
@@ -55,13 +55,13 @@ The number of deleted records.
 }
 \description{
 Delete records from a project.  This is a destructive action that
-  will result in deletion of any events and data associated with the arm.
-  Data loss is non-reversible.  The user must have 'Delete Record' privileges
-  in the database.
+will result in deletion of any events and data associated with the arm.
+Data loss is non-reversible.  The user must have 'Delete Record' privileges
+in the database.
 }
 \section{REDCap API Documentation}{
 
-This method allows you to delete one or more records from a project in a 
+This method allows you to delete one or more records from a project in a
 single API request.
 }
 

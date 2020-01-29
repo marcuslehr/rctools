@@ -6,13 +6,13 @@
 #'   an import to REDCap
 #'   
 #' @param data Data frame being prepared for import to REDCap.
-#' @param meta_data REDCap database meta data.
+#' @param data_dict REDCap database meta data.
 #' @param logfile A character string giving the filepath to which the 
 #'   results of the validation are printed.  If \code{""}, the results 
 #'   are printed in the console.
 #'   
 #' @details
-#' \code{validateImport} is called internally by \code{rc_importRecords} and is 
+#' \code{validateImport} is called internally by \code{rc_import} and is 
 #' not available to the user.
 #' 
 #' Each variable is validated by matching they type of variable with the type 
@@ -22,12 +22,12 @@
 #' mm/dd/yyyy format, the function will accept mm/dd/yy, yyyy-mm-dd, 
 #' yyyy/mm/dd, and yyyymmdd formats as well.  When possible, pass dates as 
 #' Date objects or POSIXct objects to avoid confusion.  Dates are also compared 
-#' to minimum and maximum values listed in the data dictionary.  Records where 
+#' to minimum and maximum values listed in the data data_dictionary.  Records where 
 #' a date is found out of range are allowed to import and a message 
 #' is printed in the log.
 #' 
 #' For continuous/numeric variables, the values are checked against the 
-#' minimum and maximum allowed in the data dictionary. Records where a value 
+#' minimum and maximum allowed in the data data_dictionary. Records where a value 
 #' is found out of range are allowed to import and a message is printed 
 #' in the log.
 #' 
@@ -44,7 +44,7 @@
 #' and are also not case-sensitive.
 #' 
 #' Radio and dropdown fields may have either the coding in the data 
-#' dictionary or the labels in the data dictionary. The validation will use 
+#' data_dictionary or the labels in the data data_dictionary. The validation will use 
 #' the meta data to convert any matching values to the appropriate coding 
 #' before importing to REDCap.  Values that cannot be reconciled are 
 #' deleted with a message printed in the log.  These variables
@@ -77,14 +77,14 @@
 #' \url{http://www.regular-expressions.info/email.html}
 #' 
 
-validateImport <- function(data, meta_data, logfile = "")
+validateImport <- function(data, data_dict, logfile = "")
 {
   coll <- checkmate::makeAssertCollection()
   
   checkmate::assert_data_frame(x = data,
                                add = coll)
   
-  checkmate::assert_data_frame(x = meta_data,
+  checkmate::assert_data_frame(x = data_dict,
                                add = coll)
   
   checkmate::assert_character(x = logfile,
@@ -99,24 +99,24 @@ validateImport <- function(data, meta_data, logfile = "")
     field_meta <- sub(pattern = "___[a-z,A-Z,0-9,_]+", 
                       replacement = "", 
                       x = field_name)
-    meta_index <- which(meta_data$field_name == field_meta)
-    field_type <- meta_data[meta_index, "field_type"]
+    meta_index <- which(data_dict$field_name == field_meta)
+    field_type <- data_dict[meta_index, "field_type"]
     
     if (length(field_type)){
       if (field_type == "text" &&
-          !is.na(meta_data[meta_index, 
+          !is.na(data_dict[meta_index, 
                     "text_validation_type_or_show_slider_number"])){
-        field_type <- meta_data[meta_index, 
+        field_type <- data_dict[meta_index, 
                                 "text_validation_type_or_show_slider_number"]
       }
     }
     
-    field_min <- meta_data[meta_index,
+    field_min <- data_dict[meta_index,
                            "text_validation_min"]
-    field_max <- meta_data[meta_index,
+    field_max <- data_dict[meta_index,
                            "text_validation_max"]
     
-    field_choice <- meta_data[meta_index,
+    field_choice <- data_dict[meta_index,
                               "select_choices_or_calculations"]
     
     if (!length(field_type))

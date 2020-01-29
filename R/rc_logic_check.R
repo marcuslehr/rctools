@@ -1,4 +1,4 @@
-#' @name rc_logicCheck
+#' @name rc_logic_check
 #'
 #' @title Check branching logic for errors
 #' @description  Check branching logic for common errors
@@ -6,24 +6,25 @@
 #' branching logic exist in the project metadata. It will also warn of faulty logic
 #' concerning \code{[event-name] = 'event_name'} conditions.
 #'
-#' @param meta_data REDCap project metadata (aka data dictionary). By default, 
-#' $meta_data is expected in a REDCap bundle object, as created by \code{rc_setup}.
+#' @param data_dict REDCap project data data_dictionary. By default, 
+#' $data_dict is expected in a REDCap bundle object, as created by \code{rc_setup}.
 #' Otherwise, a data.frame containing the metadata must be supplied.
+#' @param events REDCap events metadata
 #'
 #' @author Marcus Lehr
 #' @export
 
-rc_logicCheck <- function(meta_data = getOption("redcap_bundle")$meta_data,
+rc_logic_check <- function(data_dict = getOption("redcap_bundle")$data_dict,
                           events = getOption("redcap_bundle")$events) {
 
-  if (is.null(meta_data)) {
-    stop("$meta_data not found in REDCap bundle. Please create a REDCap bundle containing
-    $meta_data with rc_setup() or supply meta_data via a data.frame")
+  if (is.null(data_dict)) {
+    stop("$data_dict not found in REDCap bundle. Please create a REDCap bundle containing
+    $data_dict with rc_setup() or supply data_dict via a data.frame")
   } else if (is.null(events)) {
     stop("$events not found in REDCap bundle. Please create a REDCap bundle containing
     $events with rc_setup() or supply event data via a data.frame")
   } else {
-    bundle = list(meta_data = meta_data,
+    bundle = list(data_dict = data_dict,
                   events = events)
     
     validate_events(bundle)
@@ -36,7 +37,7 @@ rc_logicCheck <- function(meta_data = getOption("redcap_bundle")$meta_data,
 
 validate_events <- function(bundle) {
 
-  branchingLogic = bundle[["meta_data"]]$branching_logic
+  branchingLogic = bundle[["data_dict"]]$branching_logic
   events = bundle[["events"]]$unique_event_name
 
   # Extract all events matching the pattern "[event-name] (=|!=) 'event_name'"
@@ -64,7 +65,7 @@ validate_events <- function(bundle) {
 
     # Print results
     message("\nInvalid event names were found in the following fields:")
-    print(bundle[["meta_data"]]$field_name[invalidIndex])
+    print(bundle[["data_dict"]]$field_name[invalidIndex])
     message("Invalid event names:")
     print(invalidEvents)
   } else {
@@ -76,8 +77,8 @@ validate_events <- function(bundle) {
 
 validate_variables <- function(bundle) {
 
-  branchingLogic = bundle[["meta_data"]]$branching_logic
-  vars = bundle[["meta_data"]]$field_name
+  branchingLogic = bundle[["data_dict"]]$branching_logic
+  vars = bundle[["data_dict"]]$field_name
 
   # Extract varaible names used in branching logic by mathcing the pattern "[var_name]"
   # without capturing events by excluding bracketed words followed by "["
@@ -97,7 +98,7 @@ validate_variables <- function(bundle) {
 
     # Print results
     message("\nInvalid variable names were found in the following fields:")
-    print(bundle[["meta_data"]]$field_name[invalidIndex])
+    print(bundle[["data_dict"]]$field_name[invalidIndex])
     message("Invalid variable names:")
     print(invalidVars)
   } else {
@@ -113,7 +114,7 @@ validate_variables <- function(bundle) {
 
 validate_event_logic <- function(bundle) {
 
-  branchingLogic = bundle[["meta_data"]]$branching_logic
+  branchingLogic = bundle[["data_dict"]]$branching_logic
   invalidLogic = data.frame(operator = c('=','!='),
                             gate = c('AND','OR'))
   logicErrors = 0
@@ -134,7 +135,7 @@ validate_event_logic <- function(bundle) {
               "'event_name'\" logic found.\n",
               "This will result in the field always being ", hidden[i],
               ". Please review branching\nlogic in the following fields:")
-      print(bundle[["meta_data"]]$field_name[invalidIndex])
+      print(bundle[["data_dict"]]$field_name[invalidIndex])
       logicErrors = logicErrors+1
     }
   }

@@ -16,7 +16,7 @@ missingSummary(
   batch.size = -1
 )
 
-missingSummary_offline(records, meta_data, excludeMissingForms = TRUE)
+missingSummary_offline(records, data_dict, excludeMissingForms = TRUE)
 }
 \arguments{
 \item{url}{A url address to connect to the REDCap API}
@@ -32,31 +32,31 @@ contain no data and you would not want it in this report.}
 
 \item{proj}{A redcapProjectInfo object.}
 
-\item{batch.size}{Batch size parameter for \code{rc_exportRecords}}
+\item{batch.size}{Batch size parameter for \code{rc_export}}
 
 \item{records}{a filename pointing to the raw records download from REDCap}
 
-\item{meta_data}{a filename pointing to the data dictionary download from REDCap}
+\item{data_dict}{a filename pointing to the data data_dictionary download from REDCap}
 }
 \description{
 Returns a data frame of subject events with missing values.
 }
 \details{
 The intention of this function is to generate a list of subject
-  events that are missing and could potentially be values that should have
-  been entered.
+events that are missing and could potentially be values that should have
+been entered.
 
-  The branching logic from the data dictionary is parsed and translated into
-  and R expression.  When a field with branching logic passes the logical
-  statement, it is evaluated with \code{is.na}, otherwise, it is set to
-  \code{FALSE} (non-missing, because there was never an opportunity to
-  provide a value).
+The branching logic from the data data_dictionary is parsed and translated into
+and R expression.  When a field with branching logic passes the logical
+statement, it is evaluated with \code{is.na}, otherwise, it is set to
+\code{FALSE} (non-missing, because there was never an opportunity to
+provide a value).
 
-  Optionally, forms that are entirely missing can be determined to be
-  non-missing.  This is applicable when, for instance, a patient did not
-  have an adverse event.  In this case, a form dedicated to adverse events
-  would contain meaningless missing values and could be excluded from the
-  report.
+Optionally, forms that are entirely missing can be determined to be
+non-missing.  This is applicable when, for instance, a patient did not
+have an adverse event.  In this case, a form dedicated to adverse events
+would contain meaningless missing values and could be excluded from the
+report.
 }
 \author{
 Benjamin Nutter

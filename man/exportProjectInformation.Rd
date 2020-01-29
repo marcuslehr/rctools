@@ -28,13 +28,13 @@ Retrieve a data frame with the project information.
 }
 \details{
 If this function is used in a version of REDCap that does not
-  support the Export Version Number function, the character string
-  \code{'Version Unknown'} is returned.
+support the Export Version Number function, the character string
+\code{'Version Unknown'} is returned.
 }
 \section{REDCap API Documentation (6.5.0)}{
 
-This function allows you to export some of the basic attributes of a given 
-REDCap project, such as the project's title, if it is longitudinal, if 
+This function allows you to export some of the basic attributes of a given
+REDCap project, such as the project's title, if it is longitudinal, if
 surveys are enabled, the time the project was created and moved to production, etc.
 }
 

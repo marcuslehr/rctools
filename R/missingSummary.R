@@ -10,9 +10,9 @@
 #' @param url A url address to connect to the REDCap API
 #' @param token A REDCap API token
 #' @param proj A redcapProjectInfo object.
-#' @param batch.size Batch size parameter for \code{rc_exportRecords}
+#' @param batch.size Batch size parameter for \code{rc_export}
 #' @param records a filename pointing to the raw records download from REDCap
-#' @param meta_data a filename pointing to the data dictionary download from REDCap
+#' @param data_dict a filename pointing to the data data_dictionary download from REDCap
 #' @param excludeMissingForms If all of the fields in a form are missing, would
 #'   you like to assume that they are purposefully missing?  For instance, if
 #'   a patient did not experience an adverse event, the adverse event form would
@@ -23,7 +23,7 @@
 #'   events that are missing and could potentially be values that should have
 #'   been entered.
 #'
-#'   The branching logic from the data dictionary is parsed and translated into
+#'   The branching logic from the data data_dictionary is parsed and translated into
 #'   and R expression.  When a field with branching logic passes the logical
 #'   statement, it is evaluated with \code{is.na}, otherwise, it is set to
 #'   \code{FALSE} (non-missing, because there was never an opportunity to
@@ -44,26 +44,26 @@ token = getOption("redcap_token"),
                                  excludeMissingForms = TRUE, ...,
                                  proj=NULL, batch.size=-1){
 
-  records <- rc_exportRecords(url, token, factors=FALSE, labels=TRUE,
+  records <- rc_export(url, token, factors=FALSE, labels=TRUE,
                            dates=FALSE, survey=FALSE, dag=TRUE,
                            batch.size=batch.size)
   #   records.orig <- records
 
-  meta_data <- exportMetaData(url, token)
-  meta_data <- meta_data[meta_data$field_type != "descriptive", ]
+  data_dict <- exportMetaData(url, token)
+  data_dict <- data_dict[data_dict$field_type != "descriptive", ]
 
-  form_names <- unique(meta_data$form_name)
+  form_names <- unique(data_dict$form_name)
   form_complete_names <- paste0(form_names, "_complete")
 
-  logic <- parseBranchingLogic(meta_data$branching_logic)
-  names(logic) <- meta_data$field_name
+  logic <- parseBranchingLogic(data_dict$branching_logic)
+  names(logic) <- data_dict$field_name
 
   start_value <- 2 + sum(c("redcap_event_name", "redcap_data_access_group") %in% names(records))
   for (i in tail(seq_along(records), -(start_value - 1))){
 
     l <- logic[[names(records)[i]]]
 
-    tmp_form <- meta_data$form_name[meta_data$field_name ==
+    tmp_form <- data_dict$form_name[data_dict$field_name ==
                                       sub("___[[:print:]]", "", names(records)[i])]
 
     tmp_form <- paste0(tmp_form, "_complete")
@@ -87,9 +87,9 @@ token = getOption("redcap_token"),
     for (i in seq_len(nrow(records))){
       completeFormMissing <- lapply(form_names,
                                     function(f){
-                                      flds <- meta_data$field_name[meta_data$form_name %in% f]
-                                      flds <- flds[!flds %in% meta_data$field_name[1]]
-                                      flds <- flds[!flds %in% meta_data$field_name[meta_data$field_type == "checkbox"]]
+                                      flds <- data_dict$field_name[data_dict$form_name %in% f]
+                                      flds <- flds[!flds %in% data_dict$field_name[1]]
+                                      flds <- flds[!flds %in% data_dict$field_name[data_dict$field_type == "checkbox"]]
                                       if (all(unlist(records[i, flds, drop=FALSE]) | sapply(logic[flds], is.expression))){
                                         return(flds)
                                       }
@@ -116,7 +116,7 @@ token = getOption("redcap_token"),
 #' @rdname missingSummary
 #'
 
-missingSummary_offline <- function(records, meta_data,
+missingSummary_offline <- function(records, data_dict,
                                    excludeMissingForms = TRUE){
 
   records <- read.csv(records,
@@ -124,7 +124,7 @@ missingSummary_offline <- function(records, meta_data,
                       na.string="")
   #   records.orig <- records
 
-  meta_data <- read.csv(meta_data,
+  data_dict <- read.csv(data_dict,
                         col.names=c('field_name', 'form_name', 'section_header',
                                     'field_type', 'field_label', 'select_choices_or_calculations',
                                     'field_note', 'text_validation_type_or_show_slider_number',
@@ -133,19 +133,19 @@ missingSummary_offline <- function(records, meta_data,
                                     'question_number', 'matrix_group_name', 'matrix_ranking',
                                     'field_annotation'),
                         stringsAsFactors=FALSE)
-  meta_data <- meta_data[meta_data$field_type != "descriptive", ]
+  data_dict <- data_dict[data_dict$field_type != "descriptive", ]
 
-  form_names <- unique(meta_data$form_name)
+  form_names <- unique(data_dict$form_name)
   form_complete_names <- paste0(form_names, "_complete")
 
-  logic <- parseBranchingLogic(meta_data$branching_logic)
-  names(logic) <- meta_data$field_name
+  logic <- parseBranchingLogic(data_dict$branching_logic)
+  names(logic) <- data_dict$field_name
 
   start_value <- 2 + sum(c("redcap_event_name", "redcap_data_access_group") %in% names(records))
   for (i in tail(seq_along(records), -(start_value - 1))){
     l <- logic[[names(records)[i]]]
 
-    tmp_form <- meta_data$form_name[meta_data$field_name ==
+    tmp_form <- data_dict$form_name[data_dict$field_name ==
                                       sub("___[[:print:]]", "", names(records)[i])]
     tmp_form <- paste0(tmp_form, "_complete")
 
@@ -165,9 +165,9 @@ missingSummary_offline <- function(records, meta_data,
     for (i in seq_len(nrow(records))){
       completeFormMissing <- lapply(form_names,
                                     function(f){
-                                      flds <- meta_data$field_name[meta_data$form_name %in% f]
-                                      flds <- flds[!flds %in% meta_data$field_name[1]]
-                                      flds <- flds[!flds %in% meta_data$field_name[meta_data$field_type == "checkbox"]]
+                                      flds <- data_dict$field_name[data_dict$form_name %in% f]
+                                      flds <- flds[!flds %in% data_dict$field_name[1]]
+                                      flds <- flds[!flds %in% data_dict$field_name[data_dict$field_type == "checkbox"]]
                                       if (all(unlist(records[i, flds, drop=FALSE]) | sapply(logic[flds], is.expression))){
                                         return(flds)
                                       }

@@ -19,32 +19,32 @@ exportMetaData(
 
 \item{token}{A REDCap API token}
 
-\item{fields}{A character vector of field names for which the metadata is to 
+\item{fields}{A character vector of field names for which the metadata is to
 be retrieved.}
 
 \item{forms}{A character vector of forms for which the metadata is to be
 retrieved. Note that if a form name is given, all of the fields on that form
-will be returned, regardless of whether it is included in \code{fields} or 
-not.  Be careful to use the form names in the second column of the data 
-dictionary, and not the display names shown on the webpage.}
+will be returned, regardless of whether it is included in \code{fields} or
+not.  Be careful to use the form names in the second column of the data
+data_dictionary, and not the display names shown on the webpage.}
 
 \item{error_handling}{An option for how to handle errors returned by the API.
 see \code{\link{redcap_error}}}
 
 \item{...}{Arguments to be passed to other methods.}
 
-\item{drop_utf8}{\code{logical(1)}. In some cases, UTF-8 characters can 
-pose problems for exporting the data dictionary.  Set this to \code{TRUE}
+\item{drop_utf8}{\code{logical(1)}. In some cases, UTF-8 characters can
+pose problems for exporting the data data_dictionary.  Set this to \code{TRUE}
 to replace any UTF-8 characters with empty characters.}
 }
 \description{
-Retrieves the meta data for a REDcap database, including 
-field names, labels, types, formulas, etc.  This file can be used to parse 
-levels of factors, apply labels, and other data management tasks once the 
+Retrieves the meta data for a REDcap database, including
+field names, labels, types, formulas, etc.  This file can be used to parse
+levels of factors, apply labels, and other data management tasks once the
 data are retrieved
 }
 \details{
-A record of this export is placed in the REDCap logging page, 
+A record of this export is placed in the REDCap logging page,
 but the file that is exported is not stored in the database.
 }
 \section{REDCap API Documentation}{
@@ -58,9 +58,9 @@ This function allows you to export the metadata for a project
 }
 
 \section{Known REDCap Limitations}{
- 
+
 The API doesn't respond to the \code{fields} and \code{forms} arguments.  It
-always returns the full data dictionary.
+always returns the full data data_dictionary.
 }
 
 \references{

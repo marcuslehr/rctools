@@ -31,9 +31,9 @@ see \code{\link{redcap_error}}}
 Retrieving dataframe of survey participants managed in REDCap
 }
 \details{
-REDCap allows the user to manage a list of participants (if they are known) for each survey. This function 
-pulls this information into a dataframe. The contents of the dataframe are the contact fields of the participants, 
-the link to the survey for that participant if the participant hasn't completed the survey yet (otherwise, NA), 
+REDCap allows the user to manage a list of participants (if they are known) for each survey. This function
+pulls this information into a dataframe. The contents of the dataframe are the contact fields of the participants,
+the link to the survey for that participant if the participant hasn't completed the survey yet (otherwise, NA),
 the participants record id, and other information.
 }
 \author{

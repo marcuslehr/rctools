@@ -4,16 +4,16 @@
 \alias{checkbox_suffixes}
 \title{Checkbox Suffixes}
 \usage{
-checkbox_suffixes(fields, meta_data)
+checkbox_suffixes(fields, data_dict)
 }
 \arguments{
 \item{fields}{The current field names of interest}
 
-\item{meta_data}{The meta data data frame.}
+\item{data_dict}{The meta data data frame.}
 }
 \description{
 Checkbox variables return one vector of data for each option defined
-  in the variable.  The variables are returned with the suffix \code{___[option]}.
-  \code{rc_exportRecords} needs these suffixes in order to retrieve all of the 
-  variables and to apply the correct labels.
+in the variable.  The variables are returned with the suffix \code{___[option]}.
+\code{rc_export} needs these suffixes in order to retrieve all of the
+variables and to apply the correct labels.
 }

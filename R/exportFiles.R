@@ -107,19 +107,19 @@ token = getOption("redcap_token"),
   
   checkmate::reportAssertions(coll)
   
-  #* Secure the meta_data
-  meta_data <- 
-    if (is.null(bundle$meta_data)) 
+  #* Secure the data_dict
+  data_dict <- 
+    if (is.null(bundle$data_dict)) 
       exportMetaData(url, token)
     else 
-      bundle$meta_data
+      bundle$data_dict
   
   #* make sure 'field' exist in the project and are 'file' fields
-  if (!field %in% meta_data$field_name) 
+  if (!field %in% data_dict$field_name) 
   {
     coll$push(paste("'", field, "' does not exist in the project.", sep=""))
   }
-  else if (meta_data$field_type[meta_data$field_name == field] != "file")
+  else if (data_dict$field_type[data_dict$field_name == field] != "file")
   {
     coll$push(paste0("'", field, "' is not of field type 'file'"))
   }

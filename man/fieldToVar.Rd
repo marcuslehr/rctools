@@ -6,17 +6,16 @@
 \usage{
 fieldToVar(
   records,
-  meta_data,
+  data_dict,
   factors = TRUE,
   dates = TRUE,
   checkboxLabels = FALSE
 )
 }
 \arguments{
-\item{records}{A data frame of records returned by \code{rc_exportRecords} 
-or \code{rc_exportReports}}
+\item{records}{A data frame of records returned by \code{rc_export}}
 
-\item{meta_data}{A data frame giving the data dictionary, as returned 
+\item{data_dict}{A data frame giving the data data_dictionary, as returned
 by \code{exportMetaData}}
 
 \item{factors}{Logical, determines if checkbox, radio button, dropdown and yesno
@@ -31,8 +30,8 @@ variables are converted to factors}
 Converts a field exported from REDCap into a valid R vector
 }
 \details{
-This function is called internally by \code{rc_exportRecords} and 
-  \code{rc_exportReports}. It is not available to the user.
+This function is called internally by \code{rc_export}. It is not
+available to the user.
 }
 \author{
 Jeffrey Horner

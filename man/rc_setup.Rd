@@ -7,9 +7,9 @@
 rc_setup(
   url,
   token,
-  create.option = TRUE,
-  return.object = TRUE,
-  meta_data = FALSE,
+  create_option = TRUE,
+  return_object = FALSE,
+  data_dict = FALSE,
   users = FALSE,
   instruments = FALSE,
   events = FALSE,
@@ -26,13 +26,13 @@ rc_setup(
 
 \item{token}{A REDCap API token}
 
-\item{create.option}{Logical. Indicates whether the REDCap bundle should be
+\item{create_option}{Logical. Indicates whether the REDCap bundle should be
 saved to an option.}
 
-\item{return.object}{Logical. Indicates whether the REDCap bundle should be
+\item{return_object}{Logical. Indicates whether the REDCap bundle should be
 returned as an object.}
 
-\item{meta_data}{Logical.  Indicates if the meta data (data dictionary) 
+\item{data_dict}{Logical.  Indicates if the meta data (data data_dictionary)
 should be exported.}
 
 \item{users}{Logical. Indicates if the users table should be exported.}
@@ -43,20 +43,20 @@ should be exported.}
 
 \item{arms}{Logical. Indicates if the arms table should be exported.}
 
-\item{mappings}{Logical. Indicates if the form-event mappings should 
+\item{mappings}{Logical. Indicates if the form-event mappings should
 be exported.}
 
 \item{proj_info}{Logical. Indicates if the project information should be exported.
-If the project is not longitudinal, the events, arms, and event-form mappings 
+If the project is not longitudinal, the events, arms, and event-form mappings
 elements will be assigned character vectors instead of data frames.}
 
 \item{version}{Logical. Indicates if the REDCap version number should be exported.
 Only applicable in REDCap 6.0.0 and higher.}
 
-\item{dates}{Logical. If \code{TRUE} (Default), user expiration dates are converted to 
+\item{dates}{Logical. If \code{TRUE} (Default), user expiration dates are converted to
 \code{POSIXct} objects.}
 
-\item{labels}{Logical.  If \code{TRUE} (Default), the user form permissions are 
+\item{labels}{Logical.  If \code{TRUE} (Default), the user form permissions are
 converted to labelled factors.}
 }
 \description{
@@ -70,7 +70,7 @@ By default, this function exports all metadata. If any of the
 metadata arguments are set to \code{TRUE}, then only the indicated data
 will be exported. Additionally, by default the exported data will be
 saved to the option "redcap_bundle", and other rctools functions will check
-this option for metadata by default. The bundle can be accessed via 
+this option for metadata by default. The bundle can be accessed via
 \code{getOption("redcap_bundle")}. It will also be returned as
 an object (by default) for ease of access. Saving the bundle object as an
 RDS (see saveRDS()) or within your workspace image (see save.image()) is
@@ -78,7 +78,7 @@ useful to negate the need for additional API calls in future sessions.
 
 For security purposes, the REDCap token will be saved only to the option
 "redcap_token". This option, along with the "redcap_bundle" option, will
-not persist across R sessions. Unlike the REDCap bundle data, saving a 
+not persist across R sessions. Unlike the REDCap bundle data, saving a
 token within an object or workspace is not recommended.
 }
 \author{

@@ -29,13 +29,13 @@ importFiles(
 
 \item{field}{The field name in which the file is stored. Must be length 1.}
 
-\item{event}{The event name for the file.  Must be length 1.  This applies 
-only to longitudinal projects.  If the event is not supplied for a 
+\item{event}{The event name for the file.  Must be length 1.  This applies
+only to longitudinal projects.  If the event is not supplied for a
 longitudinal project, the API will return an error}
 
-\item{overwrite}{Logical.  When \code{FALSE}, the function checks if a 
-file already exists for that record.  If a file exists, the function 
-terminates to prevent overwriting.  When \code{TRUE}, no additional 
+\item{overwrite}{Logical.  When \code{FALSE}, the function checks if a
+file already exists for that record.  If a file exists, the function
+terminates to prevent overwriting.  When \code{TRUE}, no additional
 check is performed.}
 
 \item{repeat_instance}{The repeat instance number of the repeating
@@ -50,9 +50,9 @@ of REDCap, and passed as NULL, the API will assume a value of 1.}
 see \code{\link{redcap_error}}}
 }
 \description{
-A single file may be attached to a single record.  The 
-  behavior of this function is consistent with the
-  behavior of the API, which only allows one file to be uploaded at a time
+A single file may be attached to a single record.  The
+behavior of this function is consistent with the
+behavior of the API, which only allows one file to be uploaded at a time
 }
 \details{
 The function may only import a single file

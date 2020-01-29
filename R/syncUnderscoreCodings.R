@@ -18,7 +18,7 @@
 #' @param records The data frame object returned from the API export 
 #'   prior to applying factors, labels, and dates via the \code{fieldToVar} 
 #'   function.
-#' @param meta_data Metadata export from \code{exportMetaData}
+#' @param data_dict Metadata export from \code{exportMetaData}
 #' @param export Logical.  Specifies if data are being synchronized for 
 #'   import or export
 #'
@@ -57,23 +57,23 @@
 #' @author Benjamin Nutter
 #' 
 
-syncUnderscoreCodings <- function(records, meta_data, export = TRUE){
+syncUnderscoreCodings <- function(records, data_dict, export = TRUE){
   #* Deterimine if there are any underscores in checkbox codings
-  .checkbox <- meta_data[meta_data$field_type %in% c('checkbox'), ]
+  .checkbox <- data_dict[data_dict$field_type %in% c('checkbox'), ]
   
-  if (nrow(.checkbox) == 0) return(meta_data)
+  if (nrow(.checkbox) == 0) return(data_dict)
   
   codings <- lapply(X = .checkbox$field_name,
                     FUN = manual_checkbox_suffixes,
-                    meta_data)
+                    data_dict)
   codings <- lapply(X = codings,
                     FUN = function(x) sub("^.+___", "", x))
 
   metaUnderscore <- any(sapply(codings, function(x) any(grepl("_", x))))
   
-  #* If there are no underscores in checkbox codings, return meta_data.
+  #* If there are no underscores in checkbox codings, return data_dict.
   #* No futher work needed.
-  if (!metaUnderscore) return(meta_data)
+  if (!metaUnderscore) return(data_dict)
   
   
   #* If the function reaches this point, there were underscores in the codings
@@ -96,14 +96,14 @@ syncUnderscoreCodings <- function(records, meta_data, export = TRUE){
   recordUnderscore <- any(grepl(pattern = "_", 
                                 x = checkNames))
   
-  #* if underscores are found in the meta_data codings and the records suffixes, return meta_data
+  #* if underscores are found in the data_dict codings and the records suffixes, return data_dict
   #* No further work needed
-  if (metaUnderscore & recordUnderscore) return(meta_data)
+  if (metaUnderscore & recordUnderscore) return(data_dict)
   
   
-  #* If the function reaches this point, the meta_data codings do not match the record suffixes.
-  #* This will remove underscores from the meta_data codings and return the 
-  #* meta_data so that it matches the records suffixes.
+  #* If the function reaches this point, the data_dict codings do not match the record suffixes.
+  #* This will remove underscores from the data_dict codings and return the 
+  #* data_dict so that it matches the records suffixes.
   oldCoding <- strsplit(x = .checkbox$select_choices_or_calculations, 
                         " [|] ")
   newCoding <- lapply(X = oldCoding, 
@@ -126,9 +126,9 @@ syncUnderscoreCodings <- function(records, meta_data, export = TRUE){
   newCodingStr <- sapply(X = newCoding, 
                          FUN = paste, 
                          collapse = " | ")
-  if (export) meta_data$select_choices_or_calculations[meta_data$field_type == "checkbox"] <- newCodingStr
+  if (export) data_dict$select_choices_or_calculations[data_dict$field_type == "checkbox"] <- newCodingStr
   
-  field_names <- cbind(rep(x = meta_data$field_name[meta_data$field_type == "checkbox"], 
+  field_names <- cbind(rep(x = data_dict$field_name[data_dict$field_type == "checkbox"], 
                            sapply(X = oldCoding, 
                                   FUN = length)), 
                        gsub(pattern = ",[[:print:]]+", 
@@ -143,6 +143,6 @@ syncUnderscoreCodings <- function(records, meta_data, export = TRUE){
                        paste(field_names[, 1], 
                              field_names[, 3], 
                              sep="___"))
-  attr(meta_data, "checkbox_field_name_map") <- field_names
-  return(meta_data)
+  attr(data_dict, "checkbox_field_name_map") <- field_names
+  return(data_dict)
 }

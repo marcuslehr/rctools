@@ -28,9 +28,9 @@ saveRDS(bundle, 'redcap_bundle.RDS')
 ```
 Now that you've secured the project metadata, you're ready to use other functions for import, export, or validation. For example, we can export a REDCap report, then check it to see if any data appears to be missing.
 ```r
-reportData = rc_export(report.id = [report_ID])
-missingData = rc_missing(data = reportData,
-                         completion.field = 'study_complete')
+reportData = rc_export(report_id = [report_ID])
+missingData = rc_missing(record_data = reportData,
+                         completion_field = 'study_complete')
 ```
 
 Keep in mind that all functions other than import/export functions can be used without API access. All functions have arguments for the pieces of metadata they need, so that that data can be supplied without the use of `rc_setup()` or API access. For example, the most important piece of metadata is the "Data Dictionary", which can be downloaded manually from REDCap and supplied via the `dict` argument. 
