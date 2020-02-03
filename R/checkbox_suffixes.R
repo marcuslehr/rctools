@@ -6,30 +6,34 @@
 #'   \code{rc_export} needs these suffixes in order to retrieve all of the 
 #'   variables and to apply the correct labels.
 #'   
-#' @param fields The current field names of interest
+#' @param field_names The current field names of interest
 #' @param data_dict The meta data data frame.
 
-checkbox_suffixes <- function(fields, data_dict)
+checkbox_suffixes <- function(field_names, data_dict)
 {
-  name_suffix <- sapply(X = fields, 
+  name_suffix <- sapply(X = field_names, 
                         FUN = manual_checkbox_suffixes, 
                         data_dict)
 
   label_suffix <- 
-    sapply(X = fields,
+    sapply(X = field_names,
            FUN = manual_checkbox_label_suffixes,
            data_dict)
   
-  list(name_suffix = unlist(name_suffix),
-       label_suffix = unlist(label_suffix))
+  labels = unlist(label_suffix)
+  names(labels) = unlist(name_suffix)
+  
+  labels
+  
+  # list(name_suffix = unlist(name_suffix),
+  #      label_suffix = unlist(label_suffix))
 }
 
 #***********************************************
 #* Unexported methods
 
 #* Get full variable names (appends ___[option] to checkboxes)
-manual_checkbox_suffixes <- function(x, data_dict)
-{
+manual_checkbox_suffixes <- function(x, data_dict) {
   #* If x is a checkbox variable
   if (data_dict$field_type[data_dict$field_name %in% x] == "checkbox"){
     #* Remove characters between "|" and ","; and between "|" and end of string.
@@ -50,8 +54,7 @@ manual_checkbox_suffixes <- function(x, data_dict)
 }
 
 #* Get full variable label (appends ": [option label]" for checkboxes)
-manual_checkbox_label_suffixes <- function(x, data_dict)
-{
+manual_checkbox_label_suffixes <- function(x, data_dict) {
   #* If x is a checkbox variable
   if (data_dict$field_type[data_dict$field_name %in% x] == "checkbox"){
     #* Select choices

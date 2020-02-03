@@ -38,11 +38,11 @@
 #'   viable if the user whose token is being used to make the API request is 
 #'   *not* in a data access group. If the user is in a group, then this 
 #'   flag will revert to its default value.
-#' @param form_complete_auto \code{logical(1)}. When \code{TRUE},
-#'  the \code{[form]_complete} fields for any form 
-#'   from which at least one variable is requested will automatically
-#'   be retrieved.  When \code{FALSE} (Default), these fields must be 
-#'   explicitly requested.  
+#' @param form_complete_auto \code{logical(0)}. If \code{fields} are passed,
+#' REDCap does not return form complete fields unless specifically requested.
+#' However, if \code{TRUE}, the \code{[form]_complete} fields for any form 
+#' from which at least one variable is requested will automatically be 
+#' retrieved.
 #'   
 #' @param format Logical.  Determines whether the data will be formatted with
 #' \code{rc_format} (Default = TRUE)
@@ -215,10 +215,26 @@ rc_export <- function(report_id = NULL,
 
     else {    
     
-      # Error checking
+      ## Error checking ##
+      {
       if (is.null(bundle)) 
         stop("A REDCap bundle containing $data_dict and $events is required. Please supply
       a REDCap bundle as created by rc_setup()")
+      
+      #* Secure the data dictionary
+      if (!is.null(bundle$data_dict))
+        data_dict <- bundle$data_dict
+      else
+        stop("$data_dict not found in bundle object. Please supply a REDCap bundle object 
+        containing $data_dict, as created by rc_setup()")
+    
+      #* for purposes of the export, we don't need the descriptive fields.
+      #* Including them makes the process more error prone, so we'll ignore them.
+      data_dict <- data_dict[!data_dict$field_type %in% "descriptive", ]
+      
+      # Get record_id field name
+      id_field = getID(data_dict = data_dict)
+      
       
       # coll <- checkmate::makeAssertCollection()
       
@@ -240,19 +256,6 @@ rc_export <- function(report_id = NULL,
                                             add = coll)
       
       # checkmate::reportAssertions(coll)
-    
-    
-      #* Secure the data dictionary
-      if (!is.null(bundle$data_dict))
-        data_dict <- bundle$data_dict
-      else
-        stop("$data_dict not found in bundle object. Please supply a REDCap bundle object, as
-           created by rc_setup(), containing $data_dict")
-    
-      #* for purposes of the export, we don't need the descriptive fields.
-      #* Including them makes the process more error prone, so we'll ignore them.
-      data_dict <- data_dict[!data_dict$field_type %in% "descriptive", ]
-      
       
       #* Secure the events table
       # events_list = NULL
@@ -298,51 +301,62 @@ rc_export <- function(report_id = NULL,
       }
     
       checkmate::reportAssertions(coll)
+      }
       
-    
+      
       #* Create the vector of field names
-      if (!is.null(fields)) #* fields were provided
       {
-        # redcap_event_name is automatically included in longitudinal projects
-        field_names <- fields[!fields %in% c("redcap_event_name", 
-                                             "redcap_repeat_instrument", 
-                                             "redcap_repeat_instance")]
+        default_fields = c(id_field, "redcap_event_name", 
+                           "redcap_repeat_instrument","redcap_repeat_instance")
+        
+        if (!is.null(fields)) #* fields were provided
+        {
+          field_names <- unique(c(default_fields, fields))
+          
+          #* Expand 'field_names' to include fields from specified forms.
+          if (!is.null(forms))
+            field_names <-
+            unique(c(field_names,
+                     data_dict$field_name[data_dict$form_name %in% forms]))
+        }
+        else if (!is.null(forms))
+            field_names <- c(default_fields, 
+                             data_dict$field_name[data_dict$form_name %in% forms]
+                            )
+        
+        # else
+        #   #* fields were not provided, default to all fields.
+        #   field_names <- data_dict$field_name
+        #   # field_names = default_fields
+          
+        
+        ## This is currently unused. Seems to be unneed.. checkbox vars still come through
+        # suffixed <-
+        #   checkbox_suffixes(
+        #     # The subset prevents `[form]_complete` fields from
+        #     # being included here.
+        #     field_names = field_names[field_names %in% data_dict$field_name],
+        #     data_dict = data_dict
+        #   )
+        
+        # Add the form_name_complete column to the export
+        # This only seems to be relevant if fields are passed
+        if (form_complete_auto){
+          # Identify the forms from which the chosen fields are found
+          if (!is.null(fields))
+            included_form <- unique(data_dict$form_name[data_dict$field_name %in% field_names])
+          else included_form = unique(data_dict$form_name)
+          
+          field_names <- c(field_names, sprintf("%s_complete", included_form))
+        }
+        
+        # # Add ID and Redcap fields
+        # field_names = c(id_field,
+        #                 "redcap_event_name", "redcap_repeat_instrument","redcap_repeat_instance",
+        #                 field_names)
       }
-      else if (!is.null(forms))
-      {
-        field_names <- data_dict$field_name[data_dict$form_name %in% forms]
-      }
-      else
-        #* fields were not provided, default to all fields.
-        field_names <- data_dict$field_name
       
-      #* Expand 'field_names' to include fields from specified forms.
-      if (!is.null(forms))
-        field_names <-
-        unique(c(field_names,
-                 data_dict$field_name[data_dict$form_name %in% forms]))
-    
-    
-      suffixed <-
-        checkbox_suffixes(
-          # The subset prevents `[form]_complete` fields from
-          # being included here.
-          fields = field_names[field_names %in% data_dict$field_name],
-          data_dict = data_dict
-        )
-      
-      # Identify the forms from which the chosen fields are found
-      included_form <-
-        unique(
-          data_dict$form_name[data_dict$field_name %in% field_names]
-        )
-      
-      # Add the form_name_complete column to the export
-      if (form_complete_auto){
-        field_names <- c(field_names,
-                         sprintf("%s_complete", included_form))
-      }
-      
+      # Create body for POST()
       body <- list(token = token,
                    content = 'record',
                    format = 'csv',
@@ -351,8 +365,8 @@ rc_export <- function(report_id = NULL,
                    exportDataAccessGroups = tolower(dag),
                    returnFormat = 'csv')
       
-      
-      body[['fields']] <- paste0(field_names, collapse=",")
+      # Expand body to include provided selections
+      if (!is.null(fields)) body[['fields']] <- paste0(field_names, collapse=",")
       if (!is.null(forms)) body[['forms']] <- paste0(forms, collapse=",")
       if (!is.null(events)) body[['events']] <- paste0(events, collapse=",")
       if (!is.null(records)) body[['records']] <- paste0(records, collapse=",")
@@ -361,7 +375,7 @@ rc_export <- function(report_id = NULL,
         x <- unbatched(url = url,
                        token = token,
                        body = body,
-                       id = data_dict$field_name[1],
+                       id = id_field,
                        colClasses = colClasses,
                        error_handling = error_handling)
       } else {
@@ -369,7 +383,7 @@ rc_export <- function(report_id = NULL,
                      token = token,
                      body = body,
                      batch.size = batch.size,
-                     id = data_dict$field_name[1],
+                     id = id_field,
                      colClasses = colClasses,
                      error_handling = error_handling)
         }

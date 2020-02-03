@@ -92,6 +92,7 @@ rc_setup <- function(url,token, create_option=TRUE, return_object=FALSE,
       list(
     		redcap_url = url,
         data_dict = if (data_dict) exportMetaData(url, token) else NULL,
+    		id_field = if(data_dict) bundle$data_dict[1,1] else NULL,
         users = if (users) userData$Users else NULL,
         form_perm = if (users) userData$Form_Permissions else NULL,
         instruments = if (instruments) exportInstruments(url, token) else NULL,
