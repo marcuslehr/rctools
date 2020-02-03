@@ -83,15 +83,16 @@ rc_setup <- function(url,token, create_option=TRUE, return_object=FALSE,
     version=TRUE
   }
   
-  if (users) userData = exportUsers(url, token, 
+  if (data_dict) meta_data = exportMetaData(url, token)
+	if (users) userData = exportUsers(url, token, 
                                     dates = dates,
                                     labels = labels)
-  
   bundle = 
     structure(
       list(
     		redcap_url = url,
-        data_dict = if (data_dict) exportMetaData(url, token) else NULL,
+        data_dict = if (data_dict) meta_data else NULL,
+    		id_field = if(data_dict) meta_data[1,1] else NULL,
         users = if (users) userData$Users else NULL,
         form_perm = if (users) userData$Form_Permissions else NULL,
         instruments = if (instruments) exportInstruments(url, token) else NULL,

@@ -10,17 +10,14 @@ rc_format(
   factors = TRUE,
   labels = TRUE,
   dates = TRUE,
-  checkboxLabels = FALSE,
-  fields = NULL,
-  forms = NULL,
-  ...
+  checkboxLabels = FALSE
 )
 }
 \arguments{
-\item{record_data}{A raw data export from REDCap.}
+\item{record_data}{Dataframe. Record data export from REDCap}
 
-\item{data_dict}{REDCap project data data_dictionary. By default, a
-REDCap bundle object, as created by \code{rc_setup}, will be looked for.
+\item{data_dict}{Dataframe. REDCap project data data_dictionary. By default, a
+REDCap bundle option, as created by \code{rc_setup}, will be looked for.
 Otherwise, a data.frame containing the metadata must be supplied.}
 
 \item{factors}{Logical.  Determines if categorical data from the database is
@@ -39,12 +36,6 @@ If \code{TRUE}, they are applied as ""/"\link{field_label}" where \link{field_la
 is the label assigned to the level in the data data_dictionary.
 This option is only available after REDCap version 6.0.  See Checkbox Variables
 for more on how this interacts with the \code{factors} argument.}
-
-\item{fields}{A character vector of fields to be returned.  If \code{NULL},
-all fields are returned.}
-
-\item{forms}{A character vector of forms to be returned.  If \code{NULL},
-all forms are returned.}
 
 \item{completionField}{The REDCap variable which indicates whether or not a subject
 has completed the study. This should be indicated by a 'Yes' or a '1' (i.e. a Yes/No

@@ -4,10 +4,10 @@
 \alias{checkbox_suffixes}
 \title{Checkbox Suffixes}
 \usage{
-checkbox_suffixes(fields, data_dict)
+checkbox_suffixes(field_names, data_dict)
 }
 \arguments{
-\item{fields}{The current field names of interest}
+\item{field_names}{The current field names of interest}
 
 \item{data_dict}{The meta data data frame.}
 }

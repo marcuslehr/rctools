@@ -12,7 +12,7 @@ rc_missing(
 )
 }
 \arguments{
-\item{record_data}{A raw data export from REDCap.}
+\item{record_data}{Record data export from REDCap}
 
 \item{completion_field}{The REDCap variable which indicates whether or not a subject
 has completed the study. This should be indicated by a 'Yes' or a '1' (i.e. a Yes/No

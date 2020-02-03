@@ -12,7 +12,7 @@
 #' The logic of this function does not extend to checkbox variables or repeat instruments.
 #' If present in the record data, they will be dropped.
 #'
-#' @param record_data A raw data export from REDCap.
+#' @param record_data Record data export from REDCap
 #' @param completion_field The REDCap variable which indicates whether or not a subject
 #' has completed the study. This should be indicated by a 'Yes' or a '1' (i.e. a Yes/No
 #' field in REDCap).
@@ -73,11 +73,13 @@ rc_missing <- function(record_data, completion_field,
 
   ## Repeat/checkbox fields ---
   if (any(!is.na(record_data$redcap_repeat_instance))|any(grepl('___',names(record_data)))) {
-    message("The logic of this function does not translate to repeat instruments or checkbox fields.
-              All such data will be dropped.")
+    message("The logic of this function does not translate to repeat instruments, surveys,
+		or checkbox fields. All such data will be dropped.")
     record_data = dplyr::filter(record_data, is.na(redcap_repeat_instance)) %>%
-                dplyr::select(-redcap_repeat_instrument,-redcap_repeat_instance,
-                              -dplyr::contains('___'))
+										dplyr::select(
+											-dplyr::contains('redcap_repeat'), # Repeat instruments
+											-dplyr::contains('redcap_survey'), # Survey data
+											-dplyr::contains('___')) # Checkbox data
   }
 
 
@@ -86,7 +88,9 @@ rc_missing <- function(record_data, completion_field,
   # Grab completion data then remove '_complete' fields from data
   completionData = dplyr::select(record_data, record_id, study_complete) %>% na.omit()
   # completionData$record_id = as.character(completionData$record_id)
-  record_data = dplyr::select(record_data, -dplyr::contains('complete'))
+	
+	# Completion field should be deleted more explicitly
+  record_data = dplyr::select(record_data, -dplyr::contains('_complete'))
 
   # Convert data to long format. Globally empty events and IDs will be lost
   meltVars = c('record_id','redcap_event_name')
