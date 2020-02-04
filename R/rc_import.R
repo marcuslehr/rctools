@@ -119,7 +119,7 @@ rc_import <- function(record_data,
                                          export = FALSE),
     silent = T)
   
-  suffixed <- checkbox_suffixes(fields = data_dict$field_name,
+  suffixed <- checkbox_suffixes(field_names = data_dict$field_name,
                                 data_dict = data_dict, 
                                 version = version)
   

@@ -99,10 +99,11 @@ rc_outliers <- function(record_data, sex_var = NA, sd_threshold = 2.5,
   # Add form names and reorder columns
   instrVarMap = data_dict[,1:2] %>% dplyr::rename(variable = field_name)
   record_data = suppressWarnings(dplyr::left_join(record_data, instrVarMap, by = 'variable'))
-  record_data = record_data %>% dplyr::select(meltVars, form_name, variable, value)
+  record_data = record_data %>% dplyr::select(all_of(meltVars), form_name, variable, value)
   
-  # Identify outliers for each variable by sex
-  record_data = record_data %>% dplyr::group_by_(sex_var, 'variable') %>% 
+  # Identify outliers for each variable
+  group_by = c(sex_var, 'variable') %>% na.omit()
+  record_data = record_data %>% dplyr::group_by_(group_by) %>% 
                   dplyr::mutate(outlier = abs(scale(value))>sd_threshold)
   
   return(
