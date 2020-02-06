@@ -107,7 +107,7 @@ rc_format <- function(record_data, data_dict = getOption("redcap_bundle")$data_d
   if (labels){
     
     # Get field names
-    field_names = names(record_data)
+    field_names = names(record_data)[names(record_data) %in% data_dict$field_name]
     
     # Currently generating labels for all fields
     col_labels = checkbox_suffixes(field_names = data_dict$field_name,

@@ -9,7 +9,9 @@ rc_outliers(
   sex_var = NA,
   sd_threshold = 2.5,
   data_dict = getOption("redcap_bundle")$data_dict,
-  fields = NULL
+  fields = NULL,
+  plot = FALSE,
+  unfiltered = FALSE
 )
 }
 \arguments{
@@ -24,11 +26,15 @@ deviations from the mean a value can be before being flagged as an outlier.}
 
 \item{data_dict}{Dataframe. REDCap project data data_dictionary. By default,
 $data_dict is expected in the REDCap bundle option, as created by
-\code{rc_setup}. If not supplied, the first column in \code{record_data}
-will assumed to be the 'record_id' field.}
+\code{rc_setup}.}
 
 \item{fields}{Character. A vector of field/variable names to be analyzed
 may be passed manually.}
+
+\item{plot}{Logical. Select whether plots of the data should be produced.}
+
+\item{unfiltered}{Logical. Select whether an unfiltered dataframe should be
+returned, or only outliers (default).}
 }
 \description{
 Identifies outliers for each variable, defined as being further

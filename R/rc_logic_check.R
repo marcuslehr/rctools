@@ -7,9 +7,11 @@
 #' concerning \code{[event-name] = 'event_name'} conditions.
 #'
 #' @param data_dict REDCap project data data_dictionary. By default, 
-#' $data_dict is expected in a REDCap bundle object, as created by \code{rc_setup}.
+#' $data_dict is expected in the REDCap bundle option, as created by \code{rc_setup}.
 #' Otherwise, a data.frame containing the metadata must be supplied.
-#' @param events REDCap events metadata
+#' @param events REDCap events metadata. By default, $events is expected 
+#' in the REDCap bundle option, as created by \code{rc_setup}.
+#' Otherwise, a data.frame containing the metadata must be supplied.
 #'
 #' @author Marcus Lehr
 #' @export
@@ -24,26 +26,28 @@ rc_logic_check <- function(data_dict = getOption("redcap_bundle")$data_dict,
     stop("$events not found in REDCap bundle. Please create a REDCap bundle containing
     $events with rc_setup() or supply event data via a data.frame")
   } else {
-    bundle = list(data_dict = data_dict,
-                  events = events)
+
+    branching_logic = data_dict$branching_logic
+    events = events$unique_event_name
+    field_names = data_dict$field_name
     
-    validate_events(bundle)
-    validate_variables(bundle)
-    validate_event_logic(bundle)
+    validate_events(branching_logic, events)
+    validate_variables(branching_logic, field_names)
+    validate_event_logic(branching_logic)
   }
 }
 
 # Validate event names --------------------------------------------------------------------
 
-validate_events <- function(bundle) {
+validate_events <- function(branching_logic, events) {
 
-  branchingLogic = bundle[["data_dict"]]$branching_logic
-  events = bundle[["events"]]$unique_event_name
+  # branching_logic = data_dict$branching_logic
+  # events = events$unique_event_name
 
   # Extract all events matching the pattern "[event-name] (=|!=) 'event_name'"
-  eventCalls1 = stringr::str_extract_all(branchingLogic, "(?<=\\[event-name\\]\\s?(=|!=)\\s?('|\"))(\\w*)(?=('|\"))")
+  eventCalls1 = stringr::str_extract_all(branching_logic, "(?<=\\[event-name\\]\\s?(=|!=)\\s?('|\"))(\\w*)(?=('|\"))")
   # Extract all events matching the pattern "[event-name][var_name]"
-  eventCalls2 = stringr::str_extract_all(branchingLogic, "(?<=\\[)(\\w*)(?=\\]\\[)")
+  eventCalls2 = stringr::str_extract_all(branching_logic, "(?<=\\[)(\\w*)(?=\\]\\[)")
 
   # Combine lists, remove smart variables and NAs
   eventCalls = c(eventCalls1,eventCalls2)
@@ -60,12 +64,12 @@ validate_events <- function(bundle) {
   if (length(invalidEvents) > 0) {
 
     # Locate invalid events in data
-    invalidIndex = stringr::str_detect(branchingLogic, invalidEvents)
+    invalidIndex = stringr::str_detect(branching_logic, invalidEvents)
     invalidIndex[is.na(invalidIndex)] = FALSE
 
     # Print results
     message("\nInvalid event names were found in the following fields:")
-    print(bundle[["data_dict"]]$field_name[invalidIndex])
+    print(data_dict$field_name[invalidIndex])
     message("Invalid event names:")
     print(invalidEvents)
   } else {
@@ -75,30 +79,30 @@ validate_events <- function(bundle) {
 
 # Validate variable names -------------------------------------------------
 
-validate_variables <- function(bundle) {
+validate_variables <- function(branching_logic, field_names) {
 
-  branchingLogic = bundle[["data_dict"]]$branching_logic
-  vars = bundle[["data_dict"]]$field_name
+  # branching_logic = data_dict$branching_logic
+  # field_names = data_dict$field_name
 
   # Extract varaible names used in branching logic by mathcing the pattern "[var_name]"
   # without capturing events by excluding bracketed words followed by "["
-  varCalls = stringr::str_extract_all(branchingLogic, "(?<=\\[)(\\w+)(?=\\]([^\\[]|$))")
+  varCalls = stringr::str_extract_all(branching_logic, "(?<=\\[)(\\w+)(?=\\]([^\\[]|$))")
   varCalls = unlist(
                 lapply(varCalls, function(x) x[!is.na(x)] )
                 )
 
   # Find invalid names
-  invalidVars = unique(varCalls[!varCalls %in% vars])
+  invalidVars = unique(varCalls[!varCalls %in% field_names])
 
   if (length(invalidVars) > 0) {
 
     # Locate invalid variables in data
-    invalidIndex = stringr::str_detect(branchingLogic, invalidVars)
+    invalidIndex = stringr::str_detect(branching_logic, invalidVars)
     invalidIndex[is.na(invalidIndex)] = FALSE
 
     # Print results
     message("\nInvalid variable names were found in the following fields:")
-    print(bundle[["data_dict"]]$field_name[invalidIndex])
+    print(data_dict$field_name[invalidIndex])
     message("Invalid variable names:")
     print(invalidVars)
   } else {
@@ -112,16 +116,16 @@ validate_variables <- function(bundle) {
 # Warn user of "[event-name] = 'event_name' AND [event-name] = 'event_name'" (field always hidden)
 # or "[event-name] != 'event_name' OR [event-name] != 'event_name'" logic (field never hidden)
 
-validate_event_logic <- function(bundle) {
+validate_event_logic <- function(branching_logic) {
 
-  branchingLogic = bundle[["data_dict"]]$branching_logic
+  # branching_logic = data_dict$branching_logic
   invalidLogic = data.frame(operator = c('=','!='),
-                            gate = c('AND','OR'))
+                            gate = c('AND','OR'),
+                            result = c('hidden', 'displayed'))
   logicErrors = 0
-  hidden = c('hidden', 'displayed')
   for (i in 1:nrow(invalidLogic)) {
     # Find logic matching one of the above descriptions
-    invalidIndex = stringr::str_detect(branchingLogic, stringr::regex(
+    invalidIndex = stringr::str_detect(branching_logic, stringr::regex(
                          paste0("\\[event-name\\] ?", invalidLogic[i,1],
                                 " ?('|\")\\w*('|\") ", invalidLogic[i,2],
                                 " \\[event-name\\] ?", invalidLogic[i,1]),
@@ -133,9 +137,9 @@ validate_event_logic <- function(bundle) {
               "'event_name' ",invalidLogic[i,2],
               " [event-name]", invalidLogic[i,1],
               "'event_name'\" logic found.\n",
-              "This will result in the field always being ", hidden[i],
+              "This will result in the field always being ", invalidLogic[i,3],
               ". Please review branching\nlogic in the following fields:")
-      print(bundle[["data_dict"]]$field_name[invalidIndex])
+      print(data_dict$field_name[invalidIndex])
       logicErrors = logicErrors+1
     }
   }

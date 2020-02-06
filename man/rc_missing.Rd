@@ -6,7 +6,7 @@
 \usage{
 rc_missing(
   record_data,
-  completion_field,
+  completion_field = NULL,
   data_dict = getOption("redcap_bundle")$data_dict,
   events = getOption("redcap_bundle")$events
 )
@@ -16,7 +16,7 @@ rc_missing(
 
 \item{completion_field}{The REDCap variable which indicates whether or not a subject
 has completed the study. This should be indicated by a 'Yes' or a '1' (i.e. a Yes/No
-field in REDCap).}
+field in REDCap). If not provided, some missing data may be lost.}
 
 \item{data_dict}{REDCap project data data_dictionary. By default,
 $data_dict is expected in a REDCap bundle object, as created by \code{rc_setup}.
@@ -28,8 +28,7 @@ event data must be supplied.}
 }
 \description{
 Finds data points which are ostenibly missing from Redcap records data.
-}
-\details{
+
 For each event/variable combination, if a value exists for at least one
 record then it is expected to exist for all records. If an entire event is empty for
 a given record, none of the variables will be flagged unless there is data for that

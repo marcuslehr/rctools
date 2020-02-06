@@ -11,10 +11,12 @@ rc_logic_check(
 }
 \arguments{
 \item{data_dict}{REDCap project data data_dictionary. By default,
-$data_dict is expected in a REDCap bundle object, as created by \code{rc_setup}.
+$data_dict is expected in the REDCap bundle option, as created by \code{rc_setup}.
 Otherwise, a data.frame containing the metadata must be supplied.}
 
-\item{events}{REDCap events metadata}
+\item{events}{REDCap events metadata. By default, $events is expected
+in the REDCap bundle option, as created by \code{rc_setup}.
+Otherwise, a data.frame containing the metadata must be supplied.}
 }
 \description{
 Check branching logic for common errors
