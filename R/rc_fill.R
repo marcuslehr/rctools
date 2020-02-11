@@ -31,8 +31,25 @@ rc_fill <- function(record_data, ...,
   
   checkmate::reportAssertions(coll)
   
-	
-  dplyr::group_by_(record_data, paste(group_by, collapse = ',')) %>% 
+  # Test for columns that contain more than one value per group
+  cols = c(...)
+  counts = list()
+  for (col in cols) {
+    x = suppressWarnings(
+            dplyr::group_by_(record_data, group_by) %>% dplyr::select(all_of(col)) %>% 
+            na.omit() %>% dplyr::summarise(n = dplyr::n())
+    )
+    counts[[col]] = max(x$n)
+  }
+  
+  # Warn of any groups that contain >1 value
+  counts = as.data.frame(counts)
+  if (any(counts > 1)) {
+    warning("The following fields contain more than one value per group. Verify that filling is appropriate.")
+    print(names(counts[which(counts == max(counts))]))
+  }
+  
+  # Fill columns
+  dplyr::group_by_(record_data, paste(group_by, collapse = ',')) %>%
                   tidyr::fill(., ..., .direction = "downup")
 }
-

@@ -23,6 +23,8 @@
 #' @param events REDCap project event metadata. By default, $events is expected in
 #' the REDCap bundle, as created by \code{rc_setup}. Otherwise, a data.frame containing
 #' event data must be supplied.
+#' @param plot Logical. Determine if missing results should be plotted. These are useful 
+#' for investigating the structure of missing data, especially when a large amount is returned.  
 #'
 #' @importFrom magrittr '%>%'
 #'
@@ -30,16 +32,33 @@
 #' @export
 
 rc_missing <- function(record_data, completion_field = NULL, 
-                           data_dict = getOption("redcap_bundle")$data_dict,
-                           events = getOption("redcap_bundle")$events) {
+                       data_dict = getOption("redcap_bundle")$data_dict,
+                       events = getOption("redcap_bundle")$events,
+                       plot = FALSE) {
 
 
 # Checks ------------------------------------------------------------------
 
+  #* Error Collection Object
+  coll <- checkmate::makeAssertCollection()
+  
+  massert(~ record_data + data_dict + events,
+          fun = checkmate::assert_class,
+          fixed = list(classes = 'data.frame',
+                       add = coll))
+  checkmate::assert_character(completion_field, 
+                              null.ok = T,
+                              add = coll)
+  checkmate::assert_logical(plot,
+                            add = coll)
+  
+  checkmate::reportAssertions(coll)
+  
+  
   ## record_id field ---
-
   id_field = getID(record_data, data_dict)
 
+  
   ## Event data ---
 
   if (!is.null(events$unique_event_name)) {
@@ -49,28 +68,31 @@ rc_missing <- function(record_data, completion_field = NULL,
 
     #Collect list of events present in data, ensuring event order is preserved
     events = as.character(unique(record_data$redcap_event_name))
-    message("$events could not be found in REDCap bundle. Event list will be captured from record data.")
+    message("Event list not found in REDCap bundle- it will be captured from record data.")
 
   } else {
-    stop("Event data could not be found. Please ensure that your data contains the 'redcap_event_name' column.")
+    stop("Event data could not be found. Please supply event metadata from Redcap or ensure that your 
+         data contains the 'redcap_event_name' column.")
   }
-
   
 
-  ## Repeat/checkbox fields ---
+# Prep data -------------------------------------------------------------------  
   
-  if (any(!is.na(record_data$redcap_repeat_instance))|any(grepl('___',names(record_data)))) {
-    message("The logic of this function does not translate to repeat instruments, surveys,
+  ## Filter ---
+  
+  if (any(!is.na(record_data$redcap_repeat_instance)) | 
+      any(data_dict$field_type == 'calc') |
+      any(grepl('___',names(record_data))) ) {
+    
+    message("The logic of this function does not translate to repeat instruments, calculated,
 		or checkbox fields. All such data will be dropped.")
-    record_data = dplyr::filter(record_data, is.na(redcap_repeat_instance)) %>%
+    
+    record_data = dplyr::filter(record_data, is.na(redcap_repeat_instance)) %>% # Repeat instruments
 										dplyr::select(
-											-dplyr::contains('redcap_repeat'), # Repeat instruments
-											-dplyr::contains('redcap_survey'), # Survey data
+											-dplyr::contains('redcap_repeat'), # Repeat ID columns
+											-data_dict$field_name[data_dict$field_type == 'calc'], # Calculated fields
 											-dplyr::contains('___')) # Checkbox data
   }
-
-
-# Setup -------------------------------------------------------------------
   
   ## Completion data ---
   
@@ -80,7 +102,7 @@ rc_missing <- function(record_data, completion_field = NULL,
     record_data = dplyr::select(record_data, -all_of(completion_field))
     # completionData$record_id = as.character(completionData$record_id)
   }
-  else warning("Completion field could not be found. Some missing data may not be captured.")
+  else message("Completion field not found. Some missing data may not be captured.")
   
 	# Remove _complete fields
   record_data = dplyr::select(record_data, -dplyr::contains('_complete'))
@@ -185,12 +207,54 @@ rc_missing <- function(record_data, completion_field = NULL,
                       dplyr::select(all_of(id_field), redcap_event_name, form_name, variable)
                     )
     }
-
-    return(missingData)
-
   } 
   else {
     message("No missing data were found.")
     return(missingDataAll)
   }
+
+  if (nrow(missingData)/nrow(record_data) > .1)
+    warning("More than 10% of the data appears to be missing. Manual review for false positives is recommended,
+            consider using the 'plot' argument")
+  
+  if (plot == T) plot_missing(missingData)
+  
+  return(missingData)
 }
+  
+# Plot function --------------------------------------------------------------------
+
+plot_missing <- function(missingData) {
+  
+    # Count
+    form_counts = dplyr::group_by(missingData, form_name) %>% dplyr::summarise(count = dplyr::n()) %>% 
+      dplyr::mutate(prop = (count/sum(count))*100,
+                    ypos = 100 - cumsum(prop) + prop/2)
+    
+    # Count
+    variable_counts = dplyr::group_by(missingData, variable) %>% dplyr::summarise(count = dplyr::n()) %>% 
+      dplyr::mutate(prop = (count/sum(count))*100,
+                    ypos = 100 - cumsum(prop) + prop/2)
+    
+    # Plot
+    pieCharts = list(forms =
+                      ggplot2::ggplot(form_counts, ggplot2::aes(x='x', y=prop, fill=form_name)) +
+                      ggplot2::geom_bar(width = 1, stat = 'identity', color = 'white') +
+                      ggplot2::geom_text(ggplot2::aes(y = ypos, label = form_name), color = 'white') +
+                      ggplot2::coord_polar('y') +
+                      ggplot2::theme_void() +
+                      ggplot2::theme(legend.position = 'none') +
+                      ggplot2::labs(title = 'Form Counts'),
+                     variables = 
+                      ggplot2::ggplot(variable_counts, ggplot2::aes(x='x', y=prop, fill=variable)) +
+                      ggplot2::geom_bar(width = 1, stat = 'identity', color = 'white') +
+                      ggplot2::geom_text(ggplot2::aes(y = ypos, label = variable), color = 'white') +
+                      ggplot2::coord_polar('y') +
+                      ggplot2::theme_void() +
+                      ggplot2::theme(legend.position = 'none') +
+                      ggplot2::labs(title = 'Variable Counts')
+                )
+    gridExtra::grid.arrange(pieCharts[[2]])
+    gridExtra::grid.arrange(pieCharts[[1]])
+}
+  

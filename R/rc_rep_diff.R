@@ -7,7 +7,7 @@
 #' each sequential pair will be created.
 #'
 #' @param records A raw data export from REDCap.
-#' @param varRoots A vector of root names which are common and unique to all of the associated
+#' @param var_roots A vector of root names which are common and unique to all of the associated
 #' technical replicates.
 #' @param data_dict REDCap project data data_dictionary. By default, 
 #' $data_dict is expected in a REDCap bundle object, as created by \code{rc_setup}.
@@ -16,7 +16,7 @@
 #' @author Marcus Lehr
 #' @export
 
-rc_rep_diff = function(records, varRoots, 
+rc_rep_diff = function(records, var_roots, 
                       data_dict = getOption("redcap_bundle")$data_dict) {
 
 
@@ -37,11 +37,11 @@ rc_rep_diff = function(records, varRoots,
 
   diffData = dplyr::select(records, record_id, redcap_event_name)
 
-  for (v in 1:length(varRoots)){
-    currentRep = as.data.frame(select(records, contains(varRoots[v])))
+  for (v in 1:length(var_roots)){
+    currentRep = as.data.frame(select(records, contains(var_roots[v])))
 
     for (r in 1:(ncol(currentRep)-1)) {
-      currentRep = mutate(currentRep, !!paste0(varRoots[v],'_diff',r) := abs(currentRep[,r]-currentRep[,r+1]))
+      currentRep = mutate(currentRep, !!paste0(var_roots[v],'_diff',r) := abs(currentRep[,r]-currentRep[,r+1]))
       attr(currentRep[,ncol(currentRep)], "label") =
         paste0('|',colnames(currentRep)[r],' - ',colnames(currentRep)[r+1],'|')
     }
