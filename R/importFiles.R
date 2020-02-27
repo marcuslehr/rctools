@@ -83,7 +83,7 @@ token = getOption("redcap_token"),
     coll$push(paste0("'", field, "' is not of field type 'file'"))
   
   #* make sure 'event' exists in the project
-  if (is.null(bundle$events)) 
+  if (is.null(bundle$event_data)) 
     events_list <- exportEvents(url, token)
   
   if (class(events_list) == 'data.frame'){

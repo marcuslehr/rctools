@@ -126,10 +126,10 @@ token = getOption("redcap_token"),
   
   #* Secure the events list
   events_list <- 
-    if (is.null(bundle$events))
+    if (is.null(bundle$event_data))
       exportEvents(url, token)
     else
-      bundle$events
+      bundle$event_data
       
   #* make sure 'event' exists in the project
   if (inherits(events_list, "data.frame"))

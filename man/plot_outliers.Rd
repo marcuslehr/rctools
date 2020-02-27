@@ -4,17 +4,21 @@
 \alias{plot_outliers}
 \title{Plot data from rc_outliers}
 \usage{
-plot_outliers(outlier_data, id_field, sex_var = NA)
+plot_outliers(
+  outlier_data,
+  sex_var = NA,
+  id_field = getOption("redcap_bundle")$id_field
+)
 }
 \arguments{
 \item{outlier_data}{Dataframe. As created by \code{rc_outliers}. Will be
 used to color outliers in red. If unfiltered, it will be used in place of
 record_data.}
 
-\item{id_field}{Character. Field name corresponding to the 'record_id' field.}
-
 \item{sex_var}{String. Name of variable indicating the sex of subjects. If
 included, separate plots for each sex will be made.}
+
+\item{id_field}{Character. Field name corresponding to the 'record_id' field.}
 }
 \description{
 Creates a grid of plots for each variable passed from

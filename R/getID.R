@@ -7,7 +7,7 @@
 #' 
 #' @param record_data Dataframe. Record data exported from REDCap
 #' @param data_dict Dataframe. REDCap project data data_dictionary
-#' @param id_field Character. Name of the 'record_id' field
+#' @param id_field Character. Field name corresponding to the 'record_id' field.
 #' 
 #' @author Marcus Lehr
 
@@ -26,7 +26,7 @@ getID <- function(record_data = NULL,
   
   else {
     warning("'record_id' field could not be found. It will be assumed to be the first column.")
-    id_field = record_data[1,1]
+    id_field = names(record_data)[1]
   }
   
   # Update bundle

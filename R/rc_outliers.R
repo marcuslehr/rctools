@@ -36,28 +36,35 @@ rc_outliers <- function(record_data, sex_var = NA, sd_threshold = 2.5,
                         data_dict = getOption("redcap_bundle")$data_dict,
                         fields = NULL, plot = FALSE, unfiltered = FALSE) {
   
-  # Grab record ID field name
-  id_field = getID(record_data, data_dict)
+  validate_args(required = c('record_data'),
+                sex_var = sex_var, sd_threshold = sd_threshold, data_dict = data_dict,
+                fields = fields, plot = plot, unfiltered = unfiltered)
   
-  # Retrieve numeric data from records
-  record_data = numeric_data(record_data, data_dict, 
+  # Get ID column name
+  id_field = getID(record_data, data_dict)
+  rc_fields = c('redcap_event_name','redcap_repeat_instrument','redcap_repeat_instance')
+	
+	# Retrieve numeric data from records
+  record_data = numeric_only(record_data, data_dict, 
                              sex_var, fields)
   
   # Add form names and reorder columns
-  instrVarMap = data_dict[,1:2] %>% dplyr::rename(variable = field_name)
-  record_data = suppressWarnings(dplyr::left_join(record_data, instrVarMap, by = 'variable'))
-  record_data = record_data[na.omit(c(id_field, sex_var, 'redcap_event_name', 'form_name', 'variable', 'value'))]
+  if (!is.null(data_dict)) {
+    instrVarMap = data_dict[,1:2] %>% dplyr::rename(variable = field_name)
+    record_data = suppressWarnings(dplyr::left_join(record_data, instrVarMap, by = 'variable'))
+    record_data = record_data[na.omit(c(id_field, sex_var, rc_fields, 'form_name', 'variable', 'value'))]
+  }
+  else message("Form names cannot be added unless data_dict is supplied.")
   
   # Identify outliers for each variable
   group_by = c(sex_var, 'variable') %>% na.omit() %>% paste(., collapse = ',')
-  record_data = record_data %>% dplyr::group_by_('vd_sex','variable') %>% 
+  record_data = record_data %>% dplyr::group_by_(group_by) %>% 
                   dplyr::mutate(outlier = abs(scale(value))>sd_threshold) %>%
                   dplyr::ungroup() %>% dplyr::arrange_(id_field)
   
+  # NAs result from single values and (I think) standard deviations of 0. Replace them with FALSE
   record_data$outlier[is.na(record_data$outlier)] = FALSE
   
-  # # Remove sex column
-  # if (!is.na(sex_var)) record_data = dplyr::select(record_data, -all_of(sex_var))
   
   # Make plots
   if (plot) plot_outliers(record_data, id_field, sex_var)

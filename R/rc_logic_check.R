@@ -9,7 +9,7 @@
 #' @param data_dict REDCap project data data_dictionary. By default, 
 #' $data_dict is expected in the REDCap bundle option, as created by \code{rc_setup}.
 #' Otherwise, a data.frame containing the metadata must be supplied.
-#' @param events REDCap events metadata. By default, $events is expected 
+#' @param event_data REDCap events metadata. By default, $event_data is expected 
 #' in the REDCap bundle option, as created by \code{rc_setup}.
 #' Otherwise, a data.frame containing the metadata must be supplied.
 #'
@@ -17,24 +17,19 @@
 #' @export
 
 rc_logic_check <- function(data_dict = getOption("redcap_bundle")$data_dict,
-                          events = getOption("redcap_bundle")$events) {
+                           event_data = getOption("redcap_bundle")$event_data) {
 
-  if (is.null(data_dict)) {
-    stop("$data_dict not found in REDCap bundle. Please create a REDCap bundle containing
-    $data_dict with rc_setup() or supply data_dict via a data.frame")
-  } else if (is.null(events)) {
-    stop("$events not found in REDCap bundle. Please create a REDCap bundle containing
-    $events with rc_setup() or supply event data via a data.frame")
-  } else {
+  validate_args(required = c('data_dict','event_data'),
+                data_dict = data_dict, event_data = event_data)
+  
 
     branching_logic = data_dict$branching_logic
-    events = events$unique_event_name
+    events = event_data$unique_event_name
     field_names = data_dict$field_name
     
     validate_events(branching_logic, events)
     validate_variables(branching_logic, field_names)
     validate_event_logic(branching_logic)
-  }
 }
 
 # Validate event names --------------------------------------------------------------------
@@ -42,7 +37,7 @@ rc_logic_check <- function(data_dict = getOption("redcap_bundle")$data_dict,
 validate_events <- function(branching_logic, events) {
 
   # branching_logic = data_dict$branching_logic
-  # events = events$unique_event_name
+  # events = event_data$unique_event_name
 
   # Extract all events matching the pattern "[event-name] (=|!=) 'event_name'"
   eventCalls1 = stringr::str_extract_all(branching_logic, "(?<=\\[event-name\\]\\s?(=|!=)\\s?('|\"))(\\w*)(?=('|\"))")

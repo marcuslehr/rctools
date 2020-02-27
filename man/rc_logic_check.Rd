@@ -6,7 +6,7 @@
 \usage{
 rc_logic_check(
   data_dict = getOption("redcap_bundle")$data_dict,
-  events = getOption("redcap_bundle")$events
+  event_data = getOption("redcap_bundle")$event_data
 )
 }
 \arguments{
@@ -14,7 +14,7 @@ rc_logic_check(
 $data_dict is expected in the REDCap bundle option, as created by \code{rc_setup}.
 Otherwise, a data.frame containing the metadata must be supplied.}
 
-\item{events}{REDCap events metadata. By default, $events is expected
+\item{event_data}{REDCap events metadata. By default, $event_data is expected
 in the REDCap bundle option, as created by \code{rc_setup}.
 Otherwise, a data.frame containing the metadata must be supplied.}
 }

@@ -12,7 +12,7 @@ rc_setup(
   data_dict = FALSE,
   users = FALSE,
   instruments = FALSE,
-  events = FALSE,
+  event_data = FALSE,
   arms = FALSE,
   mappings = FALSE,
   proj_info = FALSE,
@@ -39,7 +39,7 @@ should be exported.}
 
 \item{instruments}{Logical. Indicates if the instruments table should be exported.}
 
-\item{events}{Logical. Indicates if the event names should be exported.}
+\item{event_data}{Logical. Indicates if the event names should be exported.}
 
 \item{arms}{Logical. Indicates if the arms table should be exported.}
 

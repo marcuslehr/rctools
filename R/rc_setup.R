@@ -29,7 +29,7 @@
 #'   should be exported.
 #' @param users Logical. Indicates if the users table should be exported.
 #' @param instruments Logical. Indicates if the instruments table should be exported.
-#' @param events Logical. Indicates if the event names should be exported.
+#' @param event_data Logical. Indicates if the event names should be exported.
 #' @param arms Logical. Indicates if the arms table should be exported.
 #' @param mappings Logical. Indicates if the form-event mappings should 
 #'   be exported.
@@ -50,11 +50,12 @@
 
 rc_setup <- function(url,token, create_option=TRUE, return_object=FALSE,
                       data_dict=FALSE, users=FALSE, instruments=FALSE,
-                      events=FALSE, arms=FALSE, mappings=FALSE,
+                      event_data=FALSE, arms=FALSE, mappings=FALSE,
                       proj_info=FALSE, version=FALSE,
                       dates=TRUE, labels=TRUE
                       ){
   
+  ## Error checking. Cannot use validate_args here
   coll <- checkmate::makeAssertCollection()
   
   massert(~ url + token,
@@ -64,7 +65,7 @@ rc_setup <- function(url,token, create_option=TRUE, return_object=FALSE,
           )
 
   massert(~ dates + labels + data_dict + users + instruments + 
-            events + arms + mappings + version + proj_info,
+            event_data + arms + mappings + version + proj_info,
           fun = checkmate::assert_logical,
           fixed = list(len = 1,
                        add = coll)
@@ -72,21 +73,25 @@ rc_setup <- function(url,token, create_option=TRUE, return_object=FALSE,
   
   checkmate::reportAssertions(coll)
   
-  if (!any(data_dict, users, instruments, events, arms, mappings, proj_info, version)) {
+  # If no data types are specificed, default to TRUE for all
+  if (!any(data_dict, users, instruments, event_data, arms, mappings, proj_info, version)) {
     data_dict=TRUE
     users=TRUE
     instruments=TRUE
-    events=TRUE
+    event_data=TRUE
     arms=TRUE
     mappings=TRUE
     proj_info=TRUE
     version=TRUE
   }
   
+  # The dictionary and user data are used for 2 bundle objects.
+  # Exporting them first avoids duplicate API calls
   if (data_dict) meta_data = exportMetaData(url, token)
 	if (users) userData = exportUsers(url, token, 
                                     dates = dates,
                                     labels = labels)
+  # Create the bundle
   bundle = 
     structure(
       list(
@@ -96,7 +101,7 @@ rc_setup <- function(url,token, create_option=TRUE, return_object=FALSE,
         users = if (users) userData$Users else NULL,
         form_perm = if (users) userData$Form_Permissions else NULL,
         instruments = if (instruments) exportInstruments(url, token) else NULL,
-        events = if (events) exportEvents(url, token) else NULL,
+        event_data = if (event_data) exportEvents(url, token) else NULL,
         arms = if (arms) exportArms(url, token) else NULL,
         mappings = if (mappings) exportMappings(url, token) else NULL,
         proj_info = if (proj_info) exportProjectInformation(url, token) else NULL,
@@ -105,13 +110,15 @@ rc_setup <- function(url,token, create_option=TRUE, return_object=FALSE,
       class = c("redcapBundle", "redcapProject", "list")
     )
   
-  options(redcap_token = token)
-  
-  if (create_option==T) {
+  # Save the data to options
+  if (create_option) {
     options(redcap_bundle = bundle)
-    message("Project metadata has been saved as an option. You can access it via getOption('redcap_bundle')")
+    options(redcap_token = token)
+    message("Project metadata has been saved as an option. You can access it via getOption('redcap_bundle')
+            and getOption('redcap_token')")
+    
     if (return_object==F)
-      message("Option data will not persist across R sessions, consider saving bundle data as an object for
+      message("Option data will not persist across R sessions. Consider saving bundle data as an object for
               use in future sessions via saveRDS() or save.image()")
   }
   

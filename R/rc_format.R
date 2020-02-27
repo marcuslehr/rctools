@@ -57,45 +57,15 @@ rc_format <- function(record_data, data_dict = getOption("redcap_bundle")$data_d
                       checkboxLabels = FALSE)
 {
   
-  if (is.null(data_dict)) 
-    stop("Project metadata must be supplied. Please create a bundle object
-       with rc_setup() or supply the metadata via a data.frame")
-  
-  #* Error Collection Object
-  coll <- checkmate::makeAssertCollection()
-  
-  massert(~ factors + labels + dates + checkboxLabels,
-          fun = checkmate::assert_logical,
-          fixed = list(len = 1,
-                       add = coll))
-  
-  massert(~ record_data + data_dict,
-          fun = checkmate::assert_class,
-          fixed = list(classes = "data.frame",
-                       add = coll))
-  
-  checkmate::reportAssertions(coll)
-  
-  
-  if (length(data_dict) != 18) warning("data_dict has an unexpected number of columns. Please supply metadata 
-                                       exactly as produced by REDCap")
-  
-  col.names=c('field_name', 'form_name', 'section_header', 
-              'field_type', 'field_label', 'select_choices_or_calculations', 
-              'field_note', 'text_validation_type_or_show_slider_number', 
-              'text_validation_min', 'text_validation_max', 'identifier', 
-              'branching_logic', 'required_field', 'custom_alignment', 
-              'question_number', 'matrix_group_name', 'matrix_ranking',
-              'field_annotation')
-  
-  names(data_dict) <- col.names[1:length(col.names)]
+  validate_args(required = c('record_data','data_dict'),
+                record_data = record_data, data_dict = data_dict,
+                factors = factors, labels = labels, dates = dates,
+                checkboxLabels = checkboxLabels)
+
   
   #* for purposes of the export, we don't need the descriptive fields. 
-  #* Including them makes the process more error prone, so we'll ignore them.
-  data_dict <- data_dict[!data_dict$field_type %in% "descriptive", ]  
-  
-  
-  checkmate::reportAssertions(coll)
+  #* Including them causes errors in checkbox_suffixes
+  data_dict <- data_dict[!data_dict$field_type %in% "descriptive",]
   
   
   record_data <- fieldToVar(records = record_data, 
@@ -107,20 +77,23 @@ rc_format <- function(record_data, data_dict = getOption("redcap_bundle")$data_d
   if (labels){
     
     # Get field names
-    field_names = names(record_data)[names(record_data) %in% data_dict$field_name]
+    fields = names(record_data)[names(record_data) %in% data_dict$field_name]
     
     # Currently generating labels for all fields
     col_labels = checkbox_suffixes(field_names = data_dict$field_name,
-                                 data_dict = data_dict)
+                                   data_dict = data_dict)
     
     # Apply column labels
-    record_data[field_names] <-
-      mapply(nm = field_names,
-             lab = col_labels[field_names],
-             FUN = function(nm, lab){
-               labelVector::set_label(record_data[[nm]], lab)
-             },
-             SIMPLIFY = FALSE)
+    Hmisc::label(record_data) = as.list(col_labels[match(names(record_data),names(col_labels))])
+    
+    ## Deprecated labelling method
+    # record_data[fields] <-
+    #   mapply(nm = fields,
+    #          lab = col_labels[fields],
+    #          FUN = function(nm, lab){
+    #            labelVector::set_label(record_data[[nm]], lab)
+    #          },
+    #          SIMPLIFY = FALSE)
   }
   
   record_data

@@ -26,15 +26,17 @@ Imports:
     DBI,
     httr,
     labelVector,
+    Hmisc,
     lubridate,
     readr,
+    dplyr,
     stringr,
     tidyr,
-    dplyr,
     magrittr,
     reshape2,
     ggplot2,
-    gridExtra
+    gridExtra,
+    formattable
 LazyLoad: yes
 URL: https://github.com/chillywings/redcapAPI
 RoxygenNote: 7.0.2

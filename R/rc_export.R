@@ -142,53 +142,35 @@ rc_export <- function(report_id = NULL,
                        colClasses = NA, batch.size = -1, 
                        error_handling = getOption("redcap_error_handling")
                        ) {
+
+# Checks ------------------------------------------------------------------
+
   
-  # Initial coercions
-  if (is.null(url) & !is.null(bundle)) url = bundle$redcap_url 
+  # Initial checks
+  if (is.null(url) & !is.null(bundle)) 
+    url = bundle$redcap_url
   
-  if (is.numeric(records)) records <- as.character(records)
+  required = c('url','token')
   
+  if (format | form_complete_auto) {
+    if (is.null(bundle$data_dict)) 
+      stop("bundle$data_dict must be supplied when using the 'format' (default = T) or 'form_complete_auto' arguments.")
+    required = c(required,'data_dict')
+  }
   
-  #* Error Collection Object
-  coll <- checkmate::makeAssertCollection()
-  
-  massert(~ url + token + fields + forms + records + events,
-          fun = checkmate::assert_character,
-          null.ok = list(fields = T, forms = T,
-                         records = T, events = T),
-          fixed = list(add = coll))
-  
-  checkmate::assert_logical(x = format,
-                              len = 1,
-                              add = coll)
-  
-  # checkmate::reportAssertions(coll)
+  validate_args(required = required,
+                url = url, token = token, bundle = bundle,
+                data_dict = bundle$data_dict, event_data = bundle$event_data,
+                fields = fields, forms = forms, events = events,
+                records = records, survey = survey, dag = dag,
+                form_complete_auto = form_complete_auto, format = format,
+                colClasses = colClasses, batch.size = batch.size,
+                error_handling = error_handling)
     
 
 # Export Report -----------------------------------------------------------
 
     if (!is.null(report_id)) {
-      
-      # Error checking
-      # coll <- checkmate::makeAssertCollection()
-      
-      checkmate::assert_integerish(x = report_id,
-                                   len = 1,
-                                   add = coll)
-      
-      if (format & !is.null(bundle$data_dict)) {
-        data_dict = bundle$data_dict
-        checkmate::assert_class(x = data_dict,
-                                classes = 'data.frame',
-                                add = coll)
-      } 
-      if (format & is.null(bundle$data_dict)) stop("When `format=TRUE`, $data_dict must be supplied in REDCap bundle")
-        
-        
-      error_handling <- checkmate::matchArg(x = error_handling, 
-                                            choices = c("null", "error"),
-                                            add = coll)
-      checkmate::reportAssertions(coll)
       
       # Create body for POST
       body <- list(token = token, 
@@ -215,146 +197,36 @@ rc_export <- function(report_id = NULL,
 
     else {    
     
-      ## Error checking ##
-      {
-      if (is.null(bundle)) 
-        stop("A REDCap bundle containing $data_dict and $events is required. Please supply
-      a REDCap bundle as created by rc_setup()")
-      
-      #* Secure the data dictionary
-      if (!is.null(bundle$data_dict))
-        data_dict <- bundle$data_dict
-      else
-        stop("$data_dict not found in bundle object. Please supply a REDCap bundle object 
-        containing $data_dict, as created by rc_setup()")
-    
-      #* for purposes of the export, we don't need the descriptive fields.
-      #* Including them makes the process more error prone, so we'll ignore them.
-      data_dict <- data_dict[!data_dict$field_type %in% "descriptive", ]
-      
-      # Get record_id field name
-      id_field = getID(data_dict = data_dict)
-      
-      
-      # coll <- checkmate::makeAssertCollection()
-      
-      massert(~ survey + dag + form_complete_auto,
-              fun = checkmate::assert_logical,
-              fixed = list(len = 1,
-                           add = coll))
-      
-      checkmate::assert_class(x = bundle,
-                              classes = "redcapBundle",
-                              add = coll)
-      
-      checkmate::assert_integerish(x = batch.size,
-                                   len = 1,
-                                   add = coll)
-      
-      error_handling <- checkmate::matchArg(x = error_handling,
-                                            choices = c("null", "error"),
-                                            add = coll)
-      
-      # checkmate::reportAssertions(coll)
-      
-      #* Secure the events table
-      # events_list = NULL
-      if (!is.null(events) & !is.null(bundle$events))
-        events_list <- bundle$events
-      
-      if (!is.null(events) & is.null(bundle$events)) 
-        warning("$events not found in bundle object. The supplied events list cannot be validated.")
-      
-      
-      #* Check that all event names exist in the events list
-      if (!is.null(events) && inherits(events_list, "data.frame"))
-      {
-        bad_events <- events[!events %in% events_list$unique_event_name]
-        if (length(bad_events))
-          coll$push(paste0("The following are not valid event names: ",
-                           paste0(bad_events, collapse = ", ")))
-      }
-    
-      form_complete_fields <-
-        sprintf("%s_complete",
-                unique(data_dict$form_name))
-      form_complete_fields <-
-        form_complete_fields[!is.na(form_complete_fields)]
-      
-      #* Check that all fields exist in the meta data
-      if (!is.null(fields))
-      {
-        bad_fields <- fields[!fields %in% c(data_dict$field_name,
-                                            form_complete_fields)]
-        if (length(bad_fields))
-          coll$push(paste0("The following are not valid field names: ",
-                           paste0(bad_fields, collapse = ", ")))
-      }
-      
-      #* Check that all form names exist in the meta data
-      if (!is.null(forms))
-      {
-        bad_forms <- forms[!forms %in% data_dict$form_name]
-        if (length(bad_forms))
-          coll$push(paste0("The following are not valid form names: ",
-                           paste0(bad_forms, collapse = ", ")))
-      }
-    
-      checkmate::reportAssertions(coll)
-      }
-      
-      
-      #* Create the vector of field names
-      {
-        default_fields = c(id_field, "redcap_event_name", 
-                           "redcap_repeat_instrument","redcap_repeat_instance")
+      ## Checks 
         
-        if (!is.null(fields)) #* fields were provided
-        {
-          field_names <- unique(c(default_fields, fields))
+        # Get record_id field name
+        id_field = getID(id_field = getOption("redcap_bundle")$id_field,
+                         data_dict = bundle$data_dict)
+        
+        # Append default and complete fields to the export
+        if (!is.null(fields))
+          # Append default fields
+          fields <- unique(c(id_field,
+                             "redcap_event_name","redcap_repeat_instrument","redcap_repeat_instance",
+                             fields))
+        
+        
+        if (!is.null(bundle$data_dict)) {
           
-          #* Expand 'field_names' to include fields from specified forms.
-          if (!is.null(forms))
-            field_names <-
-            unique(c(field_names,
-                     data_dict$field_name[data_dict$form_name %in% forms]))
+          data_dict = bundle$data_dict
+          
+          #* for purposes of the export, we don't need the descriptive fields.
+          #* Including them makes the process more error prone, so we'll ignore them.
+          ## I believe this only affected checkbox_suffixes (no longer used here)
+          data_dict <- data_dict[!data_dict$field_type %in% "descriptive",]
+          
+          if (!is.null(fields) & form_complete_auto) {
+            # Auto append complete fields if desired
+            form_complete_fields <- sprintf("%s_complete", unique(data_dict$form_name[data_dict$field_name %in% fields]))
+            form_complete_fields <- form_complete_fields[!is.na(form_complete_fields)]
+            fields <- unique(c(fields, form_complete_fields))
+          }
         }
-        else if (!is.null(forms))
-            field_names <- c(default_fields, 
-                             data_dict$field_name[data_dict$form_name %in% forms]
-                            )
-        
-        # else
-        #   #* fields were not provided, default to all fields.
-        #   field_names <- data_dict$field_name
-        #   # field_names = default_fields
-          
-        
-        ## This is currently unused. Seems to be unneed.. checkbox vars still come through
-        # suffixed <-
-        #   checkbox_suffixes(
-        #     # The subset prevents `[form]_complete` fields from
-        #     # being included here.
-        #     field_names = field_names[field_names %in% data_dict$field_name],
-        #     data_dict = data_dict
-        #   )
-        
-        # Add the form_name_complete column to the export
-        # This only seems to be relevant if fields are passed
-        if (form_complete_auto){
-          # Identify the forms from which the chosen fields are found
-          if (!is.null(fields))
-            included_form <- unique(data_dict$form_name[data_dict$field_name %in% field_names])
-          else included_form = unique(data_dict$form_name)
-          
-          field_names <- c(field_names, sprintf("%s_complete", included_form))
-        }
-        
-        # # Add ID and Redcap fields
-        # field_names = c(id_field,
-        #                 "redcap_event_name", "redcap_repeat_instrument","redcap_repeat_instance",
-        #                 field_names)
-      }
       
       # Create body for POST()
       body <- list(token = token,
@@ -366,7 +238,7 @@ rc_export <- function(report_id = NULL,
                    returnFormat = 'csv')
       
       # Expand body to include provided selections
-      if (!is.null(fields)) body[['fields']] <- paste0(field_names, collapse=",")
+      if (!is.null(fields)) body[['fields']] <- paste0(fields, collapse=",")
       if (!is.null(forms)) body[['forms']] <- paste0(forms, collapse=",")
       if (!is.null(events)) body[['events']] <- paste0(events, collapse=",")
       if (!is.null(records)) body[['records']] <- paste0(records, collapse=",")

@@ -2,28 +2,17 @@
 % Please edit documentation in R/rc_rep_diff.R
 \name{rc_rep_diff}
 \alias{rc_rep_diff}
-\title{Report differences between technical replicates}
+\title{Take differences for each sequential pair of replicate variables}
 \usage{
-rc_rep_diff(
-  records,
-  varRoots,
-  data_dict = getOption("redcap_bundle")$data_dict
-)
+rc_rep_diff(record_data, var_roots)
 }
 \arguments{
-\item{records}{A raw data export from REDCap.}
+\item{record_data}{A raw data export from REDCap.}
 
-\item{varRoots}{A vector of root names which are common and unique to all of the associated
+\item{var_roots}{A vector of root names which are common and unique to all of the associated
 technical replicates.}
-
-\item{data_dict}{REDCap project data data_dictionary. By default,
-$data_dict is expected in a REDCap bundle object, as created by \code{rc_setup}.
-Otherwise, a data.frame containing the metadata must be supplied.}
 }
 \description{
-Take differences for each sequential pair of replicate variables
-}
-\details{
 For each variable root supplied, all variables containing the root in the
 record data will be collected and a new column containing difference values for
 each sequential pair will be created.

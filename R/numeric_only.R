@@ -1,4 +1,4 @@
-#' @name numeric_data
+#' @name numeric_only
 #'
 #' @title Filters REDCap records data for numeric data only
 #' @description Unless a vector of variables/field names is passed to the 
@@ -18,24 +18,33 @@
 #' included, it will be used as one of the melting factors.
 #' @param fields Character. A vector of field/variable names to be analyzed
 #' may be passed manually. 
+#' @param long_format Logical. Determines whether the returned dataframe will
+#' be in long or wide format. Default is \code{TRUE}.
+#' @param drop_message Logical. Determine if a message is shown to the user about
+#' dropping non-numerical data
 #' 
 #' @importFrom magrittr '%>%'
 #' 
 #' @author Marcus Lehr
 
-numeric_data <- function(record_data, data_dict = NULL, 
-                         sex_var = NA, fields = NULL) {
+numeric_only <- function(record_data, 
+                         data_dict = getOption("redcap_bundle")$data_dict, 
+                         sex_var = NA, fields = NULL, 
+                         long_format = TRUE, drop_message = TRUE) {
   
-  # Grab record ID field name
+  # Notify user
+  if (drop_message == T)
+    message("This function is designed to work with numeric data only. 
+            All non-numeric fields will be dropped.")
+  
+  # Get ID column names
   id_field = getID(record_data, data_dict)
+  rc_fields = c('redcap_event_name','redcap_repeat_instrument','redcap_repeat_instance')
   
   # Remove unwanted columns from record data
-  record_data = dplyr::select(record_data, 
-                              -dplyr::contains('redcap_repeat'), # Repeat instruments
-                              -dplyr::contains('redcap_survey'), # Survey data
+  record_data = dplyr::select(record_data,
                               -dplyr::contains('_complete'), # Form complete fields
                               -dplyr::contains('___')) # Checkbox data
-  
   
   
   if (!is.null(fields)) field_names = fields
@@ -50,25 +59,26 @@ numeric_data <- function(record_data, data_dict = NULL,
         warning("Please provide data_dict or record_data formatted with rc_format() to avoid
                 inappropriate variables being passed.")
         # Format columns without data_dict
-        record_data = readr::type_convert(record_data)
+        record_data = suppressMessages(readr::type_convert(record_data))
       }
     }
     # Select only fields which (may) contain quantitative data
     field_names = sapply(record_data, 
                          function(x) any(grepl('integer|numeric|character',
                                                class(x)))) %>% .[.==T] %>% names()
-    
-    # # Add id_field and remove redcap fields
-    # field_names = c(id_field, sex_var, field_names[!grepl('redcap',field_names)]) %>% 
-    #                   unique() %>% na.omit()
-    
+
+    # Remove fields with < 3 levels (likely yes/no fields or other factors)
+    factor_names = names(record_data)[sapply(record_data, function(x) 
+                        length(levels(as.factor(x)))) < 3] %>% as.vector()
+    field_names = setdiff(field_names, factor_names)
+
     ## I don't think this offers any additional benefit and it requires data_dict
     # text_fields = data_dict$field_name[grepl('text|calc',data_dict$field_type)] 
     # field_names = intersect(num_fields, text_fields) %>% c(id_field,.) %>%  unique()
   }
   
   # Add melting variables to fields list
-  meltVars = c(id_field, sex_var, 'redcap_event_name') %>% na.omit()
+  meltVars = c(id_field, sex_var, rc_fields) %>% na.omit()
   field_names = c(meltVars, field_names) %>% unique()
   
   # Subset data
@@ -93,6 +103,12 @@ numeric_data <- function(record_data, data_dict = NULL,
       warning("Some fields contain multiple numbers. Only the first will be used.")
     # Extract only first number from values
     record_data$value = stringr::str_extract(record_data$value, "\\d+\\.?\\d*") %>% as.numeric()
+    
+  
+  if (long_format == F) {
+    cast_formula = paste(paste(id_field), '+', paste(rc_fields, collapse = ' + '),"~ variable")
+    record_data = reshape2::dcast(record_data, cast_formula)
+  }
   
   return(record_data)
 }

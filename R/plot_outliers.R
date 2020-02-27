@@ -16,7 +16,8 @@
 #' @author Marcus Lehr
 
 
-plot_outliers <- function(outlier_data, id_field, sex_var = NA) {
+plot_outliers <- function(outlier_data, sex_var = NA, 
+													id_field = getOption("redcap_bundle")$id_field) {
   
 # Prep vars --------------------------------------------------------------
   
@@ -55,7 +56,7 @@ plot_outliers <- function(outlier_data, id_field, sex_var = NA) {
       
       #Create plot
       scPlotsRaw[[as.character(i)]][[vars[j]]] = 
-        ggplot2::ggplot(pData, ggplot2::aes(x = hnrcid, y = value, color = outlier)) +
+        ggplot2::ggplot(pData, ggplot2::aes_string(x = id_field, y = 'value', color = 'outlier')) +
         ggplot2::ylab(vars[j]) + 
         gglayers +
         
@@ -75,25 +76,3 @@ plot_outliers <- function(outlier_data, id_field, sex_var = NA) {
     gridExtra::grid.arrange(grobs = scPlotsRaw[[i]], top = paste(sexes[i], 'data'))
   }
 }
-
-
-# Recycle Bin -------------------------------------------------------------
-
-  # if (!is.null(outlier_data$outlier)) record_data = outlier_data
-  # else if (!is.null(record_data))
-  #   # Retrieve numeric data from records
-  #   record_data = numeric_data(record_data, data_dict, 
-  #                            sex_var, fields)
-  # else stop("Either REDCap records data or unfiltered outlier data, as created by rc_outliers(),
-  #           must be provided.")
-  # 
-  # if (!is.null(outlier_data)) {
-  #   # Remove form_name column if present
-  #   try(dplyr::select(outlier_data, -form_name), silent = T)
-  #   # Recreate outlier column
-  #   record_data$outlier = do.call(paste0, record_data) %in% do.call(paste0, outlier_data)
-  # }
-
-# if (!is.null(outlier_data$outlier)) 
-#   p = ggplot2::ggplot(pData, ggplot2::aes(x = hnrcid, y = value, color = outlier))
-# else p = ggplot2::ggplot(pData, ggplot2::aes(x = hnrcid, y = value))

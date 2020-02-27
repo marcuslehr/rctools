@@ -7,24 +7,42 @@
 rc_missing(
   record_data,
   completion_field = NULL,
+  bundle = getOption("redcap_bundle"),
   data_dict = getOption("redcap_bundle")$data_dict,
-  events = getOption("redcap_bundle")$events
+  event_data = getOption("redcap_bundle")$event_data,
+  form_perm = getOption("redcap_bundle")$form_perm,
+  plot = FALSE,
+  table = FALSE
 )
 }
 \arguments{
 \item{record_data}{Record data export from REDCap}
 
-\item{completion_field}{The REDCap variable which indicates whether or not a subject
+\item{completion_field}{Character. The REDCap variable which indicates whether or not a subject
 has completed the study. This should be indicated by a 'Yes' or a '1' (i.e. a Yes/No
 field in REDCap). If not provided, some missing data may be lost.}
 
-\item{data_dict}{REDCap project data data_dictionary. By default,
-$data_dict is expected in a REDCap bundle object, as created by \code{rc_setup}.
-Otherwise, a data.frame containing the metadata must be supplied.}
+\item{bundle}{List. A project metadata bundle as created by \code{rc_setup}. By default, the
+bundle is expected in the option "redcap_bundle".}
 
-\item{events}{REDCap project event metadata. By default, $events is expected in
-the REDCap bundle, as created by \code{rc_setup}. Otherwise, a data.frame containing
+\item{data_dict}{Dataframe. REDCap project data data_dictionary. By default,
+$data_dict is expected in a REDCap bundle object, as created by \code{rc_setup}. Otherwise, an
+equivalent data.frame containing the project data dictionary must be supplied.}
+
+\item{event_data}{Dataframe. REDCap project event metadata. By default, $event_data is expected in
+the REDCap bundle, as created by \code{rc_setup}. Otherwise, an equivalent data.frame containing
 event data must be supplied.}
+
+\item{form_perm}{Dataframe. User access permissions for REDCap forms. By default, $form_perm
+is expected in the REDCap bundle, as created by \code{rc_setup}. Otherwise, an equivalent
+data.frame containing form permission data must be supplied.}
+
+\item{plot}{Logical. Determine if missing results should be plotted. These are useful
+for investigating the structure of missing data, especially when a large amount is returned.}
+
+\item{table}{Logical. If \code{TRUE} a list will be returned containing the missing dataframe
+and two missing tables. The tables contain the percent of missing record_idor variable counts.
+To view formatted tables, use square bracket indexing- e.g. data[\link{'IDs_table'}]}
 }
 \description{
 Finds data points which are ostenibly missing from Redcap records data.

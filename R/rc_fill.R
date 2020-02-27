@@ -2,8 +2,9 @@
 #'
 #' @title Fills in empty rows for categorical data
 #' @description  Takes a data point which only occurs in a single event (row)
-#' and copies that data to all rows for each participant. This is useful for 
-#' filtering data. 
+#' and copies that data to all rows for each participant (or other grouping
+#' variable assigned by \code{group_by}). This function is particularly useful
+#' for making filtering operations more straight forward. 
 #' 
 #' @param record_data Dataframe. Record data exported from REDCap
 #' @param ... Variables to be filled. Variable names can be unquoted or quoted. 
@@ -19,24 +20,20 @@
 rc_fill <- function(record_data, ..., 
                     group_by = getOption("redcap_bundle")$id_field) {
   
-  #* Error Collection Object
-  coll <- checkmate::makeAssertCollection()
   
-  checkmate::assert_class(x = record_data, 
-                          classes = 'data.frame', 
-                          add = coll)
+  if(is.null(group_by)) group_by = getID(record_data = record_data)
   
-  checkmate::assert_character(x = group_by,
-                              add = coll)
+  validate_args(required = c('record_data'),
+                record_data = record_data,
+                group_by = group_by)
   
-  checkmate::reportAssertions(coll)
   
   # Test for columns that contain more than one value per group
   cols = c(...)
   counts = list()
   for (col in cols) {
-    x = suppressWarnings(
-            dplyr::group_by_(record_data, group_by) %>% dplyr::select(all_of(col)) %>% 
+    x = suppressMessages(
+            dplyr::group_by(record_data, !!dplyr::sym(group_by)) %>% dplyr::select(all_of(col)) %>% 
             na.omit() %>% dplyr::summarise(n = dplyr::n())
     )
     counts[[col]] = max(x$n)
@@ -45,8 +42,8 @@ rc_fill <- function(record_data, ...,
   # Warn of any groups that contain >1 value
   counts = as.data.frame(counts)
   if (any(counts > 1)) {
-    warning("The following fields contain more than one value per group. Verify that filling is appropriate.")
-    print(names(counts[which(counts == max(counts))]))
+    stop("Fields cannot contain more than one value per group. Please resolve conflicts in the following
+         fields before filling:\n",paste0(names(counts[which(counts > 1)]), collapse = ', '))
   }
   
   # Fill columns
