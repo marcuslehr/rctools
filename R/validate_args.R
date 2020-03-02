@@ -203,14 +203,9 @@ validate_args <- function(required = NULL,
 		# Make formula
 		massert_formula = formula(paste('~',paste(vars,collapse = ' + ')))
 		
-		## Generate null.ok list
-		# null.ok = as.list(!vars %in% required)
-		# names(null.ok) = vars
-		
 		# Assert
 		massert(massert_formula,
 						checkmate::matchArg,
-						# null.ok = null.ok,
 						choices = list(overwriteBehavior = c('normal','overwrite'),
 													 returnContent = c('count', 'ids', 'nothing'),
 													 error_handling = c('null','error')),
@@ -315,17 +310,36 @@ validate_args <- function(required = NULL,
 ##--- data_dict validations
   if (!is.null(data_dict)) {
 		
-		data_dict_names = col.names=c('field_name', 'form_name', 'section_header', 
-											'field_type', 'field_label', 'select_choices_or_calculations', 
-											'field_note', 'text_validation_type_or_show_slider_number', 
-											'text_validation_min', 'text_validation_max', 'identifier', 
-											'branching_logic', 'required_field', 'custom_alignment', 
-											'question_number', 'matrix_group_name', 'matrix_ranking',
-											'field_annotation')
+		data_dict_api_names = c('field_name','form_name','section_header','field_type','field_label',
+			'select_choices_or_calculations','field_note','text_validation_type_or_show_slider_number',
+			'text_validation_min', 'text_validation_max', 'identifier','branching_logic', 'required_field',
+			'custom_alignment','question_number', 'matrix_group_name', 'matrix_ranking','field_annotation')
+												
+		data_dict_read.csv_names = c("ï..Variable...Field.Name","Form.Name","Section.Header",
+			"Field.Type","Field.Label","Choices..Calculations..OR.Slider.Labels","Field.Note",
+			"Text.Validation.Type.OR.Show.Slider.Number","Text.Validation.Min","Text.Validation.Max",
+			"Identifier.","Branching.Logic..Show.field.only.if....","Required.Field.","Custom.Alignment",
+			"Question.Number..surveys.only.","Matrix.Group.Name","Matrix.Ranking.","Field.Annotation")
+			
+		data_dict_read_csv_names = c("Variable / Field Name","Form Name","Section Header",
+			"Field Type","Field Label","Choices, Calculations, OR Slider Labels","Field Note",
+			"Text Validation Type OR Show Slider Number","Text Validation Min","Text Validation Max",
+			"Identifier?","Branching Logic (Show field only if...)","Required Field?","Custom Alignment",
+			"Question Number (surveys only)","Matrix Group Name","Matrix Ranking?","Field Annotation")
 		
-    if (length(data_dict) != 18 |
-				any(!data_dict_names %in% names(data_dict)))
-      coll$push("Please supply a data dictionary exactly as produced by REDCap")
+    # If data_dict has been exported via REDCap GUI and imported with read.csv/read_csv,
+		# rename columns names with those of REDCap API export
+		if (identical(names(data_dict)[2:length(names(data_dict))], 
+		              data_dict_read.csv_names[2:18]) | # For some reason this condition doesn't work when being called
+                                                    # from the function envir. Something about the first col name
+                                                    # breaks it. Removing just the 'ï' doesn't work
+				identical(names(data_dict), data_dict_read_csv_names)) {
+		  names(data_dict) = data_dict_api_names
+			data_dict <<- data_dict
+			}
+		else if (any(!data_dict_api_names %in% names(data_dict)))
+      coll$push("Please supply a data dictionary exactly as produced by REDCap
+			or via a REDCap bundle, as created by rc_setup()")
 			
 		# Check for bad fields
 		if (!is.null(fields)){
@@ -350,11 +364,10 @@ validate_args <- function(required = NULL,
     
     ## These are the col names exported from RC, changing shouldn't be necessary.
 		## Also, changing from here would require exporting to the parent environment
-
-    # names(data_dict) <- col.names[1:length(col.names)]
+    # names(data_dict) <- data_dict_names
   }
 	else if (!is.null(fields) | !is.null(forms))
-		message("The supplied fields or forms cannot be validated without the project
+		warning("The supplied fields or forms cannot be validated without the project
 		data dictionary. Please supply it directly or via a REDCap bundle, as created by
 		rc_setup()")
 	
@@ -371,7 +384,7 @@ validate_args <- function(required = NULL,
 		}
   }
   else if (!is.null(events))
-		message("The supplied events list cannot be validated without the project
+		warning("The supplied events list cannot be validated without the project
 		events data. Please supply it directly or via a REDCap bundle, as created by
 		rc_setup()")
 

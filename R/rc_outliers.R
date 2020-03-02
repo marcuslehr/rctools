@@ -37,7 +37,8 @@ rc_outliers <- function(record_data, sex_var = NA, sd_threshold = 2.5,
                         fields = NULL, plot = FALSE, unfiltered = FALSE) {
   
   validate_args(required = c('record_data'),
-                sex_var = sex_var, sd_threshold = sd_threshold, data_dict = data_dict,
+								record_data = record_data, sex_var = sex_var,
+                sd_threshold = sd_threshold, data_dict = data_dict,
                 fields = fields, plot = plot, unfiltered = unfiltered)
   
   # Get ID column name
