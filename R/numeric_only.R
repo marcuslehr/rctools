@@ -47,9 +47,8 @@ numeric_only <- function(record_data,
                               -dplyr::contains('___')) # Checkbox data
   
   
-  if (!is.null(fields)) field_names = fields
-  
-  else {
+  # Generate fields if not provided
+  if (is.null(fields)) {
     # Check format status of data and format if necessary
     if (!any(unlist(sapply(record_data, class))=='labelled')) {
       # Use data_dict if available
@@ -63,28 +62,29 @@ numeric_only <- function(record_data,
       }
     }
     # Select only fields which (may) contain quantitative data
-    field_names = sapply(record_data, 
+    fields = sapply(record_data, 
                          function(x) any(grepl('integer|numeric|character',
                                                class(x)))) %>% .[.==T] %>% names()
 
     # Remove fields with < 3 levels (likely yes/no fields or other factors)
     factor_names = names(record_data)[sapply(record_data, function(x) 
                         length(levels(as.factor(x)))) < 3] %>% as.vector()
-    field_names = setdiff(field_names, factor_names)
+    fields = setdiff(fields, factor_names)
 
     ## I don't think this offers any additional benefit and it requires data_dict
     # text_fields = data_dict$field_name[grepl('text|calc',data_dict$field_type)] 
-    # field_names = intersect(num_fields, text_fields) %>% c(id_field,.) %>%  unique()
+    # fields = intersect(num_fields, text_fields) %>% c(id_field,.) %>%  unique()
   }
   
-  # Add melting variables to fields list
+  # Create melting variables and add to fields list
   meltVars = c(id_field, sex_var, rc_fields) %>% na.omit()
-  field_names = c(meltVars, field_names) %>% unique()
+  meltVars = meltVars[meltVars %in% names(record_data)]
+  fields = c(meltVars, fields) %>% unique()
   
   # Subset data
-  record_data = record_data[field_names]
+  record_data = record_data[fields]
   
-  # Fill sex variable, if applicable
+  # Fill sex variable before melt, if applicable
   if (!is.na(sex_var)) 
     record_data = rc_fill(record_data, sex_var)
   
@@ -105,7 +105,7 @@ numeric_only <- function(record_data,
     record_data$value = stringr::str_extract(record_data$value, "\\d+\\.?\\d*") %>% as.numeric()
     
   
-  if (long_format == F) {
+  if (!long_format) {
     cast_formula = paste(paste(id_field), '+', paste(rc_fields, collapse = ' + '),"~ variable")
     record_data = reshape2::dcast(record_data, cast_formula)
   }
