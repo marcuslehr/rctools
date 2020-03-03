@@ -58,17 +58,19 @@ rc_outliers <- function(record_data, sex_var = NA, sd_threshold = 2.5,
   else message("Form names cannot be added unless data_dict is supplied.")
   
   # Identify outliers for each variable
-  group_by = c(sex_var, 'variable') %>% na.omit() %>% paste(., collapse = ',')
-  record_data = record_data %>% dplyr::group_by_(group_by) %>% 
+  groups = c(sex_var, 'variable') %>% na.omit()
+  record_data = record_data %>% dplyr::group_by_at(groups) %>% 
                   dplyr::mutate(outlier = abs(scale(value))>sd_threshold) %>%
-                  dplyr::ungroup() %>% dplyr::arrange_(id_field)
+                  dplyr::ungroup() %>% dplyr::arrange(!!dplyr::sym(id_field))
   
   # NAs result from single values and (I think) standard deviations of 0. Replace them with FALSE
   record_data$outlier[is.na(record_data$outlier)] = FALSE
   
   
   # Make plots
-  if (plot) plot_outliers(record_data, id_field, sex_var)
+  if (plot) plot_outliers(outlier_data = record_data, 
+                          sex_var = sex_var, 
+                          id_field = id_field)
   
   # Filter data
   if (unfiltered == F) record_data = record_data %>% 

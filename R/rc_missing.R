@@ -4,14 +4,15 @@
 #' @description  Finds data points which are ostenibly missing from Redcap records data.
 #' 
 #' For each event/variable combination, if a value exists for at least one
-#' record then it is expected to exist for all records. If an entire event is empty for
-#' a given record, none of the variables will be flagged unless there is data for that
-#' record in the following event. Additionally, if the subject is marked as having
-#' completed the study (i.e. \code{completion_field == 'Yes'|1}), then empty events for
-#' that subject will not be discarded.
+#' record then it is expected to exist for all records. Any event or variable which is empty within
+#' the entire dataframe will inherently be dropped. If an event has no values for a given record, 
+#' none of the variables will be flagged unless there is data for that record in the following event. 
+#' Additionally, if the subject is marked as having completed the study (i.e. \code{completion_field 
+#' == 'Yes'|1}), then empty events for that subject will not be discarded.
 #'
-#' The logic of this function does not extend to checkbox variables or repeat instruments.
-#' If present in the record data, they will be dropped.
+#' The logic of this function does not extend to repeat instruments or checkbox, calculated,
+#' or hidden fields. If present in the record data, they will be dropped. Additionally, this function
+#' does not yet support branching logic. It will be implemented in a future version.
 #'
 #' @param record_data Record data export from REDCap
 #' @param completion_field Character. The REDCap variable which indicates whether or not a subject

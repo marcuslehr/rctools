@@ -32,10 +32,14 @@ rc_fill <- function(record_data, ...,
   cols = c(...)
   counts = list()
   for (col in cols) {
+    # Replace blanks with NA
+    record_data[record_data[[col]] == '',col] = NA
+    
+    # Count items per group in each column
     x = suppressMessages(
             dplyr::group_by(record_data, !!dplyr::sym(group_by)) %>% dplyr::select(all_of(col)) %>% 
             na.omit() %>% dplyr::summarise(n = dplyr::n())
-    )
+        )
     counts[[col]] = max(x$n)
   }
   
@@ -48,5 +52,6 @@ rc_fill <- function(record_data, ...,
   
   # Fill columns
   dplyr::group_by_(record_data, paste(group_by, collapse = ',')) %>%
-                  tidyr::fill(., ..., .direction = "downup")
+                  tidyr::fill(., ..., .direction = "downup") %>%
+									dplyr::ungroup()
 }
