@@ -300,7 +300,7 @@ validate_args <- function(required = NULL,
   
 ##--- record_data
   if (!is.null(record_data)) {
-    id_field = suppressWarnings(getID())
+    id_field = suppressWarnings(getID(record_data))
     if (!any(grepl(id_field,names(record_data))) |
         !any(grepl('redcap_event_name',names(record_data)))
     )

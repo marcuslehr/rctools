@@ -48,6 +48,8 @@
 #' @importFrom magrittr '%>%'
 #' 
 #' @author Marcus Lehr
+#' 
+#' @export
 
 
 rc_pool <- function(record_data, var_roots = NULL, fields_list = NULL,

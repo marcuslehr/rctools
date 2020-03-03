@@ -11,9 +11,9 @@
 #' 
 #' @author Marcus Lehr
 
-getID <- function(record_data = NULL, 
-                   data_dict = getOption("redcap_bundle")$data_dict, 
-                   id_field = getOption("redcap_bundle")$id_field) {
+getID <- function(record_data, 
+                  data_dict = getOption("redcap_bundle")$data_dict, 
+                  id_field = getOption("redcap_bundle")$id_field) {
   
   if (!is.null(id_field)) return(id_field)
   

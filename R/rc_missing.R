@@ -38,6 +38,7 @@
 #' @importFrom magrittr '%>%'
 #'
 #' @author Marcus Lehr
+#' 
 #' @export
 
 rc_missing <- function(record_data, completion_field = NULL, 

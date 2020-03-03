@@ -14,6 +14,7 @@
 #' Otherwise, a data.frame containing the metadata must be supplied.
 #'
 #' @author Marcus Lehr
+#' 
 #' @export
 
 rc_logic_check <- function(data_dict = getOption("redcap_bundle")$data_dict,
