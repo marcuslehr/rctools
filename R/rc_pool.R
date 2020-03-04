@@ -43,6 +43,8 @@
 #' be in long or wide format. Default is \code{FALSE}. This option is useful for more
 #' aggressive pooling- particularly when there are same-row data points that will be
 #' lost in wide format.
+#' @param numeric_only Logical. Determines if only fields containing numerical data
+#' should be searched when using \code{var_roots}. Default is \code{FALSE}
 #' @param id_field Character. Field name corresponding to the 'record_id' field.
 #' 
 #' @importFrom magrittr '%>%'
@@ -53,7 +55,7 @@
 
 
 rc_pool <- function(record_data, var_roots = NULL, fields_list = NULL,
-                         long_format = FALSE,
+                         long_format = FALSE, numeric_only = FALSE,
                          id_field = getOption("redcap_bundle")$id_field) {
   
   validate_args(required = c('record_data'),
@@ -61,6 +63,7 @@ rc_pool <- function(record_data, var_roots = NULL, fields_list = NULL,
                 var_roots = var_roots,
                 fields_list = fields_list,
                 long_format = long_format,
+								numeric_only = numeric_only,
                 id_field = id_field)
   
   if (is.null(var_roots) & is.null(fields_list))
@@ -74,7 +77,8 @@ rc_pool <- function(record_data, var_roots = NULL, fields_list = NULL,
   # Instantiate list to log the affected fields
   fields_changed = list()
   
-  if (!is.null(fields_list)) {
+  # Check for errors in fields_list
+	if (!is.null(fields_list)) {
     
     # Drop fields not found in record_data
     fields_bad = lapply(fields_list, function(x) x[!x %in% names(record_data)]) %>% unlist()
@@ -84,9 +88,15 @@ rc_pool <- function(record_data, var_roots = NULL, fields_list = NULL,
       message("The following supplied fields were not found in record_data and will be dropped:\n",
               paste(fields_bad, collapse = ', '))
       fields_list = lapply(fields_list, function(x) setdiff(x, fields_bad))
+			
+			# If search terms are used as names in fields_list, the record of changed columns will be overwritten
+      if (!is.null(var_roots))
+        if (any(var_roots %in% names(fields_list))) 
+          stop("Search terms specified in var_roots cannot exist in names(fields_list)")
     }
   }
   
+	# Long format method
   if (long_format) {
     
     # Melt data
@@ -114,18 +124,14 @@ rc_pool <- function(record_data, var_roots = NULL, fields_list = NULL,
     
     if (!is.null(var_roots)) {
       
-      # If search terms are used as names in fields_list, the record of changed columns will be overwritten
-      if (!is.null(fields_list)) 
-        if (any(var_roots %in% names(fields_list))) 
-          stop("Search terms specified in var_roots cannot exist in names(fields_list)")
-      
-      # Select numeric column names. I don't think this function makes sense with other data
-      # types and this restricts the search space.
-      num_cols = names(numeric_only(record_data, long_format = F, drop_message = F))
+      # Select numeric data only if desired
+			if (numeric_only)
+				col_names = names(numeric_only(record_data, long_format = F, drop_message = F))
+			else col_names = names(record_data)
       
       for (r in var_roots) {
         # Get column names
-        cols = num_cols[grepl(r, num_cols)]
+        cols = col_names[grepl(r, col_names)]
         
         if (length(cols) > 0) {
           # Note the variables which will be changed
@@ -146,6 +152,7 @@ rc_pool <- function(record_data, var_roots = NULL, fields_list = NULL,
     return(molten_data)
   }
   
+	# Wide format method
   else {
     
     if (!is.null(fields_list)) {
@@ -177,15 +184,16 @@ rc_pool <- function(record_data, var_roots = NULL, fields_list = NULL,
     
     if (!is.null(var_roots)) {
       
-      # Select numeric data. I think it only makes sense with numeric columns 
-      # and other types can cause issues
-      num_cols = names(numeric_only(record_data, long_format = F, drop_message = F))
+      # Select numeric data only if desired
+			if (numeric_only)
+				col_names = names(numeric_only(record_data, long_format = F, drop_message = F))
+			else col_names = names(record_data)
       
       # Assemble combined variables
       for (r in var_roots) {
         
         # Get matching column names
-        cols = num_cols[grepl(r, num_cols)]
+        cols = col_names[grepl(r, col_names)]
         
         if (length(cols)>0) {
           # Validate cols are all the same class?
