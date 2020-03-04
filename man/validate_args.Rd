@@ -89,6 +89,8 @@ the calling function.}
 
 \item{returnContent}{Character, defined inputs, length == 1}
 
+\item{error_handling}{Character, defined inputs, length == 1}
+
 \item{survey}{Logical, length == 1}
 
 \item{dag}{Logical, length == 1}

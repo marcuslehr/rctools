@@ -8,11 +8,11 @@ rc_import(
   record_data,
   url = getOption("redcap_bundle")$redcap_url,
   token = getOption("redcap_token"),
+  data_dict = getOption("redcap_bundle")$data_dict,
   overwriteBehavior = c("normal", "overwrite"),
   returnContent = c("count", "ids", "nothing"),
   returnData = FALSE,
   logfile = "",
-  bundle = getOption("redcap_bundle"),
   batch.size = -1
 )
 }
@@ -22,6 +22,9 @@ rc_import(
 \item{url}{A url address to connect to the REDCap API}
 
 \item{token}{A REDCap API token}
+
+\item{data_dict}{A \code{redcapBundle} object as created by
+\code{rc_setup}.}
 
 \item{overwriteBehavior}{Character string.  'normal' prevents blank
 fields from overwriting populated fields.  'overwrite' causes blanks to
@@ -42,9 +45,6 @@ accounted for.}
 \item{logfile}{An optional filepath (preferably .txt) in which to print the
 log of errors and warnings about the data.
 If \code{""}, the log is printed to the console.}
-
-\item{bundle}{A \code{redcapBundle} object as created by
-\code{rc_setup}.}
 
 \item{batch.size}{Specifies size of batches.  A negative value
 indicates no batching.}
@@ -86,4 +86,6 @@ Additional details on API parameters are found on the package wiki at
 \author{
 Benjamin Nutter\cr
 with thanks to Josh O'Brien and etb (see references)
+
+Marcus Lehr
 }

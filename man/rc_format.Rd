@@ -36,10 +36,6 @@ If \code{TRUE}, they are applied as ""/"\link{field_label}" where \link{field_la
 is the label assigned to the level in the data data_dictionary.
 This option is only available after REDCap version 6.0.  See Checkbox Variables
 for more on how this interacts with the \code{factors} argument.}
-
-\item{completionField}{The REDCap variable which indicates whether or not a subject
-has completed the study. This should be indicated by a 'Yes' or a '1' (i.e. a Yes/No
-field in REDCap).}
 }
 \description{
 Uses REDCap project metadata to format records data.

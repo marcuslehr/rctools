@@ -5,7 +5,7 @@
 \title{Retrieve record_id field name}
 \usage{
 getID(
-  record_data,
+  record_data = NULL,
   data_dict = getOption("redcap_bundle")$data_dict,
   id_field = getOption("redcap_bundle")$id_field
 )

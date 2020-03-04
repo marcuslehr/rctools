@@ -32,6 +32,7 @@
 #' 
 #' @param overwriteBehavior Character, defined inputs, length == 1
 #' @param returnContent Character, defined inputs, length == 1
+#' @param error_handling Character, defined inputs, length == 1
 #' 
 #' @param survey Logical, length == 1 
 #' @param dag Logical, length == 1
@@ -303,7 +304,6 @@ validate_args <- function(required = NULL,
     id_field = suppressWarnings(getID(record_data))
     if (!id_field %in% names(record_data) |
         !'redcap_event_name' %in% names(record_data))
-    )
       coll$push("Record_data must contain the record_id and 'redcap_event_name' columns.")
   }
   
