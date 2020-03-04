@@ -10,9 +10,6 @@
 #' @param data_dict Dataframe. REDCap project data data_dictionary. By default, a 
 #' REDCap bundle option, as created by \code{rc_setup}, will be looked for.
 #' Otherwise, a data.frame containing the metadata must be supplied.
-#' @param completionField The REDCap variable which indicates whether or not a subject
-#' has completed the study. This should be indicated by a 'Yes' or a '1' (i.e. a Yes/No
-#' field in REDCap).
 #' 
 #' @param factors Logical.  Determines if categorical data from the database is 
 #'   returned as numeric codes or labelled factors. See 'Checkbox Variables'
