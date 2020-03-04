@@ -16,8 +16,9 @@ is used by default.}
 }
 \description{
 Takes a data point which only occurs in a single event (row)
-and copies that data to all rows for each participant. This is useful for
-filtering data.
+and copies that data to all rows for each participant (or other grouping
+variable assigned by \code{group_by}). This function is particularly useful
+for making filtering operations more straight forward.
 }
 \author{
 Marcus Lehr

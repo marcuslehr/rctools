@@ -19,7 +19,7 @@ packageStartupMessage(
 										users = NULL,
 										form_perm = NULL,
 										instruments = NULL,
-										events = NULL,
+										event_data = NULL,
 										arms = NULL,
 										mappings = NULL,
 										proj_info = NULL,

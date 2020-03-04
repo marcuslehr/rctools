@@ -5,7 +5,7 @@
 \title{Retrieve record_id field name}
 \usage{
 getID(
-  record_data = NULL,
+  record_data,
   data_dict = getOption("redcap_bundle")$data_dict,
   id_field = getOption("redcap_bundle")$id_field
 )
@@ -15,7 +15,7 @@ getID(
 
 \item{data_dict}{Dataframe. REDCap project data data_dictionary}
 
-\item{id_field}{Character. Name of the 'record_id' field}
+\item{id_field}{Character. Field name corresponding to the 'record_id' field.}
 }
 \description{
 Gets record_id field name from bundle, or data_dict
