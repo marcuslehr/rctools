@@ -301,8 +301,8 @@ validate_args <- function(required = NULL,
 ##--- record_data
   if (!is.null(record_data)) {
     id_field = suppressWarnings(getID(record_data))
-    if (!any(grepl(id_field,names(record_data))) |
-        !any(grepl('redcap_event_name',names(record_data)))
+    if (!id_field %in% names(record_data) |
+        !'redcap_event_name' %in% names(record_data))
     )
       coll$push("Record_data must contain the record_id and 'redcap_event_name' columns.")
   }
@@ -330,9 +330,9 @@ validate_args <- function(required = NULL,
     # If data_dict has been exported via REDCap GUI and imported with read.csv/read_csv,
 		# rename columns names with those of REDCap API export
 		if (identical(names(data_dict)[2:length(names(data_dict))], 
-		              data_dict_read.csv_names[2:18]) | # For some reason this condition doesn't work when being called
-                                                    # from the function envir. Something about the first col name
-                                                    # breaks it. Removing just the 'ï' doesn't work
+		              data_dict_read.csv_names[2:18]) | # For some reason the first field breaks this condition when
+																										# calling from the function envir. Removing just the 'ï' 
+																										# doesn't work
 				identical(names(data_dict), data_dict_read_csv_names)) {
 		  names(data_dict) = data_dict_api_names
 			data_dict <<- data_dict
@@ -343,12 +343,19 @@ validate_args <- function(required = NULL,
 			
 		# Check for bad fields
 		if (!is.null(fields)){
-      # Generate list of complete fields
-      form_complete_fields <- sprintf("%s_complete", unique(data_dict$form_name[data_dict$field_name %in% fields]))
-      form_complete_fields <- form_complete_fields[!is.na(form_complete_fields)]
+      # Generate list of fields plus checkbox fields
+			fields_valid = names(checkbox_suffixes(field_names = data_dict$field_name,
+																						 data_dict = data_dict))
+			
+			# Add redcap and _complete fields
+      fields_valid = c(fields_valid,
+                       'redcap_event_name','redcap_repeat_instrument','redcap_repeat_instance',
+											 sprintf("%s_complete", unique(data_dict$form_name))) %>% 
+											na.omit() # Not sure this is necessary			
         
-      # Check that all fields exist in the meta data
-      fields_bad <- fields[!fields %in% unique(c(data_dict$field_name, form_complete_fields))]
+      # Find any fields not in the meta data
+      fields_bad = setdiff(fields, fields_valid)
+      
       if (length(fields_bad) > 0)
         coll$push(paste0("The following are not valid field names: ",
                     paste0(fields_bad, collapse = ", ")))
