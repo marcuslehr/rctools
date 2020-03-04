@@ -1,7 +1,5 @@
 rctools
 ======
-**Note this package is currently under heavy development. Please use with caution until there is a stable release**
-
 
 The goal of this package is to provide simple, streamlined functions for interfacing with the REDCap API (http://www.project-redcap.org/) and working with REDCap data sets. rctools is an actively developed fork of [redcapAPI](https://github.com/nutterb/redcapAPI). 
 
@@ -134,15 +132,19 @@ outlier_data = rc_outliers(record_data = pooled_data,
 1     30803 Male        visit_2_arm_1     weight     113
 ```
 One last trick we can do with rctools is to perform some cursory checks on the branching logic using `rc_logic_check()`. Note that this function does not check syntax (and it likely never will). What it does check for are common errors that REDCap won't pick up. Most notably, when using the pattern `[event-name] = "event_name"` REDCap does not verify that the right-hand string actually contains a valid event name. This function will check these event names and bracketed event names preceeding a variable name. 
-Additionaly, it will look for inconsistent event name logic where two pieces of `[event-name] = "event_name"` logic are joined by `AND` or two pieces of `[event-name] != "event_name"` are joined by `OR`. These logic patterns will result in fields that are either always hidden or always displayed (respectively). 
+Additionaly, it will look for inconsistent event name logic where two pieces of `[event-name] = "event_name"` logic are joined by `AND` or two pieces of `[event-name] != "event_name"` are joined by `OR`. These logic patterns will result in fields that are either always hidden or always displayed (respectively). These checks can be quite useful for projects under active development, where event and variable names may change frequently. 
 ```r
+# Let's have a look at an example project
 >rc_logic_check()
 Invalid event names were found in the following fields:
-[1] "bd_drawtime"    "bd_drawloc"     "stool_time"     "stool_obtained" "uspot_fast"    
+[1] "vd_icf_screen" "bd_hcg"        "bd_adequate"  
 Invalid event names:
-[1] "screening_visit_1_arm_1"
+[1] "screeing_visit_arm_1"    "screening_visit_1_arm_1"
 
 No invalid variable names were found
 
-No [event-name] logic errors were found.
+Use of "[event-name]='event_name' AND [event-name]='event_name'" logic found.
+This will result in the field always being hidden. Please review branching
+logic in the following fields:
+[1] "vd_hchange"
 ```

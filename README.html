@@ -367,7 +367,6 @@ summary {
 
 <div id="rctools" class="section level1">
 <h1>rctools</h1>
-<p><strong>Note this package is currently under heavy development. Please use with caution until there is a stable release</strong></p>
 <p>The goal of this package is to provide simple, streamlined functions for interfacing with the REDCap API (<a href="http://www.project-redcap.org/" class="uri">http://www.project-redcap.org/</a>) and working with REDCap data sets. rctools is an actively developed fork of <a href="https://github.com/nutterb/redcapAPI">redcapAPI</a>.</p>
 <p>In an effort to both reduce the number of API calls (important for network traffic and audits) and streamline the package, rctools makes use of R’s “options”. Options are variables which are instantiated at the start of an R session. You can see a list of all options by running <code>options()</code> or access individual items using the <code>getOption()</code> function. However, all rctools functions are written with the flexibility to be used without options, provided the user is able to supply the necessary arguments.</p>
 <p>The workflow of rctools is- 1)Run <code>rc_setup()</code>, 2)Run other functions as needed. <code>rc_setup()</code> downloads project metadata from the REDCap API and makes it available for other rc_tools functions. However, for those without API access, all functions have metadata arguments so that the necessary items can be supplied directly and are written to operate without project metadata where necessary (if possible).</p>
