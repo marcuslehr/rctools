@@ -309,7 +309,8 @@ validate_args <- function(required = NULL,
   
 ##--- data_dict validations
   if (!is.null(data_dict)) {
-		
+		# If data_dict has been exported via REDCap GUI and imported with read.csv/read_csv,
+		# rename columns names with those of REDCap API export
 		data_dict_api_names = c('field_name','form_name','section_header','field_type','field_label',
 			'select_choices_or_calculations','field_note','text_validation_type_or_show_slider_number',
 			'text_validation_min', 'text_validation_max', 'identifier','branching_logic', 'required_field',
@@ -327,13 +328,12 @@ validate_args <- function(required = NULL,
 			"Identifier?","Branching Logic (Show field only if...)","Required Field?","Custom Alignment",
 			"Question Number (surveys only)","Matrix Group Name","Matrix Ranking?","Field Annotation")
 		
-    # If data_dict has been exported via REDCap GUI and imported with read.csv/read_csv,
-		# rename columns names with those of REDCap API export
-		if (identical(names(data_dict)[2:length(names(data_dict))], 
+		if (identical(names(data_dict)[2:18], 
 		              data_dict_read.csv_names[2:18]) | # For some reason the first field breaks this condition when
 																										# calling from the function envir. Removing just the 'ï' 
 																										# doesn't work
-				identical(names(data_dict), data_dict_read_csv_names)) {
+				identical(names(data_dict), data_dict_read_csv_names) &
+				length(data_dict) == 18) {
 		  names(data_dict) = data_dict_api_names
 			data_dict <<- data_dict
 			}
