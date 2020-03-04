@@ -26,19 +26,16 @@ rc_logic_check <- function(data_dict = getOption("redcap_bundle")$data_dict,
 
     branching_logic = data_dict$branching_logic
     events = event_data$unique_event_name
-    field_names = data_dict$field_name
+    fields = data_dict$field_name
     
     validate_events(branching_logic, events)
-    validate_variables(branching_logic, field_names)
+    validate_variables(branching_logic, fields)
     validate_event_logic(branching_logic)
 }
 
 # Validate event names --------------------------------------------------------------------
 
 validate_events <- function(branching_logic, events) {
-
-  # branching_logic = data_dict$branching_logic
-  # events = event_data$unique_event_name
 
   # Extract all events matching the pattern "[event-name] (=|!=) 'event_name'"
   eventCalls1 = stringr::str_extract_all(branching_logic, "(?<=\\[event-name\\]\\s?(=|!=)\\s?('|\"))(\\w*)(?=('|\"))")
@@ -75,10 +72,7 @@ validate_events <- function(branching_logic, events) {
 
 # Validate variable names -------------------------------------------------
 
-validate_variables <- function(branching_logic, field_names) {
-
-  # branching_logic = data_dict$branching_logic
-  # field_names = data_dict$field_name
+validate_variables <- function(branching_logic, fields) {
 
   # Extract varaible names used in branching logic by mathcing the pattern "[var_name]"
   # without capturing events by excluding bracketed words followed by "["
@@ -88,7 +82,7 @@ validate_variables <- function(branching_logic, field_names) {
                 )
 
   # Find invalid names
-  invalidVars = unique(varCalls[!varCalls %in% field_names])
+  invalidVars = unique(varCalls[!varCalls %in% fields])
 
   if (length(invalidVars) > 0) {
 

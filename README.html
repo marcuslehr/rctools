@@ -367,7 +367,8 @@ summary {
 
 <div id="rctools" class="section level1">
 <h1>rctools</h1>
-<p>The goal of this package is to provide simple, streamlined functions for interfacing with the REDCap API (<a href="http://www.project-redcap.org/" class="uri">http://www.project-redcap.org/</a>) and working with REDCap data sets. rctools is an actively developed fork of <a href="https://github.com/nutterb/redcapAPI">redcapAPI</a>.</p>
+<p>The goal of this package is to provide simple, streamlined functions for interfacing with the REDCap API (<a href="http://www.project-redcap.org/" class="uri">http://www.project-redcap.org/</a>) and working with REDCap data sets. rctools is an actively developed fork of <a href="https://github.com/nutterb/redcapAPI">redcapAPI</a>. It is not yet on <a href="https://cran.r-project.org/">CRAN</a>, but can be installed via</p>
+<pre class="r"><code>devtools::install_github(&#39;https://github.com/chillywings/rctools&#39;, upgrade = F, quiet = T)</code></pre>
 <p>In an effort to both reduce the number of API calls (important for network traffic and audits) and streamline the package, rctools makes use of R’s “options”. Options are variables which are instantiated at the start of an R session. You can see a list of all options by running <code>options()</code> or access individual items using the <code>getOption()</code> function. However, all rctools functions are written with the flexibility to be used without options, provided the user is able to supply the necessary arguments.</p>
 <p>The workflow of rctools is- 1)Run <code>rc_setup()</code>, 2)Run other functions as needed. <code>rc_setup()</code> downloads project metadata from the REDCap API and makes it available for other rc_tools functions. However, for those without API access, all functions have metadata arguments so that the necessary items can be supplied directly and are written to operate without project metadata where necessary (if possible).</p>
 <p>By default, <code>rc_setup()</code> will export all project metadata and save that metadata to an option called “redcap_bundle”. For security purposes, your token will be saved as a separate option called “redcap_token”. Neither of these options will persist across R sessions- if you wish to further reduce API calls, consider saving the bundle for future use.</p>
@@ -479,16 +480,20 @@ missing_data[&quot;variables_table&quot;]</code></pre>
   record_id visit_1_sex redcap_event_name variable value
       &lt;int&gt; &lt;fct&gt;       &lt;fct&gt;             &lt;fct&gt;    &lt;dbl&gt;
 1     30803 Male        visit_2_arm_1     weight     113</code></pre>
-<p>One last trick we can do with rctools is to perform some cursory checks on the branching logic using <code>rc_logic_check()</code>. Note that this function does not check syntax (and it likely never will). What it does check for are common errors that REDCap won’t pick up. Most notably, when using the pattern <code>[event-name] = &quot;event_name&quot;</code> REDCap does not verify that the right-hand string actually contains a valid event name. This function will check these event names and bracketed event names preceeding a variable name. Additionaly, it will look for inconsistent event name logic where two pieces of <code>[event-name] = &quot;event_name&quot;</code> logic are joined by <code>AND</code> or two pieces of <code>[event-name] != &quot;event_name&quot;</code> are joined by <code>OR</code>. These logic patterns will result in fields that are either always hidden or always displayed (respectively).</p>
-<pre class="r"><code>&gt;rc_logic_check()
+<p>One last trick we can do with rctools is to perform some cursory checks on the branching logic using <code>rc_logic_check()</code>. Note that this function does not check syntax (and it likely never will). What it does check for are common errors that REDCap won’t pick up. Most notably, when using the pattern <code>[event-name] = &quot;event_name&quot;</code> REDCap does not verify that the right-hand string actually contains a valid event name. This function will check these event names and bracketed event names preceeding a variable name. Additionaly, it will look for inconsistent event name logic where two pieces of <code>[event-name] = &quot;event_name&quot;</code> logic are joined by <code>AND</code> or two pieces of <code>[event-name] != &quot;event_name&quot;</code> are joined by <code>OR</code>. These logic patterns will result in fields that are either always hidden or always displayed (respectively). These checks can be quite useful for projects under active development, where event and variable names may change frequently.</p>
+<pre class="r"><code># Let&#39;s have a look at an example project
+&gt;rc_logic_check()
 Invalid event names were found in the following fields:
-[1] &quot;bd_drawtime&quot;    &quot;bd_drawloc&quot;     &quot;stool_time&quot;     &quot;stool_obtained&quot; &quot;uspot_fast&quot;    
+[1] &quot;vd_icf_screen&quot; &quot;bd_hcg&quot;        &quot;bd_adequate&quot;  
 Invalid event names:
-[1] &quot;screening_visit_1_arm_1&quot;
+[1] &quot;screeing_visit_arm_1&quot;    &quot;screening_visit_1_arm_1&quot;
 
 No invalid variable names were found
 
-No [event-name] logic errors were found.</code></pre>
+Use of &quot;[event-name]=&#39;event_name&#39; AND [event-name]=&#39;event_name&#39;&quot; logic found.
+This will result in the field always being hidden. Please review branching
+logic in the following fields:
+[1] &quot;vd_hchange&quot;</code></pre>
 </div>
 
 
