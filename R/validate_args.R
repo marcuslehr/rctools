@@ -146,7 +146,7 @@ validate_args <- function(required = NULL,
   vars = c('report_id','batch.size','sd_threshold')
 		
 		# Make formula
-		massert_formula = formula(paste('~',paste(vars,collapse = ' + ')))
+		massert_formula = stats::formula(paste('~',paste(vars,collapse = ' + ')))
 		
 		# Generate null.ok list
 		null.ok = as.list(!vars %in% required)
@@ -165,7 +165,7 @@ validate_args <- function(required = NULL,
   vars = c('url','token','id_field','logfile','completion_field')
   
 		# Make formula
-		massert_formula = formula(paste('~',paste(vars,collapse = ' + ')))
+		massert_formula = stats::formula(paste('~',paste(vars,collapse = ' + ')))
 		
 		# Generate null.ok list
 		null.ok = as.list(!vars %in% required)
@@ -184,7 +184,7 @@ validate_args <- function(required = NULL,
   vars = c('records','fields','forms','events','colClasses','group_by','var_roots')
 		
 		# Make formula
-		massert_formula = formula(paste('~',paste(vars,collapse = ' + ')))
+		massert_formula = stats::formula(paste('~',paste(vars,collapse = ' + ')))
 		
 		# Generate null.ok list
 		null.ok = as.list(!vars %in% required)
@@ -204,7 +204,7 @@ validate_args <- function(required = NULL,
 	if (any(vars %in% required)) {
 	
 		# Make formula
-		massert_formula = formula(paste('~',paste(vars,collapse = ' + ')))
+		massert_formula = stats::formula(paste('~',paste(vars,collapse = ' + ')))
 		
 		# Assert
 		massert(massert_formula,
@@ -224,7 +224,7 @@ validate_args <- function(required = NULL,
 					 'numeric_only')
 		
 		# Make formula
-		massert_formula = formula(paste('~',paste(vars,collapse = ' + ')))
+		massert_formula = stats::formula(paste('~',paste(vars,collapse = ' + ')))
 		
 		# Generate null.ok list
 		null.ok = as.list(!vars %in% required)
@@ -244,7 +244,7 @@ validate_args <- function(required = NULL,
 						'arms','mappings','proj_info')
 		
 		# Make formula
-		massert_formula = formula(paste('~',paste(vars,collapse = ' + ')))
+		massert_formula = stats::formula(paste('~',paste(vars,collapse = ' + ')))
 		
 		# Generate null.ok list
 		null.ok = as.list(!vars %in% required)
@@ -263,7 +263,7 @@ validate_args <- function(required = NULL,
   vars = c('bundle','fields_list')
 		
 		# Make formula
-		massert_formula = formula(paste('~',paste(vars,collapse = ' + ')))
+		massert_formula = stats::formula(paste('~',paste(vars,collapse = ' + ')))
 		
 		# Generate null.ok list
 		null.ok = as.list(!vars %in% required)
@@ -354,7 +354,7 @@ validate_args <- function(required = NULL,
       fields_valid = c(fields_valid,
                        'redcap_event_name','redcap_repeat_instrument','redcap_repeat_instance',
 											 sprintf("%s_complete", unique(data_dict$form_name))) %>% 
-											na.omit() # Not sure this is necessary			
+											stats::na.omit() # Not sure this is necessary			
         
       # Find any fields not in the meta data
       fields_bad = setdiff(fields, fields_valid)

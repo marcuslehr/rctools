@@ -37,6 +37,7 @@ validate_args(
   unfiltered = NULL,
   long_format = NULL,
   table = NULL,
+  numeric_only = NULL,
   record_data = NULL,
   data_dict = NULL,
   users = NULL,
@@ -116,6 +117,8 @@ the calling function.}
 \item{long_format}{Logical, length == 1}
 
 \item{table}{Logical, length == 1}
+
+\item{numeric_only}{Logical, length == 1}
 
 \item{record_data}{Data.frame; contains record_id and redcap_event_name columns}
 

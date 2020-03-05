@@ -9,6 +9,7 @@ rc_pool(
   var_roots = NULL,
   fields_list = NULL,
   long_format = FALSE,
+  numeric_only = FALSE,
   id_field = getOption("redcap_bundle")$id_field
 )
 }
@@ -19,8 +20,8 @@ purposes of this function, only quantitative data will be kept.}
 \item{var_roots}{Character. Strings to search for within column names of
 record_data. For each variable root provided, all column names containing the
 root will be pooled into a single column. In order to prevent inappropriate
-matches, the search space will be restricted to columns which appear to contain
-numerical data.}
+matches, the argument \code{numeric_only} can be used to restrict the search
+space to columns which appear to contain numerical data.}
 
 \item{fields_list}{List. A list in the format \code{list(new_column = c("old","column","names"))}.
 Unlike \code{var_roots}, the column names provided here will be matched exactly.
@@ -32,27 +33,29 @@ be in long or wide format. Default is \code{FALSE}. This option is useful for mo
 aggressive pooling- particularly when there are same-row data points that will be
 lost in wide format.}
 
+\item{numeric_only}{Logical. Determines if only fields containing numerical data
+should be searched when using \code{var_roots}. Default is \code{FALSE}}
+
 \item{id_field}{Character. Field name corresponding to the 'record_id' field.}
 }
 \description{
 For each variable root provided, all column names in the
 record_data containing that root will be pooled into a single column and
-appended to the end of the dataframe. Roots provided via \code{var_roots}
-will only be matched to columns containing numeric data to reduce false matches.
-An attribute describing the columns pooled will be appended to the dataframe,
-which can be accessed via the command
+appended to the end of the dataframe. To see which columns have been pooled,
+run the command \code{attributes([YOUR_DATA_FRAME])$pooled_vars} on the
+returned dataframe.
 
-Additionally, exact (i.e. full name) matching can be performed with the
-\code{fields_list} argument. Fields provided in this argument will be searched
-for in all columns. If both arguments are provided, \code{fields_list} will be
-applied first.
+If desired, the search space of \code{var_roots} can be restricted to only
+columns containing numeric data to reduce false matches. Additionally, exact
+(i.e. full name) matching can be performed with the \code{fields_list} argument.
+Fields provided in this argument will be searched for in all columns. If both
+arguments are provided, \code{fields_list} will be applied first.
 
 Furthermore, if the columns selected to be pooled contain more than one
 data point per row, the first data point will be used. In this case, pooling is
-likely inappropriate and the pooled columns should be reviewed. To see which columns
-have been pooled, run the command \code{attributes([YOUR_DATA_FRAME])$pooled_vars}
-on the returned dataframe. If for some reason pooling is still desirable and all data
-points should be kept, use \code{long_format = TRUE} for more aggressive pooling.
+likely inappropriate and the pooled columns should be reviewed. However, if for
+some reason pooling is still desirable and all data points should be kept,
+use \code{long_format = TRUE} for more aggressive pooling.
 }
 \details{
 The intention of this function is to correct for inefficient

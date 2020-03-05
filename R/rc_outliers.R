@@ -53,12 +53,12 @@ rc_outliers <- function(record_data, sex_var = NA, sd_threshold = 2.5,
   if (!is.null(data_dict)) {
     instrVarMap = data_dict[,1:2] %>% dplyr::rename(variable = field_name)
     record_data = suppressWarnings(dplyr::left_join(record_data, instrVarMap, by = 'variable'))
-    record_data = record_data[na.omit(c(id_field, sex_var, rc_fields, 'form_name', 'variable', 'value'))]
+    record_data = record_data[stats::na.omit(c(id_field, sex_var, rc_fields, 'form_name', 'variable', 'value'))]
   }
   else message("Form names cannot be added unless data_dict is supplied.")
   
   # Identify outliers for each variable
-  groups = c(sex_var, 'variable') %>% na.omit()
+  groups = c(sex_var, 'variable') %>% stats::na.omit()
   record_data = record_data %>% dplyr::group_by_at(groups) %>% 
                   dplyr::mutate(outlier = abs(scale(value))>sd_threshold) %>%
                   dplyr::ungroup() %>% dplyr::arrange(!!dplyr::sym(id_field))

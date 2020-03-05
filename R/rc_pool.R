@@ -3,22 +3,21 @@
 #' @title Pools columns for aggregated analysis of fields with like data
 #' @description For each variable root provided, all column names in the 
 #' record_data containing that root will be pooled into a single column and
-#' appended to the end of the dataframe. Roots provided via \code{var_roots} 
-#' will only be matched to columns containing numeric data to reduce false matches.
-#' An attribute describing the columns pooled will be appended to the dataframe,
-#' which can be accessed via the command 
+#' appended to the end of the dataframe. To see which columns have been pooled, 
+#' run the command \code{attributes([YOUR_DATA_FRAME])$pooled_vars} on the 
+#' returned dataframe.
 #' 
-#' Additionally, exact (i.e. full name) matching can be performed with the 
-#' \code{fields_list} argument. Fields provided in this argument will be searched
-#' for in all columns. If both arguments are provided, \code{fields_list} will be 
-#' applied first. 
+#' If desired, the search space of \code{var_roots} can be restricted to only
+#' columns containing numeric data to reduce false matches. Additionally, exact 
+#' (i.e. full name) matching can be performed with the \code{fields_list} argument. 
+#' Fields provided in this argument will be searched for in all columns. If both 
+#' arguments are provided, \code{fields_list} will be applied first. 
 #' 
 #' Furthermore, if the columns selected to be pooled contain more than one 
 #' data point per row, the first data point will be used. In this case, pooling is 
-#' likely inappropriate and the pooled columns should be reviewed. To see which columns
-#' have been pooled, run the command \code{attributes([YOUR_DATA_FRAME])$pooled_vars}
-#' on the returned dataframe. If for some reason pooling is still desirable and all data
-#' points should be kept, use \code{long_format = TRUE} for more aggressive pooling.
+#' likely inappropriate and the pooled columns should be reviewed. However, if for 
+#' some reason pooling is still desirable and all data points should be kept, 
+#' use \code{long_format = TRUE} for more aggressive pooling.
 #' 
 #' @details The intention of this function is to correct for inefficient
 #' REDCap project design where the same data measurement has been assigned to
@@ -33,8 +32,8 @@
 #' @param var_roots Character. Strings to search for within column names of
 #' record_data. For each variable root provided, all column names containing the
 #' root will be pooled into a single column. In order to prevent inappropriate
-#' matches, the search space will be restricted to columns which appear to contain
-#' numerical data. 
+#' matches, the argument \code{numeric_only} can be used to restrict the search 
+#' space to columns which appear to contain numerical data. 
 #' @param fields_list List. A list in the format \code{list(new_column = c("old","column","names"))}.
 #' Unlike \code{var_roots}, the column names provided here will be matched exactly.
 #' In addition, if both \code{var_roots} and \code{fields_list} are provided, 
@@ -112,6 +111,7 @@ rc_pool <- function(record_data, var_roots = NULL, fields_list = NULL,
                                                           levels(molten_data$variable))]
                                                     
         if (length(cols) > 0) {
+          
           # Note the variables which will be changed
           fields_changed[[names(fields_list)[f]]] = cols
           
@@ -134,6 +134,7 @@ rc_pool <- function(record_data, var_roots = NULL, fields_list = NULL,
         cols = col_names[grepl(r, col_names)]
         
         if (length(cols) > 0) {
+          
           # Note the variables which will be changed
           fields_changed[[r]] = cols
           
@@ -167,6 +168,15 @@ rc_pool <- function(record_data, var_roots = NULL, fields_list = NULL,
           # Note variables to be changed
           fields_changed[[f]] = cols
           
+          # If selected columns are different classes, convert to character
+          col_types = sapply(record_data[cols], function(x) paste(class(x),collapse = ' ')) %>% unlist()
+          col_types = stringr::str_replace_all(col_types, "\\s?labelled\\s?", '') # Remove labelled flag in case of incomplete labelling
+          
+          if (length(unique(col_types)) > 1){
+            message("Classes of columns matching the root ", r, " are non-identical. They will be coerced to character.")
+            record_data[cols] = sapply(record_data[cols], function(x) x = as.character(x))
+          }
+          
           # Warn about multiple data points in rows
           if (any(record_data[cols] %>% is.na() %>% rowSums() < length(record_data[cols]) - 1))
             warning("Same row data points were found within columns: ", paste(cols, collapse = ', '),
@@ -196,10 +206,18 @@ rc_pool <- function(record_data, var_roots = NULL, fields_list = NULL,
         cols = col_names[grepl(r, col_names)]
         
         if (length(cols)>0) {
-          # Validate cols are all the same class?
           
           # Note variables to be changed
           fields_changed[[r]] = cols
+          
+          # If selected columns are different classes, convert to character
+          col_types = sapply(record_data[cols], function(x) paste(class(x),collapse = ' ')) %>% unlist()
+          col_types = stringr::str_replace_all(col_types, "\\s?labelled\\s?", '') # Remove labelled flag in case of incomplete labelling
+          
+          if (length(unique(col_types)) > 1){
+            message("Classes of columns matching the root ", r, " are non-identical. They will be coerced to character.")
+            record_data[cols] = sapply(record_data[cols], function(x) x = as.character(x))
+          }
           
           # Warn about multiple data points in rows
           if (any(record_data[cols] %>% is.na() %>% rowSums() < length(record_data[cols]) - 1))

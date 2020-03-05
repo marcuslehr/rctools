@@ -115,7 +115,7 @@ rc_missing <- function(record_data, completion_field = NULL,
   }
   
   # Remove hidden fields
-  fields_hidden = data_dict$field_name[data_dict$field_annotation == '@HIDDEN'] %>% na.omit()
+  fields_hidden = data_dict$field_name[data_dict$field_annotation == '@HIDDEN'] %>% stats::na.omit()
   if (any(fields_hidden %in% names(record_data))) {
     message("Any fields hidden by the '@HIDDEN action tag will dropped.")
     record_data = dplyr::select(record_data, -all_of(fields_hidden))
@@ -125,7 +125,7 @@ rc_missing <- function(record_data, completion_field = NULL,
   
   if (any(names(record_data)==completion_field)) {
     # Grab completion data then remove from data
-    completionData = dplyr::select(record_data, all_of(id_field), all_of(completion_field)) %>% na.omit()
+    completionData = dplyr::select(record_data, all_of(id_field), all_of(completion_field)) %>% stats::na.omit()
     record_data = dplyr::select(record_data, -all_of(completion_field))
     # completionData$record_id = as.character(completionData$record_id)
   }
@@ -239,7 +239,6 @@ rc_missing <- function(record_data, completion_field = NULL,
     # Remove forms where no users have access
     if (!is.null(form_perm)) {
       
-      form_perm = bundle2935$form_perm
       forms_available = subset(form_perm, permission != 'No access')$form_name %>% unique()
       forms_hidden = subset(form_perm, permission == 'No access')$form_name %>% unique()
       forms_hidden = forms_hidden[!forms_hidden %in% forms_available]

@@ -63,14 +63,14 @@ plot_outliers <- function(outlier_data, sex_var = NA,
         # Standard deviation lines
         ggplot2::geom_hline(yintercept = mean(pData$value), color = '#ffffff', linetype= 3, alpha= 0.25)+
         
-        ggplot2::geom_hline(yintercept = mean(pData$value) + 1*sd(pData$value), color = '#ff8080', linetype= 3, alpha= 0.25)+
-        ggplot2::geom_hline(yintercept = mean(pData$value) - 1*sd(pData$value), color = '#ff8080', linetype= 3, alpha= 0.25)+
+        ggplot2::geom_hline(yintercept = mean(pData$value) + 1*stats::sd(pData$value), color = '#ff8080', linetype= 3, alpha= 0.25)+
+        ggplot2::geom_hline(yintercept = mean(pData$value) - 1*stats::sd(pData$value), color = '#ff8080', linetype= 3, alpha= 0.25)+
         
-        ggplot2::geom_hline(yintercept = mean(pData$value) + 2*sd(pData$value), color = '#ff4040', linetype= 3, alpha= 0.25)+
-        ggplot2::geom_hline(yintercept = mean(pData$value) - 2*sd(pData$value), color = '#ff4040', linetype= 3, alpha= 0.25)+
+        ggplot2::geom_hline(yintercept = mean(pData$value) + 2*stats::sd(pData$value), color = '#ff4040', linetype= 3, alpha= 0.25)+
+        ggplot2::geom_hline(yintercept = mean(pData$value) - 2*stats::sd(pData$value), color = '#ff4040', linetype= 3, alpha= 0.25)+
         
-        ggplot2::geom_hline(yintercept = mean(pData$value) + 3*sd(pData$value), color = '#ff0000', linetype= 3, alpha= 0.25)+
-        ggplot2::geom_hline(yintercept = mean(pData$value) - 3*sd(pData$value), color = '#ff0000', linetype= 3, alpha= 0.25)
+        ggplot2::geom_hline(yintercept = mean(pData$value) + 3*stats::sd(pData$value), color = '#ff0000', linetype= 3, alpha= 0.25)+
+        ggplot2::geom_hline(yintercept = mean(pData$value) - 3*stats::sd(pData$value), color = '#ff0000', linetype= 3, alpha= 0.25)
     }
     #Display plots.
     gridExtra::grid.arrange(grobs = scPlotsRaw[[i]], top = paste(sexes[i], 'data'))

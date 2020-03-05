@@ -59,7 +59,7 @@ token = getOption("redcap_token"),
   names(logic) <- data_dict$field_name
 
   start_value <- 2 + sum(c("redcap_event_name", "redcap_data_access_group") %in% names(records))
-  for (i in tail(seq_along(records), -(start_value - 1))){
+  for (i in utils::tail(seq_along(records), -(start_value - 1))){
 
     l <- logic[[names(records)[i]]]
 
@@ -119,12 +119,12 @@ token = getOption("redcap_token"),
 missingSummary_offline <- function(records, data_dict,
                                    excludeMissingForms = TRUE){
 
-  records <- read.csv(records,
+  records <- utils::read.csv(records,
                       stringsAsFactors=FALSE,
                       na.string="")
   #   records.orig <- records
 
-  data_dict <- read.csv(data_dict,
+  data_dict <- utils::read.csv(data_dict,
                         col.names=c('field_name', 'form_name', 'section_header',
                                     'field_type', 'field_label', 'select_choices_or_calculations',
                                     'field_note', 'text_validation_type_or_show_slider_number',
@@ -142,7 +142,7 @@ missingSummary_offline <- function(records, data_dict,
   names(logic) <- data_dict$field_name
 
   start_value <- 2 + sum(c("redcap_event_name", "redcap_data_access_group") %in% names(records))
-  for (i in tail(seq_along(records), -(start_value - 1))){
+  for (i in utils::tail(seq_along(records), -(start_value - 1))){
     l <- logic[[names(records)[i]]]
 
     tmp_form <- data_dict$form_name[data_dict$field_name ==

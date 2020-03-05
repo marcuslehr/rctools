@@ -38,7 +38,7 @@ rc_fill <- function(record_data, ...,
     # Count items per group in each column
     x = suppressMessages(
             dplyr::group_by(record_data, !!dplyr::sym(group_by)) %>% dplyr::select(all_of(col)) %>% 
-            na.omit() %>% dplyr::summarise(n = dplyr::n())
+            stats::na.omit() %>% dplyr::summarise(n = dplyr::n())
         )
     counts[[col]] = max(x$n)
   }

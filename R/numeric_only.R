@@ -77,7 +77,7 @@ numeric_only <- function(record_data,
   }
   
   # Create melting variables and add to fields list
-  meltVars = c(id_field, sex_var, rc_fields) %>% na.omit()
+  meltVars = c(id_field, sex_var, rc_fields) %>% stats::na.omit()
   meltVars = meltVars[meltVars %in% names(record_data)]
   fields = c(meltVars, fields) %>% unique()
   
