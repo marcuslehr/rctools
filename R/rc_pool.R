@@ -186,8 +186,9 @@ rc_pool <- function(record_data, var_roots = NULL, fields_list = NULL,
           # Pool
           record_data = dplyr::mutate(record_data, !!f := dplyr::coalesce(!!!as.list(record_data[,cols])))
           
-          # Remove old columns
-          record_data = dplyr::select(record_data, -all_of(cols))
+          # Remove old columns. Explicitly add new col at end to prevent accident removal 
+          # (ie when contained within 'cols')
+          record_data = dplyr::select(record_data, -all_of(cols), all_of(f))
         }
       }
     }
@@ -228,8 +229,9 @@ rc_pool <- function(record_data, var_roots = NULL, fields_list = NULL,
           # Pool
           record_data = dplyr::mutate(record_data, !!r := dplyr::coalesce(!!!as.list(record_data[,cols])))
            
-          # Remove old columns
-          record_data = dplyr::select(record_data, -all_of(cols))
+          # Remove old columns. Explicitly add new col at end to prevent accident removal 
+          # (ie when contained within 'cols')
+          record_data = dplyr::select(record_data, -all_of(cols), all_of(r))
         }
         else message("No columns containing root '", paste(r), "' were found.")
       }
