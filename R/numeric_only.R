@@ -86,9 +86,9 @@ numeric_only <- function(record_data,
   
   # Fill sex variable before melt, if applicable
   if (!is.na(sex_var))
-    if(any(is.na(record_data[sex_var]))) # This condition is an attempt to avoid an error when the var
-                                        # has already been filled. rc_fill will still throw an error
-																				# on an incomplete fill
+    if(any(is.na(record_data[sex_var]))) # This condition is an attempt to avoid an error when the
+                                        # var has already been filled. An error will still be thrown
+																				# for an incomplete fill
     record_data = rc_fill(record_data, sex_var)
   
   # Convert to long format. Dates get destroyed by melt()

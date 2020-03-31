@@ -8,20 +8,20 @@
 #'   
 #' @param report_id Numeric. ID number for a report created in REDCap. 
 #'   
-#' @param url A url address to connect to the REDCap API
-#' @param token A REDCap API token
-#' @param bundle A \code{redcapBundle} object as created by \code{rc_setup}. 
-#'   For the purposes of this function, the data dictionary and events data 
-#'   may be required.
+#' @param url Character. A url address to connect to the REDCap API
+#' @param token Character. A REDCap API token
+#' @param data_dict Dataframe. REDCap project data data_dictionary. By default, 
+#' this will be fetched from the REDCap bundle option, as created by \code{rc_setup}.
+#' Otherwise, a data.frame containing the project data dictionary must be supplied.
 #' 
-#' @param records A vector of study id's to be returned.  If \code{NULL}, all 
+#' @param records Character. A vector of study id's to be returned.  If \code{NULL}, all 
 #'   subjects are returned.
-#' @param fields A character vector of fields to be returned.  If \code{NULL}, 
+#' @param fields Character. A vector of fields to be returned.  If \code{NULL}, 
 #'   all fields are returned.
-#' @param forms A character vector of forms to be returned.  If \code{NULL}, 
+#' @param forms Character. A vector of forms to be returned.  If \code{NULL}, 
 #'   all forms are returned.
-#' @param events A character vector of events to be returned from a 
-#'   longitudinal database.  If \code{NULL}, all events are returned.
+#' @param events Character. A vector of events to be returned from a longitudinal database.
+#'   If \code{NULL}, all events are returned.
 #' @param survey Logical. Specifies whether or not to export the survey identifier field 
 #'   (e.g., "redcap_survey_identifier") or survey timestamp fields 
 #'   (e.g., form_name+"_timestamp") when surveys are utilized in the project. 
@@ -134,7 +134,7 @@
 rc_export <- function(report_id = NULL,
                        url = getOption("redcap_bundle")$redcap_url,
                        token = getOption("redcap_token"),
-                       bundle = getOption("redcap_bundle"),
+                       data_dict = getOption("redcap_bundle")$data_dict,
                        records = NULL, fields = NULL, forms = NULL,
                        events = NULL, survey = TRUE, dag = TRUE,
                        form_complete_auto = FALSE,
@@ -144,23 +144,17 @@ rc_export <- function(report_id = NULL,
                        ) {
 
 # Checks ------------------------------------------------------------------
-
-  
-  # Initial checks
-  if (is.null(url) & !is.null(bundle)) 
-    url = bundle$redcap_url
   
   required = c('url','token')
   
   if (format | form_complete_auto) {
-    if (is.null(bundle$data_dict)) 
-      stop("bundle$data_dict must be supplied when using the 'format' (default = T) or 'form_complete_auto' arguments.")
+    if (is.null(data_dict)) 
+      stop("data_dict must be supplied when using the 'format' (default = T) or 'form_complete_auto' arguments.")
     required = c(required,'data_dict')
   }
   
   validate_args(required = required,
-                url = url, token = token, bundle = bundle,
-                data_dict = bundle$data_dict, event_data = bundle$event_data,
+                url = url, token = token, data_dict = data_dict,
                 fields = fields, forms = forms, events = events,
                 records = records, survey = survey, dag = dag,
                 form_complete_auto = form_complete_auto, format = format,
@@ -195,38 +189,34 @@ rc_export <- function(report_id = NULL,
 
 # Export Records ----------------------------------------------------------
 
-    else {    
-    
-      ## Checks 
+    else {
+      
+      # Get record_id field name
+      id_field = getID(id_field = getOption("redcap_bundle")$id_field,
+                       data_dict = data_dict)
+      
+      # Append default and complete fields to the export
+      if (!is.null(fields))
+        # Append default fields
+        fields <- unique(c(id_field,
+                           "redcap_event_name","redcap_repeat_instrument","redcap_repeat_instance",
+                           fields))
+      
+      
+      if (!is.null(data_dict)) {
         
-        # Get record_id field name
-        id_field = getID(id_field = getOption("redcap_bundle")$id_field,
-                         data_dict = bundle$data_dict)
+        #* for purposes of the export, we don't need the descriptive fields.
+        #* Including them makes the process more error prone, so we'll ignore them.
+        ## I believe this only affected checkbox_suffixes (no longer used here)
+        data_dict <- data_dict[!data_dict$field_type %in% "descriptive",]
         
-        # Append default and complete fields to the export
-        if (!is.null(fields))
-          # Append default fields
-          fields <- unique(c(id_field,
-                             "redcap_event_name","redcap_repeat_instrument","redcap_repeat_instance",
-                             fields))
-        
-        
-        if (!is.null(bundle$data_dict)) {
-          
-          data_dict = bundle$data_dict
-          
-          #* for purposes of the export, we don't need the descriptive fields.
-          #* Including them makes the process more error prone, so we'll ignore them.
-          ## I believe this only affected checkbox_suffixes (no longer used here)
-          data_dict <- data_dict[!data_dict$field_type %in% "descriptive",]
-          
-          if (!is.null(fields) & form_complete_auto) {
-            # Auto append complete fields if desired
-            form_complete_fields <- sprintf("%s_complete", unique(data_dict$form_name[data_dict$field_name %in% fields]))
-            form_complete_fields <- form_complete_fields[!is.na(form_complete_fields)]
-            fields <- unique(c(fields, form_complete_fields))
-          }
+        if (!is.null(fields) & form_complete_auto) {
+          # Auto append complete fields if desired
+          form_complete_fields <- sprintf("%s_complete", unique(data_dict$form_name[data_dict$field_name %in% fields]))
+          form_complete_fields <- form_complete_fields[!is.na(form_complete_fields)]
+          fields <- unique(c(fields, form_complete_fields))
         }
+      }
       
       # Create body for POST()
       body <- list(token = token,

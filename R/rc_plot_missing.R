@@ -1,21 +1,20 @@
-#' @name plot_missing
+#' @name rc_plot_missing
 #'
 #' @title Plot data from rc_missing
 #' @description  Creates a pie chart for each variable passed from 
-#' \code{rc_missing}. These plots are useful for investigating the
-#' structure of missing data. This function can be called from the
-#' \code{plot} argument in \code{rc_missing}. Also try the \code{table}
-#' argument in \code{rc_missing} for further investigation. 
-#' 
-#' This is an internal function only.
+#' \code{rc_missing} and returns list containing the plots. *NOTE* The 
+#' data passed from \code{rc_missing} must be in long format. These 
+#' plots are useful for investigating the structure of missing data.  
 #' 
 #' @param missing_data Dataframe. A frame of long format missing data, as 
 #' created by \code{rc_missing}.
 #' 
 #' @author Marcus Lehr
+#' 
+#' @export
  
 
-plot_missing <- function(missing_data) {
+rc_plot_missing <- function(missing_data) {
   
   # Make column counts and other data for plots
   counts = list()
@@ -45,6 +44,7 @@ plot_missing <- function(missing_data) {
       ggplot2::labs(title = paste0(names(counts)[i], ' distribution in missing data, plot ',
                                    i,' of ',length(counts)))
     
-    gridExtra::grid.arrange(pieCharts[[i]])
+    # gridExtra::grid.arrange(pieCharts[[i]])
   }
+  return(pieCharts)
 }

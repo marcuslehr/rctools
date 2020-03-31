@@ -105,6 +105,7 @@ rc_import <- function(record_data,
   
   #*** Remove calculated fields
   fields_calc <- data_dict$field_name[data_dict$field_type == "calc"]
+  fields_calc = fields_calc[fields_calc %in% names(record_data)]
   
   if (length(fields_calc) > 0) {
     record_data <- record_data[!names(record_data) %in% fields_calc]
@@ -117,6 +118,7 @@ rc_import <- function(record_data,
   
   #** Confirm that date fields are either character, Date class, or POSIXct
   date_vars <- data_dict$field_name[grepl("date_", data_dict$text_validation_type_or_show_slider_number)]
+  date_vars = date_vars[date_vars %in% names(record_data)]
   
   bad_date_fmt <- 
     !vapply(X = record_data[date_vars], 

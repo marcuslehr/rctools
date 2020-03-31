@@ -74,7 +74,7 @@ rc_pool <- function(record_data, var_roots = NULL, fields_list = NULL,
   meltVars = c(id_field, rc_fields)[c(id_field, rc_fields) %in% names(record_data)]
   
   # Instantiate list to log the affected fields
-  fields_changed = list()
+  fields_changed = data.frame()
   
   # Check for errors in fields_list
 	if (!is.null(fields_list)) {
@@ -113,7 +113,8 @@ rc_pool <- function(record_data, var_roots = NULL, fields_list = NULL,
         if (length(cols) > 0) {
           
           # Note the variables which will be changed
-          fields_changed[[names(fields_list)[f]]] = cols
+          fields_changed = rbind(fields_changed, data.frame(pooled_vars = names(fields_list)[f]),rc_vars = cols)
+          # fields_changed[[names(fields_list)[f]]] = cols
           
           # Change variable names
           levels(molten_data$variable)[grepl(paste0('^',fields_list[[f]],'$', collapse = '|'), 
@@ -136,7 +137,8 @@ rc_pool <- function(record_data, var_roots = NULL, fields_list = NULL,
         if (length(cols) > 0) {
           
           # Note the variables which will be changed
-          fields_changed[[r]] = cols
+          fields_changed = rbind(fields_changed, data.frame(pooled_vars = r,rc_vars = cols))
+          # fields_changed[[r]] = cols
           
           # Change variable names
           levels(molten_data$variable)[grepl(paste0('^',fields_changed[[r]],'$', collapse = '|'), 
@@ -166,7 +168,8 @@ rc_pool <- function(record_data, var_roots = NULL, fields_list = NULL,
         if (length(cols) > 0) {
           
           # Note variables to be changed
-          fields_changed[[f]] = cols
+          fields_changed = rbind(fields_changed, data.frame(pooled_vars = f,rc_vars = cols))
+          # fields_changed[[f]] = cols
           
           # If selected columns are different classes, convert to character
           col_types = sapply(record_data[cols], function(x) paste(class(x),collapse = ' ')) %>% unlist()
@@ -209,7 +212,8 @@ rc_pool <- function(record_data, var_roots = NULL, fields_list = NULL,
         if (length(cols)>0) {
           
           # Note variables to be changed
-          fields_changed[[r]] = cols
+          fields_changed = rbind(fields_changed, data.frame(pooled_vars = r,rc_vars = cols))
+          # fields_changed[[r]] = cols
           
           # If selected columns are different classes, convert to character
           col_types = sapply(record_data[cols], function(x) paste(class(x),collapse = ' ')) %>% unlist()

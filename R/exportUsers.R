@@ -14,23 +14,7 @@
 #' @param error_handling An option for how to handle errors returned by the API.
 #'   see \code{\link{redcap_error}}
 #'
-#' @details
-#' For some reason I have yet to identify, some User Tables do not
-#' export correctly. In some situations, the fields are all shifted one
-#' column to the left and the form names are not always exported.
-#' This seems to be more common in projects still in Development mode.
-#' I have seen one instance of a project in Production where one user had
-#' one more column given than any other user.  If you notice this behavior,
-#' please report it to me as it may help me narrow down the source of the problem
 #' 
-#' @section REDCap API Documentation (6.5.0):
-#' This function allows you to export the users for a project
-#' 
-#' @section REDCap Version:
-#' 5.8.2 (Perhaps earlier) 
-#' 
-#' @section Known REDCap Limitations:
-#' None
 #' 
 #' @return 
 #' Returns a data frame. The number of columns in the data frame will depend on your 

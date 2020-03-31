@@ -11,7 +11,6 @@ rc_missing(
   data_dict = getOption("redcap_bundle")$data_dict,
   event_data = getOption("redcap_bundle")$event_data,
   form_perm = getOption("redcap_bundle")$form_perm,
-  plot = FALSE,
   table = FALSE
 )
 }
@@ -36,9 +35,6 @@ event data must be supplied.}
 \item{form_perm}{Dataframe. User access permissions for REDCap forms. By default, $form_perm
 is expected in the REDCap bundle, as created by \code{rc_setup}. Otherwise, an equivalent
 data.frame containing form permission data must be supplied.}
-
-\item{plot}{Logical. Determine if missing results should be plotted. These are useful
-for investigating the structure of missing data, especially when a large amount is returned.}
 
 \item{table}{Logical. If \code{TRUE} a list will be returned containing the missing dataframe
 and two missing tables. The tables contain the percent of missing record_idor variable counts.

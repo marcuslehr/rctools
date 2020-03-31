@@ -1,9 +1,11 @@
 rctools
 ======
 
-The goal of this package is to provide simple, streamlined functions for interfacing with the REDCap API (http://www.project-redcap.org/) and working with REDCap data sets. rctools is an actively developed fork of [redcapAPI](https://github.com/nutterb/redcapAPI). It is not yet on [CRAN](https://cran.r-project.org/), but can be installed via
+The goal of this package is to provide simple, streamlined functions for interfacing with the REDCap API (http://www.project-redcap.org/) and working with REDCap data sets. rctools is an actively developed fork of [redcapAPI](https://github.com/nutterb/redcapAPI). 
+
+It is not yet on [CRAN](https://cran.r-project.org/), however it can be easily installed by downloading the .tar.gz file in the main directory of this repository and running:
 ```r
-devtools::install_github('https://github.com/chillywings/rctools', upgrade = F, quiet = T)
+install.packages("Path/to/rctools/rctools_0.4.5.tar.gz", repos = NULL, type = "source", quiet = T)
 ```
 In an effort to both reduce the number of API calls (important for network traffic and audits) and streamline the package, rctools makes use of R's "options". Options are variables which are instantiated at the start of an R session. You can see a list of all options by running `options()` or access individual items using the `getOption()` function. However, all rctools functions are written with the flexibility to be used without options, provided the user is able to supply the necessary arguments.
 

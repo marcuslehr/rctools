@@ -8,7 +8,7 @@ rc_export(
   report_id = NULL,
   url = getOption("redcap_bundle")$redcap_url,
   token = getOption("redcap_token"),
-  bundle = getOption("redcap_bundle"),
+  data_dict = getOption("redcap_bundle")$data_dict,
   records = NULL,
   fields = NULL,
   forms = NULL,
@@ -26,25 +26,25 @@ rc_export(
 \arguments{
 \item{report_id}{Numeric. ID number for a report created in REDCap.}
 
-\item{url}{A url address to connect to the REDCap API}
+\item{url}{Character. A url address to connect to the REDCap API}
 
-\item{token}{A REDCap API token}
+\item{token}{Character. A REDCap API token}
 
-\item{bundle}{A \code{redcapBundle} object as created by \code{rc_setup}.
-For the purposes of this function, the data dictionary and events data
-may be required.}
+\item{data_dict}{Dataframe. REDCap project data data_dictionary. By default,
+this will be fetched from the REDCap bundle option, as created by \code{rc_setup}.
+Otherwise, a data.frame containing the project data dictionary must be supplied.}
 
-\item{records}{A vector of study id's to be returned.  If \code{NULL}, all
+\item{records}{Character. A vector of study id's to be returned.  If \code{NULL}, all
 subjects are returned.}
 
-\item{fields}{A character vector of fields to be returned.  If \code{NULL},
+\item{fields}{Character. A vector of fields to be returned.  If \code{NULL},
 all fields are returned.}
 
-\item{forms}{A character vector of forms to be returned.  If \code{NULL},
+\item{forms}{Character. A vector of forms to be returned.  If \code{NULL},
 all forms are returned.}
 
-\item{events}{A character vector of events to be returned from a
-longitudinal database.  If \code{NULL}, all events are returned.}
+\item{events}{Character. A vector of events to be returned from a longitudinal database.
+If \code{NULL}, all events are returned.}
 
 \item{survey}{Logical. Specifies whether or not to export the survey identifier field
 (e.g., "redcap_survey_identifier") or survey timestamp fields

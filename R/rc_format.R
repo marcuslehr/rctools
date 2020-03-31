@@ -7,9 +7,9 @@
 #' checkbox labels.
 #' 
 #' @param record_data Dataframe. Record data export from REDCap
-#' @param data_dict Dataframe. REDCap project data data_dictionary. By default, a 
-#' REDCap bundle option, as created by \code{rc_setup}, will be looked for.
-#' Otherwise, a data.frame containing the metadata must be supplied.
+#' @param data_dict Dataframe. REDCap project data data_dictionary. By default, 
+#' this will be fetched from the REDCap bundle option, as created by \code{rc_setup}.
+#' Otherwise, a data.frame containing the project data dictionary must be supplied.
 #' 
 #' @param factors Logical.  Determines if categorical data from the database is 
 #'   returned as numeric codes or labelled factors. See 'Checkbox Variables'

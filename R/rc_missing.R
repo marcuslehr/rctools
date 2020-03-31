@@ -30,8 +30,6 @@
 #' is expected in the REDCap bundle, as created by \code{rc_setup}. Otherwise, an equivalent 
 #' data.frame containing form permission data must be supplied.
 #' 
-#' @param plot Logical. Determine if missing results should be plotted. These are useful 
-#' for investigating the structure of missing data, especially when a large amount is returned.
 #' @param table Logical. If \code{TRUE} a list will be returned containing the missing dataframe
 #' and two missing tables. The tables contain the percent of missing record_idor variable counts.
 #' To view formatted tables, use square bracket indexing- e.g. data[['IDs_table']]
@@ -47,7 +45,7 @@ rc_missing <- function(record_data, completion_field = NULL,
                        data_dict = getOption("redcap_bundle")$data_dict,
                        event_data = getOption("redcap_bundle")$event_data,
                        form_perm = getOption("redcap_bundle")$form_perm,
-                       plot = FALSE, table = FALSE) {
+                       table = FALSE) {
 
 
 # Checks ------------------------------------------------------------------
@@ -66,7 +64,6 @@ rc_missing <- function(record_data, completion_field = NULL,
                 data_dict = data_dict,
                 event_data = event_data,
                 form_perm = form_perm,
-                plot = plot,
                 table = table)
   
   
@@ -257,12 +254,12 @@ rc_missing <- function(record_data, completion_field = NULL,
 
 # Return ------------------------------------------------------------------
 
-  if (nrow(missingData)/nrow(record_data) > .1 &
-      plot == F & table == F)
+  if (nrow(missingData)/nrow(record_data) > .1 & table == F)
     warning("More than 10% of the data appears to be missing. Manual review for false positives is recommended,
-            consider using the 'plot' or 'table' arguments.")
+            consider using the 'table' argument or rc_plot_missing().")
   
-  if (plot == T) plot_missing(missingData)
+  ## This has now been exported as an independent function
+  # if (plot == T) plot_missing(missingData)
   
   if (table == T) {
     return_data = list(missing_data = missingData)

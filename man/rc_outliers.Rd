@@ -7,10 +7,9 @@
 rc_outliers(
   record_data,
   sex_var = NA,
-  sd_threshold = 2.5,
+  sd_threshold = 3,
   data_dict = getOption("redcap_bundle")$data_dict,
   fields = NULL,
-  plot = FALSE,
   unfiltered = FALSE
 )
 }
@@ -30,8 +29,6 @@ $data_dict is expected in the REDCap bundle option, as created by
 
 \item{fields}{Character. A vector of field/variable names to be analyzed
 may be passed manually.}
-
-\item{plot}{Logical. Select whether plots of the data should be produced.}
 
 \item{unfiltered}{Logical. Select whether an unfiltered dataframe should be
 returned, or only outliers (default).}

@@ -22,7 +22,6 @@
 #' \code{rc_setup}. 
 #' @param fields Character. A vector of field/variable names to be analyzed
 #' may be passed manually. 
-#' @param plot Logical. Select whether plots of the data should be produced. 
 #' @param unfiltered Logical. Select whether an unfiltered dataframe should be
 #' returned, or only outliers (default).
 #' 
@@ -32,18 +31,19 @@
 #' 
 #' @export
 
-rc_outliers <- function(record_data, sex_var = NA, sd_threshold = 2.5,
+rc_outliers <- function(record_data, sex_var = NA, sd_threshold = 3,
                         data_dict = getOption("redcap_bundle")$data_dict,
-                        fields = NULL, plot = FALSE, unfiltered = FALSE) {
+                        fields = NULL, unfiltered = FALSE) {
   
   validate_args(required = c('record_data'),
 								record_data = record_data, sex_var = sex_var,
                 sd_threshold = sd_threshold, data_dict = data_dict,
-                fields = fields, plot = plot, unfiltered = unfiltered)
+                fields = fields, unfiltered = unfiltered)
   
   # Get ID column name
   id_field = getID(record_data, data_dict)
-  rc_fields = c('redcap_event_name','redcap_repeat_instrument','redcap_repeat_instance')
+  rc_fields = intersect(c('redcap_event_name','redcap_repeat_instrument','redcap_repeat_instance'),
+                        names(record_data))
 	
 	# Retrieve numeric data from records
   record_data = numeric_only(record_data, data_dict, 
@@ -66,11 +66,11 @@ rc_outliers <- function(record_data, sex_var = NA, sd_threshold = 2.5,
   # NAs result from single values and (I think) standard deviations of 0. Replace them with FALSE
   record_data$outlier[is.na(record_data$outlier)] = FALSE
   
-  
-  # Make plots
-  if (plot) plot_outliers(outlier_data = record_data, 
-                          sex_var = sex_var, 
-                          id_field = id_field)
+  ## This has now been exported as an independent function
+  # # Make plots
+  # if (plot) plot_outliers(outlier_data = record_data, 
+  #                         sex_var = sex_var, 
+  #                         id_field = id_field)
   
   # Filter data
   if (unfiltered == F) record_data = record_data %>% 
