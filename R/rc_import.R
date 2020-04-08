@@ -12,7 +12,7 @@
 #'   fields from overwriting populated fields.  'overwrite' causes blanks to
 #'   overwrite data in the REDCap database.
 #' @param returnContent Character string.  'count' returns the number of
-#'   records imported; 'ids' returns the record ids that are imported;
+#'   records imported; 'ids' returns a list of record ids imported;
 #'   'nothing' returns no message.
 #' @param returnData Logical.  Prevents the REDCap import and instead
 #'   returns the data frame that would have been given
@@ -67,8 +67,8 @@ rc_import <- function(record_data,
                       url = getOption("redcap_bundle")$redcap_url,
                       token = getOption("redcap_token"),
                       data_dict = getOption("redcap_bundle")$data_dict,
-                      overwriteBehavior = c('normal', 'overwrite'),
-                      returnContent = c('count', 'ids', 'nothing'),
+                      overwriteBehavior = 'normal',
+                      returnContent = 'count',
                       returnData = FALSE, logfile = "", batch.size=-1
                       ) {
   

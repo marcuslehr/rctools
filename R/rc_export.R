@@ -45,7 +45,7 @@
 #' retrieved.
 #'   
 #' @param format Logical.  Determines whether the data will be formatted with
-#' \code{rc_format} (Default = TRUE)
+#' \code{rc_format} (Default = FALSE)
 #' @param ... Additional arguments to be passed to \code{rc_format}
 #' 
 #' @param colClasses A (named) vector of colum classes passed to 
@@ -138,7 +138,7 @@ rc_export <- function(report_id = NULL,
                        records = NULL, fields = NULL, forms = NULL,
                        events = NULL, survey = TRUE, dag = TRUE,
                        form_complete_auto = FALSE,
-                       format = TRUE, ...,
+                       format = FALSE, ...,
                        colClasses = NA, batch.size = -1, 
                        error_handling = getOption("redcap_error_handling")
                        ) {
@@ -170,8 +170,12 @@ rc_export <- function(report_id = NULL,
       body <- list(token = token, 
                    content = 'report',
                    format = 'csv', 
-                   returnFormat = 'csv',
-                   report_id = report_id)
+                   report_id = report_id,
+                   csvDelimiter = '',
+                   rawOrLabel = 'raw',
+                   rawOrLabelHeaders = 'raw',
+                   exportCheckboxLabel = 'false',
+                   returnFormat = 'csv')
       
       # Export data
       x <- httr::POST(url = url, 
@@ -223,6 +227,10 @@ rc_export <- function(report_id = NULL,
                    content = 'record',
                    format = 'csv',
                    type = 'flat',
+                   csvDelimiter = '',
+                   rawOrLabel = 'raw',
+                   rawOrLabelHeaders = 'raw',
+                   exportCheckboxLabel = 'false',
                    exportSurveyFields = tolower(survey),
                    exportDataAccessGroups = tolower(dag),
                    returnFormat = 'csv')

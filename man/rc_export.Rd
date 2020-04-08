@@ -16,7 +16,7 @@ rc_export(
   survey = TRUE,
   dag = TRUE,
   form_complete_auto = FALSE,
-  format = TRUE,
+  format = FALSE,
   ...,
   colClasses = NA,
   batch.size = -1,
@@ -71,7 +71,7 @@ from which at least one variable is requested will automatically be
 retrieved.}
 
 \item{format}{Logical.  Determines whether the data will be formatted with
-\code{rc_format} (Default = TRUE)}
+\code{rc_format} (Default = FALSE)}
 
 \item{...}{Additional arguments to be passed to \code{rc_format}}
 

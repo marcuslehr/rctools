@@ -30,7 +30,7 @@ rc_plot_outliers <- function(outlier_data, sex_var = NA,
   
   # Select relevant data.
   outlier_data = outlier_data %>% dplyr::ungroup() %>% 
-                  dplyr::select_at(na.omit(id_field, sex_var, 'variable', 'value', 'outlier')) %>% 
+                  dplyr::select_at(stats::na.omit(c(id_field, sex_var, 'variable', 'value', 'outlier'))) %>% 
                   stats::na.omit() # NA values will cause errors when making sd lines
   
   # Convert IDs to character to treat as categorical

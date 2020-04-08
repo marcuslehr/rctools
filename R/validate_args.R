@@ -212,7 +212,7 @@ validate_args <- function(required = NULL,
 						choices = list(overwriteBehavior = c('normal','overwrite'),
 													 returnContent = c('count', 'ids', 'nothing'),
 													 error_handling = c('null','error')),
-						fixed = list(several.ok = T,
+						fixed = list(several.ok = F,
 												 add = coll))
 	}
 
