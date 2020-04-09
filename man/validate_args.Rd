@@ -38,6 +38,7 @@ validate_args(
   long_format = NULL,
   table = NULL,
   numeric_only = NULL,
+  make_repeat = NULL,
   record_data = NULL,
   data_dict = NULL,
   users = NULL,

@@ -49,7 +49,7 @@ Furthermore, if the columns selected to be pooled contain more than one
 data point per row, the first data point will be used. In this case, pooling is
 likely inappropriate and the pooled columns should be reviewed. However, if for
 some reason pooling is still desirable and all data points should be kept,
-use \code{long_format = TRUE} for more aggressive pooling.
+use \code{make_repeat = TRUE} for more aggressive pooling.
 }
 \details{
 The intention of this function is to correct for inefficient
