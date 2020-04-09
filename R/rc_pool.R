@@ -17,7 +17,7 @@
 #' data point per row, the first data point will be used. In this case, pooling is 
 #' likely inappropriate and the pooled columns should be reviewed. However, if for 
 #' some reason pooling is still desirable and all data points should be kept, 
-#' use \code{long_format = TRUE} for more aggressive pooling.
+#' use \code{make_repeat = TRUE} for more aggressive pooling.
 #' 
 #' @details The intention of this function is to correct for inefficient
 #' REDCap project design where the same data measurement has been assigned to
@@ -31,19 +31,15 @@
 #' purposes of this function, only quantitative data will be kept. 
 #' @param var_roots Character. Strings to search for within column names of
 #' record_data. For each variable root provided, all column names containing the
-#' root will be pooled into a single column. In order to prevent inappropriate
-#' matches, the argument \code{numeric_only} can be used to restrict the search 
-#' space to columns which appear to contain numerical data. 
+#' root will be pooled into a single column. Regular expressions may be used.
 #' @param fields_list List. A list in the format \code{list(new_column = c("old","column","names"))}.
 #' Unlike \code{var_roots}, the column names provided here will be matched exactly.
 #' In addition, if both \code{var_roots} and \code{fields_list} are provided, 
 #' \code{fields_list} will be applied first.
-#' @param long_format Logical. Determines whether the returned dataframe will
-#' be in long or wide format. Default is \code{FALSE}. This option is useful for more
-#' aggressive pooling- particularly when there are same-row data points that will be
-#' lost in wide format.
-#' @param numeric_only Logical. Determines if only fields containing numerical data
-#' should be searched when using \code{var_roots}. Default is \code{FALSE}
+#' @param make_repeat Logical. Determines whether the pooled columns will be converted
+#' into repeat instruments. Default is \code{FALSE}. This option is useful for when 
+#' there are same-row data points within columns to be pooled. In the future, this
+#' will be implemented automatically on an as-needed basis.
 #' @param id_field Character. Field name corresponding to the 'record_id' field.
 #' 
 #' @importFrom magrittr '%>%'
@@ -54,22 +50,23 @@
 
 
 rc_pool <- function(record_data, var_roots = NULL, fields_list = NULL,
-                         long_format = FALSE, numeric_only = FALSE,
-                         id_field = getOption("redcap_bundle")$id_field) {
+                    make_repeat = FALSE,
+                    id_field = getOption("redcap_bundle")$id_field) {
   
   validate_args(required = c('record_data'),
                 record_data = record_data,
                 var_roots = var_roots,
                 fields_list = fields_list,
-                long_format = long_format,
-								numeric_only = numeric_only,
+                make_repeat = make_repeat,
+                numeric_only = numeric_only,
                 id_field = id_field)
   
   if (is.null(var_roots) & is.null(fields_list))
     stop("At least one of either var_roots or fields_list must be provided.")
   
   # Get ID field names
-  id_field = getID(record_data, id_field)
+  id_field = getID(id_field = id_field,
+                   record_data = record_data)
   rc_fields = c('redcap_event_name','redcap_repeat_instrument','redcap_repeat_instance')
   meltVars = c(id_field, rc_fields)[c(id_field, rc_fields) %in% names(record_data)]
   
@@ -77,7 +74,7 @@ rc_pool <- function(record_data, var_roots = NULL, fields_list = NULL,
   fields_changed = data.frame()
   
   # Check for errors in fields_list
-	if (!is.null(fields_list)) {
+  if (!is.null(fields_list)) {
     
     # Drop fields not found in record_data
     fields_bad = lapply(fields_list, function(x) x[!x %in% names(record_data)]) %>% unlist()
@@ -87,75 +84,93 @@ rc_pool <- function(record_data, var_roots = NULL, fields_list = NULL,
       message("The following supplied fields were not found in record_data and will be dropped:\n",
               paste(fields_bad, collapse = ', '))
       fields_list = lapply(fields_list, function(x) setdiff(x, fields_bad))
-			
-			# If search terms are used as names in fields_list, the record of changed columns will be overwritten
+      
+      # If search terms are used as names in fields_list, the record of changed columns will be overwritten
       if (!is.null(var_roots))
         if (any(var_roots %in% names(fields_list))) 
           stop("Search terms specified in var_roots cannot exist in names(fields_list)")
     }
   }
   
-	# Long format method
-  if (long_format) {
+  # Repeat method
+  if (make_repeat) {
     
-    # Melt data
-    molten_data = suppressWarnings(
-                    reshape2::melt(record_data, id.vars = meltVars, na.rm = T) %>% droplevels()
-                  )
+    # Add missing (repeat) columns. There must be a cleaner way to do this..
+    if (!all(rc_fields %in% names(record_data))) {
+      rc_cols = matrix(ncol = length(setdiff(rc_fields,names(record_data)))) %>% as.data.frame()
+      names(rc_cols) = setdiff(rc_fields,names(record_data))
+      record_data = cbind(record_data,rc_cols) %>% dplyr::select(!!meltVars,dplyr::everything())
+    }
+    
+    # Empty columns will be of type logical and cause join conflicts
+      record_data = dplyr::mutate_at(record_data, dplyr::vars(contains('repeat')), as.character)
     
     if (!is.null(fields_list)) {
       
       for (f in 1:length(fields_list)) {
         # Get column names
-        cols = levels(molten_data$variable)[grepl(paste0('^',fields_list[[f]],'$', collapse = '|'), 
-                                                          levels(molten_data$variable))]
-                                                    
+        cols = intersect(fields_list[[f]], names(record_data))
+        
         if (length(cols) > 0) {
           
           # Note the variables which will be changed
           fields_changed = rbind(fields_changed, data.frame(pooled_vars = names(fields_list)[f]),rc_vars = cols)
-          # fields_changed[[names(fields_list)[f]]] = cols
           
-          # Change variable names
-          levels(molten_data$variable)[grepl(paste0('^',fields_list[[f]],'$', collapse = '|'), 
-                                             levels(molten_data$variable))] = names(fields_list)[f]
+          # Collect data to be converted, remove empty rows
+          pool_data = record_data[c(meltVars, cols)] %>% dplyr::filter_at(cols,dplyr::any_vars(!is.na(.)))
+          
+          # Melt and fill in repeat columns
+          pool_data = reshape2::melt(pool_data, id.vars = meltVars, na.rm = T)
+          pool_data$redcap_repeat_instrument = names(fields_list[f])
+          # levels(pool_data$variable) = 1:length(levels(pool_data$variable))
+          pool_data = pool_data %>% dplyr::mutate(redcap_repeat_instance = as.character(variable)) %>% 
+                        dplyr::rename(!!names(fields_list[f]) := value) %>% dplyr::select(-variable)
+          
+          # Add back to data and remove original columns
+          record_data = record_data %>% dplyr::select(-!!cols) %>% dplyr::full_join(pool_data, by = meltVars) %>% 
+                          dplyr::arrange_at(meltVars[1:2])
         }
       }
     }
     
     if (!is.null(var_roots)) {
       
-      # Select numeric data only if desired
-			if (numeric_only)
-				col_names = names(numeric_only(record_data, long_format = F, drop_message = F))
-			else col_names = names(record_data)
-      
       for (r in var_roots) {
         # Get column names
-        cols = col_names[grepl(r, col_names)]
-        
-        if (length(cols) > 0) {
+        cols = stringr::str_subset(names(record_data), r)
           
-          # Note the variables which will be changed
-          fields_changed = rbind(fields_changed, data.frame(pooled_vars = r,rc_vars = cols))
-          # fields_changed[[r]] = cols
           
-          # Change variable names
-          levels(molten_data$variable)[grepl(paste0('^',fields_changed[[r]],'$', collapse = '|'), 
-                                             levels(molten_data$variable))] = r
-        }
+          if (length(cols) > 0) {
+            
+            # Note the variables which will be changed
+            fields_changed = rbind(fields_changed, data.frame(pooled_vars = r, rc_vars = cols))
+            
+            # Collect data to be converted, remove empty rows
+            pool_data = record_data[c(meltVars, cols)] %>% dplyr::filter_at(cols,dplyr::any_vars(!is.na(.)))
+            
+            # Melt and fill in repeat columns
+            pool_data = reshape2::melt(pool_data, id.vars = meltVars, na.rm = T)
+            pool_data$redcap_repeat_instrument = r
+            # levels(pool_data$variable) = 1:length(levels(pool_data$variable))
+            pool_data = pool_data %>% dplyr::mutate(redcap_repeat_instance = as.character(variable)) %>% 
+                            dplyr::rename(!!r := value) %>% dplyr::select(-variable)
+            
+            # Add back to data and remove original columns
+            record_data = record_data %>% dplyr::select(-!!cols) %>% dplyr::full_join(pool_data, by = meltVars) %>% 
+                            dplyr::arrange_at(meltVars[1:2])
+          }
       }
     }
     
     # Append record of pooled vars
-    attr(molten_data, 'pooled_vars') = fields_changed
+    attr(record_data, 'pooled_vars') = fields_changed
     message("An attribute describing the variables pooled has been appended to the dataframe. 
             To view, use attributes(record_data)$pooled_vars")
     
-    return(molten_data)
+    return(record_data)
   }
   
-	# Wide format method
+  # Wide format method
   else {
     
     if (!is.null(fields_list)) {
@@ -184,7 +199,7 @@ rc_pool <- function(record_data, var_roots = NULL, fields_list = NULL,
           if (any(record_data[cols] %>% is.na() %>% rowSums() < length(record_data[cols]) - 1))
             warning("Same row data points were found within columns: ", paste(cols, collapse = ', '),
                     "\nData from the first column will override other columns. If all data points must be kept,
-                    use long_format = TRUE")
+                    use make_repeat = TRUE")
           
           # Pool
           record_data = dplyr::mutate(record_data, !!f := dplyr::coalesce(!!!as.list(record_data[,cols])))
@@ -198,18 +213,12 @@ rc_pool <- function(record_data, var_roots = NULL, fields_list = NULL,
     
     if (!is.null(var_roots)) {
       
-      # Select numeric data only if desired
-			if (numeric_only)
-				col_names = names(numeric_only(record_data, long_format = F, drop_message = F))
-			else col_names = names(record_data)
-      
-      # Assemble combined variables
       for (r in var_roots) {
         
-        # Get matching column names
-        cols = col_names[grepl(r, col_names)]
+        # Get column names
+        cols = stringr::str_subset(names(record_data), r)
         
-        if (length(cols)>0) {
+        if (length(cols) > 0) {
           
           # Note variables to be changed
           fields_changed = rbind(fields_changed, data.frame(pooled_vars = r,rc_vars = cols))
@@ -228,11 +237,11 @@ rc_pool <- function(record_data, var_roots = NULL, fields_list = NULL,
           if (any(record_data[cols] %>% is.na() %>% rowSums() < length(record_data[cols]) - 1))
             warning("Same row data points were found within columns: ", paste(cols, collapse = ', '),
                     "\nData from the first column will override other columns. If all data points must be kept,
-                    use long_format = TRUE")
+                    use make_repeat = TRUE")
           
           # Pool
           record_data = dplyr::mutate(record_data, !!r := dplyr::coalesce(!!!as.list(record_data[,cols])))
-           
+          
           # Remove old columns. Explicitly add new col at end to prevent accident removal 
           # (ie when contained within 'cols')
           record_data = dplyr::select(record_data, -all_of(cols), all_of(r))
