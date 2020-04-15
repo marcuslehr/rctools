@@ -10,7 +10,7 @@ rc_outliers(
   sd_threshold = 3,
   data_dict = getOption("redcap_bundle")$data_dict,
   fields = NULL,
-  unfiltered = FALSE
+  filtered = FALSE
 )
 }
 \arguments{
@@ -30,8 +30,8 @@ $data_dict is expected in the REDCap bundle option, as created by
 \item{fields}{Character. A vector of field/variable names to be analyzed
 may be passed manually.}
 
-\item{unfiltered}{Logical. Select whether an unfiltered dataframe should be
-returned, or only outliers (default).}
+\item{filtered}{Logical. Select whether non-outlier values should be returned.
+Default is \code{FLASE}.}
 }
 \description{
 Identifies outliers for each variable, defined as being further

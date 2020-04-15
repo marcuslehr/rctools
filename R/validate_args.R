@@ -29,6 +29,7 @@
 #' @param colClasses Character vector
 #' @param group_by Character vector
 #' @param var_roots Character vector
+#' @param repeats Character vector
 #' 
 #' @param overwriteBehavior Character, defined inputs, length == 1
 #' @param returnContent Character, defined inputs, length == 1
@@ -44,11 +45,11 @@
 #' @param checkboxLabels Logical, length == 1
 #' @param returnData Logical, length == 1
 #' @param plot Logical, length == 1
-#' @param unfiltered Logical, length == 1
+#' @param filtered Logical, length == 1
 #' @param long_format Logical, length == 1
 #' @param table Logical, length == 1
 #' @param numeric_only Logical, length == 1
-#; @param make_repeat Logical, length == 1
+#' @param make_repeat Logical, length == 1
 #' 
 #' @param record_data Data.frame; contains record_id and redcap_event_name columns
 #' @param data_dict Data.frame, ncol == 18
@@ -89,6 +90,7 @@ validate_args <- function(required = NULL,
                           colClasses = NULL,
                           group_by = NULL,
                           var_roots = NULL,
+													repeats = NULL,
                           
                           # Match Args
                           overwriteBehavior = NULL,
@@ -106,7 +108,7 @@ validate_args <- function(required = NULL,
                           checkboxLabels = NULL,
                           returnData = NULL,
                           plot = NULL,
-                          unfiltered = NULL,
+                          filtered = NULL,
                           long_format = NULL,
 													table = NULL,
 													numeric_only = NULL,
@@ -183,7 +185,8 @@ validate_args <- function(required = NULL,
 # Character ---------------------------------------------------------------
   
   # Generate var list
-  vars = c('records','fields','forms','events','colClasses','group_by','var_roots')
+  vars = c('records','fields','forms','events','colClasses','group_by','var_roots',
+						'repeats')
 		
 		# Make formula
 		massert_formula = stats::formula(paste('~',paste(vars,collapse = ' + ')))
@@ -222,7 +225,7 @@ validate_args <- function(required = NULL,
 
   # Generate var list
   vars = c('survey','dag','form_complete_auto','format','factors','labels','dates',
-           'checkboxLabels','returnData','plot','unfiltered','long_format','table',
+           'checkboxLabels','returnData','plot','filtered','long_format','table',
 					 'numeric_only','make_repeat')
 		
 		# Make formula

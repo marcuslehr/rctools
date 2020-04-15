@@ -8,7 +8,7 @@ rc_pool(
   record_data,
   var_roots = NULL,
   fields_list = NULL,
-  make_repeat = FALSE,
+  make_repeat = TRUE,
   id_field = getOption("redcap_bundle")$id_field
 )
 }
@@ -26,7 +26,7 @@ In addition, if both \code{var_roots} and \code{fields_list} are provided,
 \code{fields_list} will be applied first.}
 
 \item{make_repeat}{Logical. Determines whether the pooled columns will be converted
-into repeat instruments. Default is \code{FALSE}. This option is useful for when
+into repeat instruments. Default is \code{TRUE}. This option is useful for when
 there are same-row data points within columns to be pooled. In the future, this
 will be implemented automatically on an as-needed basis.}
 

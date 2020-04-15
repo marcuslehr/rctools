@@ -21,6 +21,7 @@ validate_args(
   colClasses = NULL,
   group_by = NULL,
   var_roots = NULL,
+  repeats = NULL,
   overwriteBehavior = NULL,
   returnContent = NULL,
   error_handling = NULL,
@@ -34,7 +35,7 @@ validate_args(
   checkboxLabels = NULL,
   returnData = NULL,
   plot = NULL,
-  unfiltered = NULL,
+  filtered = NULL,
   long_format = NULL,
   table = NULL,
   numeric_only = NULL,
@@ -87,6 +88,8 @@ the calling function.}
 
 \item{var_roots}{Character vector}
 
+\item{repeats}{Character vector}
+
 \item{overwriteBehavior}{Character, defined inputs, length == 1}
 
 \item{returnContent}{Character, defined inputs, length == 1}
@@ -113,13 +116,15 @@ the calling function.}
 
 \item{plot}{Logical, length == 1}
 
-\item{unfiltered}{Logical, length == 1}
+\item{filtered}{Logical, length == 1}
 
 \item{long_format}{Logical, length == 1}
 
 \item{table}{Logical, length == 1}
 
 \item{numeric_only}{Logical, length == 1}
+
+\item{make_repeat}{Logical, length == 1}
 
 \item{record_data}{Data.frame; contains record_id and redcap_event_name columns}
 

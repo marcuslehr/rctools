@@ -22,8 +22,8 @@
 #' \code{rc_setup}. 
 #' @param fields Character. A vector of field/variable names to be analyzed
 #' may be passed manually. 
-#' @param unfiltered Logical. Select whether an unfiltered dataframe should be
-#' returned, or only outliers (default).
+#' @param filtered Logical. Select whether non-outlier values should be returned.
+#' Default is \code{FLASE}.
 #' 
 #' @importFrom magrittr '%>%'
 #' 
@@ -33,12 +33,12 @@
 
 rc_outliers <- function(record_data, sex_var = NA, sd_threshold = 3,
                         data_dict = getOption("redcap_bundle")$data_dict,
-                        fields = NULL, unfiltered = FALSE) {
+                        fields = NULL, filtered = FALSE) {
   
   validate_args(required = c('record_data'),
 								record_data = record_data, sex_var = sex_var,
                 sd_threshold = sd_threshold, data_dict = data_dict,
-                fields = fields, unfiltered = unfiltered)
+                fields = fields, filtered = filtered)
   
   # Get ID column name
   id_field = getID(record_data, data_dict)
@@ -73,7 +73,7 @@ rc_outliers <- function(record_data, sex_var = NA, sd_threshold = 3,
   #                         id_field = id_field)
   
   # Filter data
-  if (unfiltered == F) record_data = record_data %>% 
+  if (filtered) record_data = record_data %>% 
                                       dplyr::filter(outlier == T) %>% 
                                       dplyr::select(-outlier)
   

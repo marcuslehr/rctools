@@ -18,6 +18,15 @@
 #' @param completion_field Character. The REDCap variable which indicates whether or not a subject
 #' has completed the study. This should be indicated by a 'Yes' or a '1' (i.e. a Yes/No
 #' field in REDCap). If not provided, some missing data may be lost.
+#' @param repeats Character. A vector of repeat instrument names which should be kept. This should
+#' only be used for repeat instruments which are expected to have a consistent number of occurances
+#' per each event/ID combination. All repeat instruments not supplied here will be removed to avoid
+#' excessive false positives.
+#' 
+#' @param table Logical. If \code{TRUE} a list will be returned containing the missing dataframe
+#' and two missing tables. The tables contain the percent of missing record_idor variable counts.
+#' To view formatted tables, use square bracket indexing- e.g. data[['IDs_table']]
+#'
 #' @param bundle List. A project metadata bundle as created by \code{rc_setup}. By default, the 
 #' bundle is expected in the option "redcap_bundle".
 #' @param data_dict Dataframe. REDCap project data data_dictionary. By default, 
@@ -29,10 +38,6 @@
 #' @param form_perm Dataframe. User access permissions for REDCap forms. By default, $form_perm
 #' is expected in the REDCap bundle, as created by \code{rc_setup}. Otherwise, an equivalent 
 #' data.frame containing form permission data must be supplied.
-#' 
-#' @param table Logical. If \code{TRUE} a list will be returned containing the missing dataframe
-#' and two missing tables. The tables contain the percent of missing record_idor variable counts.
-#' To view formatted tables, use square bracket indexing- e.g. data[['IDs_table']]
 #'
 #' @importFrom magrittr '%>%'
 #'
@@ -40,12 +45,14 @@
 #' 
 #' @export
 
-rc_missing <- function(record_data, completion_field = NULL, 
+rc_missing <- function(record_data, 
+                       completion_field = NULL, repeats = NULL,
+                       table = FALSE,
                        bundle = getOption("redcap_bundle"),
                        data_dict = getOption("redcap_bundle")$data_dict,
                        event_data = getOption("redcap_bundle")$event_data,
-                       form_perm = getOption("redcap_bundle")$form_perm,
-                       table = FALSE) {
+                       form_perm = getOption("redcap_bundle")$form_perm
+                       ) {
 
 
 # Checks ------------------------------------------------------------------
@@ -60,11 +67,13 @@ rc_missing <- function(record_data, completion_field = NULL,
   validate_args(required = c('record_data', 'data_dict'),
                 record_data = record_data,
                 completion_field = completion_field,
+                repeats = repeats,
+                table = table,
                 bundle = bundle,
                 data_dict = data_dict,
                 event_data = event_data,
-                form_perm = form_perm,
-                table = table)
+                form_perm = form_perm
+                )
   
   
   ## Event data ---
@@ -91,40 +100,48 @@ rc_missing <- function(record_data, completion_field = NULL,
   
   ## Filter ---
   
-  if (any(!is.na(record_data[['redcap_repeat_instance']])) | 
-      any(data_dict$field_type == 'calc') |
-      any(grepl('___',names(record_data))) ) {
+  # Remove repeat instrument data unless specified in repeats
+  if (any(!is.na(record_data[['redcap_repeat_instrument']]))) { # Check if col exists and contains data
+    if (any(repeats %in% record_data$redcap_repeat_instrument)) # Check if values are contained in 'repeats'
+      record_data = dplyr::filter(record_data, redcap_repeat_instrument %in% repeats |
+                                  is.na(redcap_repeat_instrument))
+    else { # Data exists and is not specified in 'repeats'
+      message("All repeat instruments will be dropped. If you would like to keep
+        any repeat instruments, please supply the `repeats` argument. This should
+        only be done for instruments where a consistent number of repeats are expected.")
     
-    message("The logic of this function does not translate to repeat instruments, checkbox,
-		or calculated fields. All such data will be dropped.")
-    
-    # Remove repeat instrument data
-    if (!is.null(record_data$redcap_repeat_instance))
-      record_data = dplyr::filter(record_data, is.na(redcap_repeat_instance)) %>% # Repeat rows
+      record_data = dplyr::filter(record_data, is.na(redcap_repeat_instrument)) %>% # Repeat rows
                       dplyr::select(-dplyr::contains('redcap_repeat')) # Repeat ID columns
-    
-    # Remove other unwanted columns
-    fields_calc = data_dict$field_name[data_dict$field_type == 'calc']
-    fields_calc = fields_calc[fields_calc %in% names(record_data)]
+    }
+  } # No data exists in repeat cols, go ahead and remove them if present
+  else if (any(grepl('redcap_repeat', names(record_data)))) 
+    record_data = record_data[!grepl('redcap_repeat', names(record_data))]
+  
+  # Remove other unwanted fields
+  fields_calc = intersect(data_dict$field_name[data_dict$field_type == 'calc'], names(record_data))
+  fields_hidden = intersect(data_dict$field_name[data_dict$field_annotation == '@HIDDEN'], names(record_data))
+  
+  if (length(fields_calc)>0 |
+      length(fields_hidden)>0 |
+      any(grepl('___',names(record_data))) # Look for checkbox data
+      ) {
+    message("The logic of this function does not translate to checkbox 
+            or calculated fields. All such data will be dropped.")
+
     record_data = dplyr::select(record_data, 
-                                -all_of(fields_calc), # Calculated fields
-											          -dplyr::contains('___')) # Checkbox data
+                                -all_of(fields_calc),
+                                -all_of(field_hidden), 
+											          -dplyr::contains('___')) 
   }
   
-  # Remove hidden fields
-  fields_hidden = data_dict$field_name[data_dict$field_annotation == '@HIDDEN'] %>% stats::na.omit()
-  if (any(fields_hidden %in% names(record_data))) {
-    message("Any fields hidden by the '@HIDDEN action tag will dropped.")
-    record_data = dplyr::select(record_data, -all_of(fields_hidden))
-  }
   
   ## Completion data ---
   
   if (any(names(record_data)==completion_field)) {
     # Grab completion data then remove from data
-    completionData = dplyr::select(record_data, all_of(id_field), all_of(completion_field)) %>% stats::na.omit()
-    record_data = dplyr::select(record_data, -all_of(completion_field))
-    # completionData$record_id = as.character(completionData$record_id)
+    completion_data = dplyr::select(record_data, !!id_field, !!completion_field) %>% stats::na.omit()
+    record_data = dplyr::select(record_data, -!!completion_field)
+    # completion_data$record_id = as.character(completion_data$record_id)
   }
   else message("Completion field not found. Some missing data may not be captured.")
   
@@ -133,151 +150,130 @@ rc_missing <- function(record_data, completion_field = NULL,
     record_data = dplyr::select(record_data, -dplyr::contains('_complete'))
 
   # Convert data to long format. Globally empty events and IDs will be lost
-  meltVars = c(id_field,'redcap_event_name')
+  rc_fields = c('redcap_event_name','redcap_repeat_instrument','redcap_repeat_instance')
+  meltVars = intersect(c(id_field, rc_fields), names(record_data))
   record_data = suppressWarnings(
               reshape2::melt(record_data, id.vars = meltVars, na.rm = T) %>% dplyr::as_tibble() %>%
-                      dplyr::filter(!value == '') %>% droplevels()
+                      dplyr::filter(value != '') %>% droplevels()
                           )
-
+  # # Ensure ID field is always character for joins
+  # record_data[[id_field]] = as.character(record_data[[id_field]]) 
+  
   # Filter events for those remaining in the data
   events = events[events %in% record_data$redcap_event_name]
 
   # Collecting IDs outside the loop allows capturing of (non-globally) empty events
-  IDs = as.character(unique(record_data[[id_field]]))
+  # IDs = as.character(unique(record_data[[id_field]]))
+  IDs = unique(record_data[[id_field]])
 
 
 # Collect missing data ----------------------------------------------------
-
-  # Loop through all events to find missing data. The variables that should occur within
-  # an event are determined by the presence of a value for at least one subject. If a subject
-  # has no data for an event (within the subset of variables pulled from redcap), then they will not
-  # be captured as missing unless data exists for the following event or the subject is indicated to
-  # have completed the study via the 'study_complete' field.
-
-  missingDataAll = data.frame()
-  for (e in events) {
-    #Filter data for an event and capture variables that are present
-    eventData = dplyr::filter(record_data, redcap_event_name == e)
-
-    # Any vars empty for this entire event are dropped
-    vars = as.character(unique(eventData$variable)) 
-
-    #Generate a table with all possible combinations
-    expectedData = data.frame(record_id = rep(IDs, length(vars)) %>%
-                                              sort() %>% as.numeric(),
-                               redcap_event_name = e,
-                               variable = vars)
-    names(expectedData)[1] = id_field
-
-    #Collect entries which are expected but not present
-    missingDataAll <- suppressWarnings(suppressMessages(
-              rbind(missingDataAll, dplyr::anti_join(expectedData, eventData))
-      ))
+  
+  # Create a frame of all event/variable combos for each ID
+  event_var_combos = dplyr::select(record_data, dplyr::contains('redcap'), variable) %>% dplyr::distinct() %>% 
+                      dplyr::arrange_at(c('redcap_event_name', 'variable'))
+  expected_data = data.frame()
+  for (i in IDs) {
+    x = event_var_combos
+    x[id_field] = i
+    x = dplyr::select(x, !!id_field, dplyr::everything())
+    expected_data = rbind(expected_data, x)
   }
-
-# Filter data -------------------------------------------------------------
-
-  if (nrow(missingDataAll) > 0) {
-    
-    # Sort df
-    missingDataAll = dplyr::arrange(missingDataAll, !!dplyr::sym(id_field))
-
-    ## Filter missingData to remove values from empty events which do not have data in a following event
-    expectedEvents = data.frame(record_id = sort(rep(IDs, length(events))) %>% as.numeric(),
-                                redcap_event_name = events)
-    names(expectedEvents)[1] = id_field
-    cast_formula = paste(paste(id_field)," + redcap_event_name ~ variable")
-    dataWide = reshape2::dcast(record_data, cast_formula)
-    
-    # Add expected events which are missing
-    dataWide = suppressWarnings(
-                      dplyr::full_join(expectedEvents, dataWide, by = meltVars)
-                   )
-    
-    # Filter events which are empty AND do not have data in the following event (per subject)
+  
+  # Fill in existing data for logic
+  cast_formula = paste(paste(meltVars,collapse = ' + '),"~ variable")
+  data_wide_full = dplyr::full_join(expected_data, record_data, by = c(meltVars, 'variable')) %>% 
+                          reshape2::dcast(., cast_formula)
+  
+  # Capture all expected data points not present in record_data
+  missing_data_all = dplyr::anti_join(expected_data, dplyr::select(record_data, -value), by = c(meltVars, 'variable'))
+  missing_data_all$variable = as.character(missing_data_all$variable)
+  
+  
+  if (nrow(missing_data_all) > 0) {
+  
+    # Filter variables from empty events unless there is data in a following event or the participant as completed the study
     if (!is.null(completion_field)) {
-      logic = suppressWarnings(dataWide %>%
-                dplyr::mutate(var_sums = rowSums(!is.na(.))-2) %>% dplyr::group_by_(id_field) %>%
-                dplyr::mutate(data_following = ifelse(test = dplyr::lead(var_sums) != 0, yes = T, no = F)) %>%
-                dplyr::left_join(., completionData, by = id_field) %>%
-                dplyr::select(all_of(id_field), redcap_event_name, var_sums, data_following, all_of(completion_field))
-              )
-      missingData = suppressWarnings(
-                      dplyr::left_join(missingDataAll, logic, by = meltVars) %>%
-                      dplyr::filter(var_sums > 0 | data_following == T | !!dplyr::sym(completion_field) == 'Yes|1') %>%
-                      dplyr::select(all_of(id_field), redcap_event_name, variable)
-                    )
+      logic = data_wide_full %>%
+                dplyr::mutate(row_sums = rowSums(!is.na(dplyr::select(.,-all_of(meltVars))))) %>% 
+                dplyr::group_by_at(meltVars[1:2]) %>% 
+                dplyr::summarise(var_count = sum(row_sums)) %>% 
+                dplyr::mutate(data_following = dplyr::lead(var_count) > 0) %>% 
+                dplyr::left_join(., completion_data, by = id_field)
+                
+      
+      missing_data = dplyr::left_join(missing_data_all, logic, by = meltVars[1:2]) %>% 
+                      dplyr::filter(var_count > 0 | data_following == T | !!dplyr::sym(completion_field) == 'Yes|1') %>% 
+                      dplyr::select(all_of(meltVars), variable)
     }
-    
     # Perform above filtering without completion_field if not provided
     else {
-      logic = suppressWarnings(dataWide %>%
-               dplyr::mutate(var_sums = rowSums(!is.na(.))-2) %>% dplyr::group_by_(id_field) %>%
-               dplyr::mutate(data_following = ifelse(test = dplyr::lead(var_sums) != 0, yes = T, no = F)) %>%
-               dplyr::select(all_of(id_field), redcap_event_name, var_sums, data_following)
-              )
-      missingData = suppressWarnings(
-                      dplyr::left_join(missingDataAll, logic, by = meltVars) %>%
-                      dplyr::filter(var_sums > 0 | data_following == T) %>%
-                      dplyr::select(all_of(id_field), redcap_event_name, variable)
-                    )
+      logic = data_wide_full %>%
+                dplyr::mutate(row_sums = rowSums(!is.na(dplyr::select(.,-all_of(meltVars))))) %>% 
+                dplyr::group_by_at(meltVars[1:2]) %>% 
+                dplyr::summarise(var_count = sum(row_sums)) %>% 
+                dplyr::mutate(data_following = dplyr::lead(var_count) > 0)
+      
+      missing_data = dplyr::left_join(missing_data_all, logic, by = meltVars[1:2]) %>% 
+                      dplyr::filter(var_count > 0 | data_following == T) %>% 
+                      dplyr::select(all_of(meltVars), variable)
     }
     
     
+    if (nrow(missing_data) > 0) {
       
-    # Add form names for ease of locating in Redcap
-    instrVarMap = data.frame(variable = data_dict$field_name,
-                             form_name = data_dict$form_name)
-    missingData = suppressWarnings(
-                  dplyr::left_join(missingData, instrVarMap, by = 'variable') %>%
-                    dplyr::select(all_of(id_field), redcap_event_name, form_name, variable)
-                  )
-    
-    # Remove forms where no users have access
-    if (!is.null(form_perm)) {
+      # Add form names for ease of locating in Redcap
+      # This doesn't work when there are pooled vars
+      missing_data = dplyr::left_join(missing_data, 
+                              dplyr::tibble(variable = data_dict$field_name, form_name = data_dict$form_name),
+                              by = 'variable') %>% 
+                      dplyr::select(all_of(meltVars), form_name, variable)
       
-      forms_available = subset(form_perm, permission != 'No access')$form_name %>% unique()
-      forms_hidden = subset(form_perm, permission == 'No access')$form_name %>% unique()
-      forms_hidden = forms_hidden[!forms_hidden %in% forms_available]
-      
-      if (length(forms_hidden) > 0) {
-        message("The following forms will be removed as no users have access to them: ", paste(forms_hidden, collapse = ', '))
-        missingData = missingData[!missingData$form_name %in% forms_hidden,]
+      # Remove data from forms where no users have access
+      if (!is.null(form_perm)) {
+        
+        forms_hidden = setdiff(unique(subset(form_perm, permission == 'No access')$form_name),
+                               unique(subset(form_perm, permission != 'No access')$form_name))
+        
+        if (any(forms_hidden %in% missing_data$form_name)) {
+          message("The following forms will be removed as no users have access to them: ", 
+                  paste(intersect(forms_hidden,missing_data$form_name), collapse = ', '))
+          missing_data = missing_data[!missing_data$form_name %in% forms_hidden,]
+        }
       }
     }
   }
   else {
     message("No missing data were found.")
-    return(missingDataAll)
+    return(missing_data_all)
   }
-
 
 # Return ------------------------------------------------------------------
 
-  if (nrow(missingData)/nrow(record_data) > .1 & table == F)
+  if (nrow(missing_data)/nrow(record_data) > .1 & table == F)
     warning("More than 10% of the data appears to be missing. Manual review for false positives is recommended,
             consider using the 'table' argument or rc_plot_missing().")
   
   ## This has now been exported as an independent function
-  # if (plot == T) plot_missing(missingData)
+  # if (plot == T) plot_missing(missing_data)
   
-  if (table == T) {
-    return_data = list(missing_data = missingData)
-    tables = table_missing(missingData, IDs, logic, id_field)
+  if (table) {
+    return_data = list(missing_data = missing_data)
+    tables = table_missing(missing_data, IDs, logic, id_field)
     return_data = c(return_data, tables)
     
     message("List object returned. Use '[' indexing to view formatted tables.")
     return(return_data)
   } 
-  else return(missingData)
+  else return(missing_data)
 }
 
 # Table function --------------------------------------------------------
 
-table_missing <- function(missingData, IDs, logic, id_field = getOption("redcap_bundle")$id_field) {
+table_missing <- function(missing_data, IDs, logic, id_field = getOption("redcap_bundle")$id_field) {
   
   # Tally IDs
-  tally = dplyr::count(missingData, redcap_event_name, variable)
+  tally = dplyr::count(missing_data, redcap_event_name, variable)
   tally$pct_missing = tally$n/length(IDs)*100
   tally = reshape2::dcast(tally, variable~redcap_event_name, value.var = 'pct_missing')
   tally[is.na(tally)] = 0
@@ -301,9 +297,9 @@ table_missing <- function(missingData, IDs, logic, id_field = getOption("redcap_
     
   
   # Tally vars
-  var_maxes = logic %>% dplyr::group_by(redcap_event_name) %>% dplyr::summarise(max = max(var_sums))
+  var_maxes = logic %>% dplyr::group_by(redcap_event_name) %>% dplyr::summarise(max = max(var_count))
   
-  tally = dplyr::count(missingData, redcap_event_name, !!dplyr::sym(id_field))
+  tally = dplyr::count(missing_data, redcap_event_name, !!dplyr::sym(id_field))
   tally = dplyr::left_join(tally, var_maxes, by = 'redcap_event_name')
   tally$pct_missing = tally$n/tally$max*100
   

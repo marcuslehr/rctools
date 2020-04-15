@@ -37,7 +37,7 @@
 #' In addition, if both \code{var_roots} and \code{fields_list} are provided, 
 #' \code{fields_list} will be applied first.
 #' @param make_repeat Logical. Determines whether the pooled columns will be converted
-#' into repeat instruments. Default is \code{FALSE}. This option is useful for when 
+#' into repeat instruments. Default is \code{TRUE}. This option is useful for when 
 #' there are same-row data points within columns to be pooled. In the future, this
 #' will be implemented automatically on an as-needed basis.
 #' @param id_field Character. Field name corresponding to the 'record_id' field.
@@ -50,7 +50,7 @@
 
 
 rc_pool <- function(record_data, var_roots = NULL, fields_list = NULL,
-                    make_repeat = FALSE,
+                    make_repeat = TRUE,
                     id_field = getOption("redcap_bundle")$id_field) {
   
   validate_args(required = c('record_data'),
@@ -58,7 +58,6 @@ rc_pool <- function(record_data, var_roots = NULL, fields_list = NULL,
                 var_roots = var_roots,
                 fields_list = fields_list,
                 make_repeat = make_repeat,
-                numeric_only = numeric_only,
                 id_field = id_field)
   
   if (is.null(var_roots) & is.null(fields_list))
@@ -110,6 +109,9 @@ rc_pool <- function(record_data, var_roots = NULL, fields_list = NULL,
       for (f in 1:length(fields_list)) {
         # Get column names
         cols = intersect(fields_list[[f]], names(record_data))
+				
+				# Prevent double-pooling
+				cols = setdiff(cols, fields_changed$pooled_vars)
         
         if (length(cols) > 0) {
           
@@ -119,16 +121,23 @@ rc_pool <- function(record_data, var_roots = NULL, fields_list = NULL,
           # Collect data to be converted, remove empty rows
           pool_data = record_data[c(meltVars, cols)] %>% dplyr::filter_at(cols,dplyr::any_vars(!is.na(.)))
           
-          # Melt and fill in repeat columns
-          pool_data = reshape2::melt(pool_data, id.vars = meltVars, na.rm = T)
-          pool_data$redcap_repeat_instrument = names(fields_list[f])
-          # levels(pool_data$variable) = 1:length(levels(pool_data$variable))
-          pool_data = pool_data %>% dplyr::mutate(redcap_repeat_instance = as.character(variable)) %>% 
-                        dplyr::rename(!!names(fields_list[f]) := value) %>% dplyr::select(-variable)
-          
-          # Add back to data and remove original columns
-          record_data = record_data %>% dplyr::select(-!!cols) %>% dplyr::full_join(pool_data, by = meltVars) %>% 
-                          dplyr::arrange_at(meltVars[1:2])
+					if (nrow(pool_data) > 0) {
+						# Melt and fill in repeat columns
+						pool_data = suppressWarnings(reshape2::melt(pool_data, id.vars = meltVars, na.rm = T))
+						pool_data$redcap_repeat_instrument = names(fields_list[f])
+						# levels(pool_data$variable) = 1:length(levels(pool_data$variable))
+						pool_data = pool_data %>% dplyr::mutate(redcap_repeat_instance = as.character(variable)) %>% 
+													dplyr::rename(!!names(fields_list[f]) := value) %>% dplyr::select(-variable)
+						
+						# Remove unnecessary repeat instruments to minimize row additions
+						unique_rows = !(duplicated(pool_data[,1:2])|duplicated(pool_data[,1:2],fromLast = T))
+						pool_data$redcap_repeat_instrument[unique_rows] = as.character(NA)
+						pool_data$redcap_repeat_instance[unique_rows] = as.character(NA)
+						
+						# Add back to data and remove original columns
+						record_data = record_data %>% dplyr::select(-!!cols) %>% dplyr::full_join(pool_data, by = meltVars) %>% 
+														dplyr::arrange_at(meltVars[1:2])
+					}
         }
       }
     }
@@ -138,27 +147,39 @@ rc_pool <- function(record_data, var_roots = NULL, fields_list = NULL,
       for (r in var_roots) {
         # Get column names
         cols = stringr::str_subset(names(record_data), r)
+         
+				# Prevent double-pooling
+				cols = setdiff(cols, fields_changed$pooled_vars)
           
-          
-          if (length(cols) > 0) {
+				if (length(cols) > 0) {
+					# Remove non-word characters from r (no longer needed post regex search)
+					r = str_extract_all(r,"\\w*") %>% unlist() %>% paste(., collapse = '')
+					
+					# Note the variables which will be changed
+					fields_changed = rbind(fields_changed, data.frame(pooled_vars = r, rc_vars = cols))
+					
+					# Collect data to be converted, remove empty rows
+					pool_data = record_data[c(meltVars, cols)] %>% dplyr::filter_at(cols,dplyr::any_vars(!is.na(.)))
             
-            # Note the variables which will be changed
-            fields_changed = rbind(fields_changed, data.frame(pooled_vars = r, rc_vars = cols))
-            
-            # Collect data to be converted, remove empty rows
-            pool_data = record_data[c(meltVars, cols)] %>% dplyr::filter_at(cols,dplyr::any_vars(!is.na(.)))
-            
-            # Melt and fill in repeat columns
-            pool_data = reshape2::melt(pool_data, id.vars = meltVars, na.rm = T)
-            pool_data$redcap_repeat_instrument = r
-            # levels(pool_data$variable) = 1:length(levels(pool_data$variable))
-            pool_data = pool_data %>% dplyr::mutate(redcap_repeat_instance = as.character(variable)) %>% 
-                            dplyr::rename(!!r := value) %>% dplyr::select(-variable)
-            
-            # Add back to data and remove original columns
-            record_data = record_data %>% dplyr::select(-!!cols) %>% dplyr::full_join(pool_data, by = meltVars) %>% 
-                            dplyr::arrange_at(meltVars[1:2])
-          }
+					if (nrow(pool_data) > 0) {
+						# Melt and fill in repeat columns
+						pool_data = suppressWarnings(reshape2::melt(pool_data, id.vars = meltVars, na.rm = T))
+						
+						pool_data$redcap_repeat_instrument = r
+						# levels(pool_data$variable) = 1:length(levels(pool_data$variable)) # Converts old var names to numbers
+						pool_data = pool_data %>% dplyr::mutate(redcap_repeat_instance = as.character(variable)) %>% 
+										dplyr::rename(!!r := value) %>% dplyr::select(-variable)
+						
+						# Remove unnecessary repeat instruments to minimize row additions
+						unique_rows = !(duplicated(pool_data[,1:2])|duplicated(pool_data[,1:2],fromLast = T))
+						pool_data$redcap_repeat_instrument[unique_rows] = as.character(NA)
+						pool_data$redcap_repeat_instance[unique_rows] = as.character(NA)
+						
+						# Add back to data and remove original columns
+						record_data = record_data %>% dplyr::select(-!!cols) %>% dplyr::full_join(pool_data, by = meltVars) %>% 
+										dplyr::arrange_at(meltVars[1:2])
+					}
+				}
       }
     }
     
