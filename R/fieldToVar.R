@@ -102,8 +102,8 @@ fieldToVar <- function(records, data_dict, factors = TRUE,
              "float" = suppressWarnings(as.numeric(records[[i]])),
              "number" = suppressWarnings(as.numeric(records[[i]])),
              "calc" = suppressWarnings(as.numeric(records[[i]])),
-             "int" = suppressWarnings(as.integer(records[[i]])),
-             "integer" = suppressWarnings(as.numeric(records[[i]])),
+             "int" = suppressWarnings(as.integer(records[[i]])), # I think this is a legacy option
+             "integer" = suppressWarnings(as.integer(records[[i]])),
              "select" = 
                makeRedcapFactor(x = records[[i]],
                                 coding = data_dict$select_choices_or_calculations[data_dict$field_name == field_base],

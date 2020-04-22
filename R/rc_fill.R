@@ -33,7 +33,7 @@ rc_fill <- function(record_data, ...,
   counts = list()
   for (col in cols) {
     # Replace blanks with NA
-    record_data[record_data[[col]] == '',col] = NA
+    record_data[[col]][record_data[[col]] == ''] = NA
     
     # Count items per group in each column
     x = suppressMessages(

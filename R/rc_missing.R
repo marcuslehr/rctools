@@ -110,12 +110,12 @@ rc_missing <- function(record_data,
         any repeat instruments, please supply the `repeats` argument. This should
         only be done for instruments where a consistent number of repeats are expected.")
     
-      record_data = dplyr::filter(record_data, is.na(redcap_repeat_instrument)) %>% # Repeat rows
-                      dplyr::select(-dplyr::contains('redcap_repeat')) # Repeat ID columns
+      record_data = dplyr::filter(record_data, is.na(redcap_repeat_instrument)) #%>% # Repeat rows
+                      # dplyr::select(-dplyr::contains('redcap_repeat')) # Repeat ID columns
     }
-  } # No data exists in repeat cols, go ahead and remove them if present
-  else if (any(grepl('redcap_repeat', names(record_data)))) 
-    record_data = record_data[!grepl('redcap_repeat', names(record_data))]
+   } # No data exists in repeat cols, go ahead and remove them if present
+  # else if (any(grepl('redcap_repeat', names(record_data)))) 
+  #   record_data = record_data[!grepl('redcap_repeat', names(record_data))]
   
   # Remove other unwanted fields
   fields_calc = intersect(data_dict$field_name[data_dict$field_type == 'calc'], names(record_data))
@@ -130,7 +130,7 @@ rc_missing <- function(record_data,
 
     record_data = dplyr::select(record_data, 
                                 -all_of(fields_calc),
-                                -all_of(field_hidden), 
+                                -all_of(fields_hidden), 
 											          -dplyr::contains('___')) 
   }
   

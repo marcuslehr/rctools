@@ -86,10 +86,10 @@ rc_plot_outliers <- function(outlier_data, sex_var = NA,
         ggplot2::geom_hline(yintercept = mean(pData$value) - 3*stats::sd(pData$value), color = '#ff0000', linetype= 3, alpha= 0.25)
     }
     #Return plots
-    if (sexes > 1)
+    if (!is.na(sex_var))
       return_data[[sexes[i]]] = gridExtra::grid.arrange(grobs = plots[[i]], top = paste(sexes[i], 'data'))
     else
       return(gridExtra::grid.arrange(grobs = plots[[i]]))
-    return(return_data)
   }
+  return(return_data)
 }

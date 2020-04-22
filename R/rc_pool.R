@@ -67,7 +67,7 @@ rc_pool <- function(record_data, var_roots = NULL, fields_list = NULL,
   id_field = getID(id_field = id_field,
                    record_data = record_data)
   rc_fields = c('redcap_event_name','redcap_repeat_instrument','redcap_repeat_instance')
-  meltVars = c(id_field, rc_fields)[c(id_field, rc_fields) %in% names(record_data)]
+  meltVars = c(id_field, rc_fields)
   
   # Instantiate list to log the affected fields
   fields_changed = data.frame()
@@ -98,7 +98,7 @@ rc_pool <- function(record_data, var_roots = NULL, fields_list = NULL,
     if (!all(rc_fields %in% names(record_data))) {
       rc_cols = matrix(ncol = length(setdiff(rc_fields,names(record_data)))) %>% as.data.frame()
       names(rc_cols) = setdiff(rc_fields,names(record_data))
-      record_data = cbind(record_data,rc_cols) %>% dplyr::select(!!meltVars,dplyr::everything())
+      record_data = cbind(record_data,rc_cols) %>% dplyr::select(all_of(meltVars),dplyr::everything())
     }
     
     # Empty columns will be of type logical and cause join conflicts
@@ -193,6 +193,9 @@ rc_pool <- function(record_data, var_roots = NULL, fields_list = NULL,
   
   # Wide format method
   else {
+    
+    # Update melt vars
+    meltVars = intersect(meltVars, names(record_data))
     
     if (!is.null(fields_list)) {
       

@@ -184,6 +184,9 @@ rc_export <- function(report_id = NULL,
       # Report errors
       if (x$status_code != 200) redcap_error(x, error_handling)
       
+      # Check for data
+      if (length(x$content)==1) stop("No records were returned from report ", report_id)
+      
       # Convert data to data.frame
       x <- utils::read.csv(text = as.character(x), 
                            stringsAsFactors = FALSE, 
@@ -283,6 +286,9 @@ unbatched <- function(url = getOption("redcap_bundle")$redcap_url,
                   body = body)
   
   if (x$status_code != 200) redcap_error(x, error_handling = error_handling)
+  
+  # Check for data
+  if (length(x$content)==1) stop("No records were returned")
   
   x <- as.character(x)
   # probably not necessary for data.  Useful for meta data though. (See Issue #99)

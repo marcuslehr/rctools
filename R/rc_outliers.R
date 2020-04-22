@@ -61,7 +61,7 @@ rc_outliers <- function(record_data, sex_var = NA, sd_threshold = 3,
   groups = c(sex_var, 'variable') %>% stats::na.omit()
   record_data = record_data %>% dplyr::group_by_at(groups) %>% 
                   dplyr::mutate(outlier = abs(scale(value))>sd_threshold) %>%
-                  dplyr::ungroup() %>% dplyr::arrange(!!dplyr::sym(id_field))
+                  dplyr::ungroup() %>% dplyr::arrange_at(c(id_field,'redcap_event_name','variable'))
   
   # NAs result from single values and (I think) standard deviations of 0. Replace them with FALSE
   record_data$outlier[is.na(record_data$outlier)] = FALSE
