@@ -37,15 +37,14 @@ validate_args(
   plot = NULL,
   filtered = NULL,
   long_format = NULL,
-  table = NULL,
-  numeric_only = NULL,
   make_repeat = NULL,
+  only_rows = NULL,
+  only_columns = NULL,
   record_data = NULL,
   data_dict = NULL,
   users = NULL,
   form_perm = NULL,
   instruments = NULL,
-  event_data = NULL,
   arms = NULL,
   mappings = NULL,
   proj_info = NULL,
@@ -120,11 +119,11 @@ the calling function.}
 
 \item{long_format}{Logical, length == 1}
 
-\item{table}{Logical, length == 1}
-
-\item{numeric_only}{Logical, length == 1}
-
 \item{make_repeat}{Logical, length == 1}
+
+\item{only_rows}{Logical, length == 1}
+
+\item{only_columns}{Logical, length == 1}
 
 \item{record_data}{Data.frame; contains record_id and redcap_event_name columns}
 
@@ -135,8 +134,6 @@ the calling function.}
 \item{form_perm}{Data.frame}
 
 \item{instruments}{Data.frame}
-
-\item{event_data}{Data.frame}
 
 \item{arms}{Data.frame}
 

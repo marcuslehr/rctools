@@ -1,4 +1,4 @@
-#' @name rc_plot_missing
+#' @name rc_missing_plot
 #'
 #' @title Plot data from rc_missing
 #' @description  Creates a pie chart for each variable passed from 
@@ -14,7 +14,7 @@
 #' @export
  
 
-rc_plot_missing <- function(missing_data) {
+rc_missing_plot <- function(missing_data) {
   
   # Make column counts and other data for plots
   counts = list()

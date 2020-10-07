@@ -6,7 +6,7 @@
 #' @title Exports the REDCap Instruments
 #' @description Returns a data frame of instruments, names, etc.
 #'   
-#' @section REDCap Version:
+#' @details REDCap Version:
 #' 6.5.0 + 
 #'
 #' @param url A url address to connect to the REDCap API
@@ -15,17 +15,17 @@
 #' @param error_handling An option for how to handle errors returned by the API.
 #'   see \code{\link{redcap_error}}
 #' 
-#' @section REDCap API Documentation:
+#' REDCap API Documentation:
 #' This function allows you to export a list of the data collection instruments 
 #' for a project. This includes their unique instrument name as seen in the second 
 #' column of the Data data_dictionary, as well as each instrument's corresponding 
 #' instrument label, which is seen on a project's left-hand menu when entering data. 
 #' The instruments will be ordered according to their order in the project.
 #' 
-#' @section REDCap Version:
+#' REDCap Version:
 #' 5.8.2+
 #' 
-#' @section Known REDCap Limitations: 
+#' Known REDCap Limitations: 
 #' None
 #' 
 #' @author Benjamin Nutter

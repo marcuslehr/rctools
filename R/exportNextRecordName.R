@@ -14,16 +14,16 @@
 #' It generates the next record name by determining the current maximum numerical 
 #' record ID and then incrementing it by one.
 #' 
-#' @return 
-#' Returns the maximum integer record ID + 1.
-#' 
-#' @section REDCap API Documentation:
+#' REDCap API Documentation:
 #' 
 #' NOTE: This method does not create a new record, but merely determines 
 #' what the next record name would be.
 #' 
-#' @section REDCap Version:
+#' REDCap Version:
 #' 8.1.8+ 
+#' 
+#' @return 
+#' Returns the maximum integer record ID + 1.
 #' 
 #' @author Xuefei Jia
 #' 

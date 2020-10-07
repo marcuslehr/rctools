@@ -17,7 +17,7 @@
 #'   file already exists for that record.  If a file exists, the function 
 #'   terminates to prevent overwriting.  When \code{TRUE}, no additional 
 #'   check is performed.
-#' @param bundle A \code{redcapBundle} object as created by \code{rc_setup}.
+#' @param bundle A \code{redcapBundle} object as created by \code{rc_bundle}.
 #' @param repeat_instance The repeat instance number of the repeating
 #'   event or the repeating instrument. When available in your instance
 #'   of REDCap, and passed as NULL, the API will assume a value of 1.

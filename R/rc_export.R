@@ -11,7 +11,7 @@
 #' @param url Character. A url address to connect to the REDCap API
 #' @param token Character. A REDCap API token
 #' @param data_dict Dataframe. REDCap project data data_dictionary. By default, 
-#' this will be fetched from the REDCap bundle option, as created by \code{rc_setup}.
+#' this will be fetched from the REDCap bundle option, as created by \code{rc_bundle}.
 #' Otherwise, a data.frame containing the project data dictionary must be supplied.
 #' 
 #' @param records Character. A vector of study id's to be returned.  If \code{NULL}, all 
@@ -83,7 +83,7 @@
 #' Thus, if you are concerned about tying up the server with a large, 
 #' longitudinal project, it would be prudent to use a smaller batch size.
 #' 
-#' @section 
+#'  
 #' Note about export rights (6.0.0+): Please be aware that Data Export user rights will be 
 #' applied to this API request. For example, if you have "No Access" data export rights 
 #' in the project, then the API data export will fail and return an error. And if you 
@@ -92,10 +92,10 @@
 #' from the API. To make sure that no data is unnecessarily filtered out of your API 
 #' request, you should have "Full Data Set" export rights in the project.
 #' 
-#' @section REDCap Version:
+#' REDCap Version:
 #' >= 6.0.0 
 #' 
-#' @section Deidentified Batched Calls:
+#' Deidentified Batched Calls:
 #' Batched calls to the API are not a feature of the REDCap API, but may be imposed 
 #' by making multiple calls to the API.  The process of batching the export requires
 #' that an initial call be made to the API to retrieve only the record IDs.  The

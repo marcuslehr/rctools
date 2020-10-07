@@ -35,10 +35,10 @@ rc_fill <- function(record_data, ...,
     # Replace blanks with NA
     record_data[[col]][record_data[[col]] == ''] = NA
     
-    # Count items per group in each column
+    # Count unique items per group in each column
     x = suppressMessages(
-            dplyr::group_by(record_data, !!dplyr::sym(group_by)) %>% dplyr::select(all_of(col)) %>% 
-            stats::na.omit() %>% dplyr::summarise(n = dplyr::n())
+            record_data %>% dplyr::group_by(!!dplyr::sym(group_by)) %>% dplyr::select(!!col) %>% 
+            stats::na.omit() %>% dplyr::distinct() %>% dplyr::summarise(n = dplyr::n())
         )
     counts[[col]] = max(x$n)
   }
@@ -51,7 +51,7 @@ rc_fill <- function(record_data, ...,
   }
   
   # Fill columns
-  dplyr::group_by_(record_data, paste(group_by, collapse = ',')) %>%
+  dplyr::group_by_at(record_data, paste(group_by, collapse = ',')) %>%
                   tidyr::fill(., ..., .direction = "downup") %>%
 									dplyr::ungroup()
 }

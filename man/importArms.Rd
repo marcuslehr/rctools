@@ -43,8 +43,8 @@ project while importing new Arms. Notice: Because of the 'override'
 parameter's destructive nature, this method may only use
 \code{override = TRUE} for projects in Development status.
 }
-\section{REDCap API Documentation}{
-
+\details{
+REDCap API Documentation:
 This method allows you to import Arms into a project or to rename
 existing Arms in a project. You may use the parameter override=1 as a
 'delete all + import' action in order to erase all existing Arms in the
@@ -53,13 +53,10 @@ parameter's destructive nature, this method may only use override=1
 for projects in Development status.
 
 NOTE: This only works for longitudinal projects.
-}
 
-\section{REDCap Version}{
-
+REDCap Version:
 At least 8.1.17+ (and likely some earlier versions)
 }
-
 \references{
 Please refer to your institution's API documentation.
 }

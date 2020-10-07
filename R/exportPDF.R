@@ -25,7 +25,7 @@
 #' This function mimics the behavior of "Download PDF of Instruments" button on the
 #' REDCap user interface.
 #' 
-#' @section REDCap API Documentation:
+#' REDCap API Documentation:
 #' This function allows you to export a PDF file for any of the following: 1) a 
 #' single data collection instrument (blank), 2) all instruments (blank), 3) a 
 #' single instrument (with data from a single record), 4) all instruments (with 
@@ -37,10 +37,10 @@
 #' will remove data from certain fields in the PDF). If the user has "No Access" data 
 #' export rights, they will not be able to use this method, and an error will be returned.
 #' 
-#' @section REDCap Version:
+#' REDCap Version:
 #' 6.5.0+ 
 #' 
-#' @section Known REDCap Limitations:
+#' Known REDCap Limitations:
 #' None 
 #'
 #' @return 

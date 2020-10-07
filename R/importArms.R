@@ -21,7 +21,7 @@
 #'   see \code{\link{redcap_error}}
 #' @param ... additional arguments to pass to other methods.
 #' 
-#' @section REDCap API Documentation:
+#' @details REDCap API Documentation:
 #' This method allows you to import Arms into a project or to rename 
 #' existing Arms in a project. You may use the parameter override=1 as a 
 #' 'delete all + import' action in order to erase all existing Arms in the 
@@ -31,7 +31,7 @@
 #' 
 #' NOTE: This only works for longitudinal projects.
 #' 
-#' @section REDCap Version:
+#' REDCap Version:
 #' At least 8.1.17+ (and likely some earlier versions)
 #' 
 #' @return 

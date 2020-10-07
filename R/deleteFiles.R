@@ -11,7 +11,7 @@
 #' @param event The event name for the file.  Must be length 1.  
 #'   This applies only to longitudinal projects.  If the event is not
 #'   supplied for a longitudinal project, the API will return an error message.
-#' @param bundle A \code{redcapBundle} object as created by \code{rc_setup}.
+#' @param bundle A \code{redcapBundle} object as created by \code{rc_bundle}.
 #' @param ... Arguments to be passed to other methods
 #' @param error_handling An option for how to handle errors returned by the API.
 #'   see \code{\link{redcap_error}}

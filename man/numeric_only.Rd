@@ -19,7 +19,7 @@ purposes of this function, only quantitative data will be kept.}
 
 \item{data_dict}{Dataframe. REDCap project data data_dictionary. By default,
 $data_dict is expected in the REDCap bundle option, as created by
-\code{rc_setup}.}
+\code{rc_bundle}.}
 
 \item{sex_var}{String. Name of variable indicating the sex of subjects. If
 included, it will be used as one of the melting factors.}

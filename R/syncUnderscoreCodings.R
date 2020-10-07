@@ -40,7 +40,7 @@
 #' names to the meta data and the expectations of REDCap (for import, 
 #' REDCap expects the underscore codings to be used.
 #' 
-#' @section Backward Compatibility:
+#' Backward Compatibility:
 #' In retrospect, we realize that the way \code{syncUnderscoreCodings} is written
 #' is backwards.  We should have altered the field names in the records
 #' data frame.  Any scripts that make use of \code{syncUnderscoreCodings} and were

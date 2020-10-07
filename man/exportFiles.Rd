@@ -39,7 +39,7 @@ The file name is always the same name of the file as it exists in REDCap}
 
 \item{...}{Arguments to be passed to other methods}
 
-\item{bundle}{A \code{redcapBundle} object as created by \code{rc_setup}.}
+\item{bundle}{A \code{redcapBundle} object as created by \code{rc_bundle}.}
 
 \item{error_handling}{An option for how to handle errors returned by the API.
 see \code{\link{redcap_error}}}
@@ -56,9 +56,8 @@ See the examples for suggestions on exporting multiple files.
 Note that the name of the file can not be changed.  Whatever name exists in
 REDCap is the name that will be used, although the record ID and event name
 may be appended as a prefix
-}
-\section{REDCap API Documentation (6.5.0)}{
 
+REDCap API Documentation (6.5.0):
 This method allows you to download a document that has been attached to an
 individual record for a File Upload field. Please note that this method may also
 be used for Signature fields (i.e. File Upload fields with "signature" validation type).
@@ -70,18 +69,13 @@ have "De-Identified" or "Remove all tagged Identifier fields" data export rights
 then the API file export will fail and return an error \emph{only if} the File Upload
 field has been tagged as an Identifier field. To make sure that your API request
 does not return an error, you should have "Full Data Set" export rights in the project.
-}
 
-\section{REDCap Version}{
-
+REDCap Version:
 5.8.2+
-}
 
-\section{Known REDCap Limitations}{
-
+Known REDCap Limitations:
 None
 }
-
 \references{
 Please refer to your institution's API documentation.
 

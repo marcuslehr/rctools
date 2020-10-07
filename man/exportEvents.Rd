@@ -47,24 +47,18 @@ neither of these conditions are satisfied, the API will return a message
 such as \code{ERROR: You cannot export arms for classic projects}, an
 error message that isn't as descriptive of the nature of the problem as
 we might like.
-}
-\section{REDCap API Documentation}{
 
+REDCap API Documentation:
 This function allows you to export the events for a project
 
 NOTE: this only works for longitudinal projects.
-}
 
-\section{REDCap Version}{
-
+REDCap Version:
 5.8.2+
-}
 
-\section{Known REDCap Limitations}{
-
+Known REDCap Limitations:
 None
 }
-
 \references{
 Please refer to your institution's API documentation.
 

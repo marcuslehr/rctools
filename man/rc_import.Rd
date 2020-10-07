@@ -24,7 +24,7 @@ rc_import(
 \item{token}{A REDCap API token}
 
 \item{data_dict}{A \code{redcapBundle} object as created by
-\code{rc_setup}.}
+\code{rc_bundle}.}
 
 \item{overwriteBehavior}{Character string.  'normal' prevents blank
 fields from overwriting populated fields.  'overwrite' causes blanks to

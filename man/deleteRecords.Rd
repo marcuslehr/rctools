@@ -59,17 +59,14 @@ will result in deletion of any events and data associated with the arm.
 Data loss is non-reversible.  The user must have 'Delete Record' privileges
 in the database.
 }
-\section{REDCap API Documentation}{
-
+\details{
+REDCap API Documentation:
 This method allows you to delete one or more records from a project in a
 single API request.
-}
 
-\section{REDCap Version}{
-
+REDCap Version:
 At least 8.1.17+ (and likely some earlier versions)
 }
-
 \references{
 Please refer to your institution's API documentation.
 }

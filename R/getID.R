@@ -30,9 +30,10 @@ getID <- function(record_data = NULL,
 	}
 	else stop("'record_id' field could not be found.")
   
-  # Update bundle
-  bundle = getOption('redcap_bundle')
-  bundle$id_field = id_field
-  options(redcap_bundle = bundle)
+  ## Update bundle ## This seems to be causing more problems than it's solving
+  # bundle = getOption('redcap_bundle')
+  # bundle$id_field = id_field
+  # options(redcap_bundle = bundle)
+	
   return(id_field)
 }

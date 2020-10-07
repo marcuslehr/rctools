@@ -7,7 +7,7 @@
 #' @param token A REDCap API token
 #' @param record_data A \code{data.frame} to be imported to the REDCap project.
 #' @param data_dict A \code{redcapBundle} object as created by
-#'   \code{rc_setup}.
+#'   \code{rc_bundle}.
 #' @param overwriteBehavior Character string.  'normal' prevents blank
 #'   fields from overwriting populated fields.  'overwrite' causes blanks to
 #'   overwrite data in the REDCap database.

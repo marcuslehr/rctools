@@ -45,21 +45,16 @@ neither of these conditions are satisfied, the API will return a message
 such as \code{ERROR: You cannot export arms for classic projects}, an
 error message that isn't as descriptive of the nature of the problem as
 we might like.
-}
-\section{REDCap API Documentation}{
 
+REDCap API Documentation:
 This function allows you to export the Arms for a project
 
 NOTE: this only works for longitudinal projects.
-}
 
-\section{REDCap Version}{
-
+REDCap Version:
 5.8.2+
-}
 
-\section{Known REDCap Limitations}{
-
+Known REDCap Limitations:
 In versions earlier than 5.9.15, providing a value to the \code{arms} argument
 had no effect and the entire data frame of arms is returned.
 
@@ -70,7 +65,6 @@ In most cases, the number or arms is fairly small, so there is no real performan
 benefit to only selecting a subset of the arms.  The safest course of action is
 to export all of the arms (the default behavior)
 }
-
 \references{
 Please refer to your institution's API documentation.
 

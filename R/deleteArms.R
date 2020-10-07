@@ -14,7 +14,7 @@
 #'   see \code{\link{redcap_error}}
 #' @param ... Additional arguments to pass to other methods.
 #' 
-#' @section REDCap API Documentation:
+#' @details REDCap API Documentation:
 #' This method allows you to delete Arms from a project. 
 #' Notice: Because of this method's destructive nature, it is only 
 #' available for use for projects in Development status. Additionally, 
@@ -25,7 +25,7 @@
 #' 
 #' NOTE: This only works for longitudinal projects.
 #' 
-#' @section REDCap Version:
+#' REDCap Version:
 #' At least 8.1.17+ (and likely some earlier versions)
 #' 
 #' @return 

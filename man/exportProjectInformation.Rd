@@ -30,24 +30,18 @@ Retrieve a data frame with the project information.
 If this function is used in a version of REDCap that does not
 support the Export Version Number function, the character string
 \code{'Version Unknown'} is returned.
-}
-\section{REDCap API Documentation (6.5.0)}{
 
+REDCap API Documentation (6.5.0):
 This function allows you to export some of the basic attributes of a given
 REDCap project, such as the project's title, if it is longitudinal, if
 surveys are enabled, the time the project was created and moved to production, etc.
-}
 
-\section{REDCap Version}{
-
+REDCap Version:
 6.5.0 (Perhaps earlier)
-}
 
-\section{Known REDCap Limitations}{
-
+Known REDCap Limitations:
 None
 }
-
 \references{
 Please refer to your institution's API documentation.
 

@@ -8,11 +8,11 @@ rc_missing(
   record_data,
   completion_field = NULL,
   repeats = NULL,
-  table = FALSE,
   bundle = getOption("redcap_bundle"),
   data_dict = getOption("redcap_bundle")$data_dict,
-  event_data = getOption("redcap_bundle")$event_data,
-  form_perm = getOption("redcap_bundle")$form_perm
+  events = getOption("redcap_bundle")$event_data$unique_event_name,
+  form_perm = getOption("redcap_bundle")$form_perm,
+  id_field = getOption("redcap_bundle")$id_field
 )
 }
 \arguments{
@@ -23,31 +23,27 @@ has completed the study. This should be indicated by a 'Yes' or a '1' (i.e. a Ye
 field in REDCap). If not provided, some missing data may be lost.}
 
 \item{repeats}{Character. A vector of repeat instrument names which should be kept. This should
-only be used for repeat instruments which are expected to have a consistent number of occurances
+ONLY be used for repeat instruments which are expected to have a consistent number of occurrences
 per each event/ID combination. All repeat instruments not supplied here will be removed to avoid
 excessive false positives.}
 
-\item{table}{Logical. If \code{TRUE} a list will be returned containing the missing dataframe
-and two missing tables. The tables contain the percent of missing record_idor variable counts.
-To view formatted tables, use square bracket indexing- e.g. data[\link{'IDs_table'}]}
-
-\item{bundle}{List. A project metadata bundle as created by \code{rc_setup}. By default, the
-bundle is expected in the option "redcap_bundle".}
+\item{bundle}{List. A project metadata bundle as created by \code{rc_bundle}. By default, the
+bundle is expected in the option "redcap_bundle". This option exists so that \code{data_dict},
+\code{events}, and \code{form_perm} can be supplied in a single argument.}
 
 \item{data_dict}{Dataframe. REDCap project data data_dictionary. By default,
-$data_dict is expected in a REDCap bundle object, as created by \code{rc_setup}. Otherwise, an
+$data_dict is expected in a REDCap bundle object, as created by \code{rc_bundle}. Otherwise, an
 equivalent data.frame containing the project data dictionary must be supplied.}
 
-\item{event_data}{Dataframe. REDCap project event metadata. By default, $event_data is expected in
-the REDCap bundle, as created by \code{rc_setup}. Otherwise, an equivalent data.frame containing
-event data must be supplied.}
+\item{events}{Character. Vector of REDCap event names. If supplying manually, chronological
+ordering of events must be ensured.}
 
 \item{form_perm}{Dataframe. User access permissions for REDCap forms. By default, $form_perm
-is expected in the REDCap bundle, as created by \code{rc_setup}. Otherwise, an equivalent
+is expected in the REDCap bundle, as created by \code{rc_bundle}. Otherwise, an equivalent
 data.frame containing form permission data must be supplied.}
 }
 \description{
-Finds data points which are ostenibly missing from Redcap records data.
+Finds data points which are ostensibly missing from Redcap records data.
 
 For each event/variable combination, if a value exists for at least one
 record then it is expected to exist for all records. Any event or variable which is empty within

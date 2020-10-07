@@ -13,7 +13,7 @@
 #' purposes of this function, only quantitative data will be kept. 
 #' @param data_dict Dataframe. REDCap project data data_dictionary. By default, 
 #' $data_dict is expected in the REDCap bundle option, as created by 
-#' \code{rc_setup}.
+#' \code{rc_bundle}.
 #' @param sex_var String. Name of variable indicating the sex of subjects. If
 #' included, it will be used as one of the melting factors.
 #' @param fields Character. A vector of field/variable names to be analyzed
@@ -77,9 +77,9 @@ numeric_only <- function(record_data,
   }
   
   # Create melting variables and add to fields list
-  meltVars = c(id_field, sex_var, rc_fields) %>% stats::na.omit()
-  meltVars = meltVars[meltVars %in% names(record_data)]
-  fields = c(meltVars, fields) %>% unique()
+  rc_factors = c(id_field, sex_var, rc_fields) %>% stats::na.omit()
+  rc_factors = rc_factors[rc_factors %in% names(record_data)]
+  fields = c(rc_factors, fields) %>% unique()
   
   # Subset data
   record_data = record_data[fields]
@@ -93,8 +93,8 @@ numeric_only <- function(record_data,
   
   # Convert to long format. Dates get destroyed by melt()
   record_data = suppressWarnings(
-    reshape2::melt(record_data, id.vars=meltVars, na.rm = T) %>% 
-       droplevels() #dplyr::as_tibble() %>% 
+    reshape2::melt(record_data, id.vars=rc_factors, na.rm = T) %>% 
+       droplevels()
   )
   
   # Insure against non-validated fields by making sure only digits are passed
@@ -109,7 +109,7 @@ numeric_only <- function(record_data,
     
   
   if (!long_format) {
-    cast_formula = paste(paste(meltVars, collapse = ' + '),"~ variable")
+    cast_formula = paste(paste(rc_factors, collapse = ' + '),"~ variable")
     record_data = reshape2::dcast(record_data, cast_formula)
   }
   

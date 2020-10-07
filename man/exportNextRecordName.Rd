@@ -31,19 +31,15 @@ this method exports the next potential record ID for a project.
 \details{
 It generates the next record name by determining the current maximum numerical
 record ID and then incrementing it by one.
-}
-\section{REDCap API Documentation}{
 
+REDCap API Documentation:
 
 NOTE: This method does not create a new record, but merely determines
 what the next record name would be.
-}
 
-\section{REDCap Version}{
-
+REDCap Version:
 8.1.8+
 }
-
 \references{
 Please refer to your institution's API documentation.
 

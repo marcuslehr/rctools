@@ -36,26 +36,20 @@ When this function is called for a classic project, a character string is
 returned giving the API error message, '400: You cannot export form-event
 mappings for classic projects' but without casting an error in R. This is
 by design and allows more flexible error checks in certain functions.
-}
-\section{REDCap API Documentation}{
 
+REDCap API Documentation:
 This function allows you to export the instrument-event mappings for a project
 (i.e., how the data collection instruments are designated for certain events in a
 longitudinal project).
 
 NOTE: this only works for longitudinal projects
-}
 
-\section{REDCap Version}{
-
+REDCap Version:
 5.8.2+ (and earlier, but we don't know how much earlier)
-}
 
-\section{Known REDCap Limitations}{
-
+Known REDCap Limitations:
 None
 }
-
 \references{
 Please refer to your institution's API documentation.
 

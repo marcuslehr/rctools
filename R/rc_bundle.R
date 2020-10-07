@@ -1,4 +1,4 @@
-#' @name rc_setup
+#' @name rc_bundle
 #' @title Export REDCap project metadata
 #' @description This function performs several API calls at once in order
 #' to reduce the overall number of calls when using rctools. All project
@@ -21,6 +21,8 @@
 #'   
 #' @param url A url address to connect to the REDCap API
 #' @param token A REDCap API token
+#' @param bundle A REDCap bundle object. If provided, the local bundle will be
+#' uploaded to the R session options for use by other rctools functions.
 #' @param create_option Logical. Indicates whether the REDCap bundle should be
 #' saved to an option.
 #' @param return_object Logical. Indicates whether the REDCap bundle should be
@@ -48,14 +50,22 @@
 #' 
 #' @export
 
-rc_setup <- function(url,token, create_option=TRUE, return_object=FALSE,
+rc_bundle <- function(url,token, bundle = NULL,
+                      create_option=TRUE, return_object=TRUE,
                       data_dict=FALSE, users=FALSE, instruments=FALSE,
                       event_data=FALSE, arms=FALSE, mappings=FALSE,
                       proj_info=FALSE, version=FALSE,
                       dates=TRUE, labels=TRUE
                       ){
   
-  ## Error checking. Cannot use validate_args here
+  # If provided, upload bundle to options.
+  # This is provided simply to reduce the amount of syntax users must remember
+  if (!is.null(bundle)) {
+    options(redcap_bundle = bundle)
+    return(message("Bundle uploaded to options."))
+  }
+  
+  ## Error checking. Cannot use validate_args() here
   coll <- checkmate::makeAssertCollection()
   
   massert(~ url + token,

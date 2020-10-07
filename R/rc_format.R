@@ -8,7 +8,7 @@
 #' 
 #' @param record_data Dataframe. Record data export from REDCap
 #' @param data_dict Dataframe. REDCap project data data_dictionary. By default, 
-#' this will be fetched from the REDCap bundle option, as created by \code{rc_setup}.
+#' this will be fetched from the REDCap bundle option, as created by \code{rc_bundle}.
 #' Otherwise, a data.frame containing the project data dictionary must be supplied.
 #' 
 #' @param factors Logical.  Determines if categorical data from the database is 
@@ -25,7 +25,8 @@
 #'   This option is only available after REDCap version 6.0.  See Checkbox Variables
 #'   for more on how this interacts with the \code{factors} argument.
 #'   
-#' @section Checkbox Variables:
+#' 
+#' Checkbox Variables:
 #' 
 #' There are four ways the data from checkbox variables may be 
 #' represented depending on the values of \code{factors} and 
@@ -64,7 +65,7 @@ rc_format <- function(record_data, data_dict = getOption("redcap_bundle")$data_d
   #* Including them causes errors in checkbox_suffixes
   data_dict <- data_dict[!data_dict$field_type %in% "descriptive",]
   
-  
+  # Apply formatting/type conversions
   record_data <- fieldToVar(records = record_data, 
                             data_dict = data_dict, 
                             factors = factors, 

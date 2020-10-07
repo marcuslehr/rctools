@@ -1,9 +1,9 @@
 packageStartupMessage(
   "Welcome to rctools.  Please Note:\n",
-  " - Run 'rc_setup' before using other functions.\n",
+  " - Run 'rc_bundle' before using other functions.\n",
   " - If you do not have API access to your REDCap project, you can still use\n",
   "  	non-import/export functions by providing metadata where needed.\n",
-  " - 'rc_setup' saves its result to an option by default. You can access\n",
+  " - 'rc_bundle' saves its result to an option by default. You can access\n",
   "  	project metadata using getOption('redcap_bundle')"
 )
 
@@ -29,8 +29,8 @@ packageStartupMessage(
 			)
 		)
 }
-.onUnload <- function(libPath) {
-  options(redcap_token = NULL,
-					redcap_bundle = NULL,
-					redcap_error_handling = NULL)
-}
+# .onUnload <- function(libPath) {
+#   options(redcap_token = NULL,
+# 					redcap_bundle = NULL,
+# 					redcap_error_handling = NULL)
+# }

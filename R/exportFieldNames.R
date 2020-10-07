@@ -13,7 +13,7 @@
 #'   see \code{\link{redcap_error}}
 #'
 #' 
-#' @section REDCap API Documentation:
+#' @details REDCap API Documentation:
 #' This function returns a list of the export/import-specific version of field names for 
 #' all fields (or for one field, if desired) in a project. This is mostly used for 
 #' checkbox fields because during data exports and data imports, 
@@ -33,10 +33,10 @@
 #' The export_field_name attribute represents the export/import-specific version of 
 #' that field name.
 #' 
-#' @section REDCap Version:
+#' REDCap Version:
 #' 6.5.0+ (perhaps earlier; need to confirm its introduction)
 #' 
-#' @section Known REDCap Limitations: 
+#' Known REDCap Limitations: 
 #' In 6.5.0, it has been observed that "slider" fields are not returned.  
 #' 
 #' Signature fields are also not included, but these are effectively the same as 

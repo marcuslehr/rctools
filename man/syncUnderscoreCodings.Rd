@@ -48,9 +48,8 @@ For data imports, the meta data are not altered and the
 \code{checkbox_field_name_map} attribute is used to synchronize field
 names to the meta data and the expectations of REDCap (for import,
 REDCap expects the underscore codings to be used.
-}
-\section{Backward Compatibility}{
 
+Backward Compatibility:
 In retrospect, we realize that the way \code{syncUnderscoreCodings} is written
 is backwards.  We should have altered the field names in the records
 data frame.  Any scripts that make use of \code{syncUnderscoreCodings} and were
@@ -64,7 +63,6 @@ underscores in the checkbox codings
 If your scripts were written under REDCap 5.5.21 or higher, you will have no backward
 compatibility problems related to this issue.
 }
-
 \author{
 Benjamin Nutter
 }

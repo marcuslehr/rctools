@@ -50,8 +50,8 @@ will result in deletion of any events and data associated with the arm.
 Due to its destructive nature, it may only be performed on databases
 in development status.  Data loss is non-reversible.
 }
-\section{REDCap API Documentation}{
-
+\details{
+REDCap API Documentation:
 This method allows you to delete Arms from a project.
 Notice: Because of this method's destructive nature, it is only
 available for use for projects in Development status. Additionally,
@@ -61,13 +61,10 @@ any records/data that have been collected under that arm (this is
 non-reversible data loss).
 
 NOTE: This only works for longitudinal projects.
-}
 
-\section{REDCap Version}{
-
+REDCap Version:
 At least 8.1.17+ (and likely some earlier versions)
 }
-
 \references{
 Please refer to your institution's API documentation.
 }

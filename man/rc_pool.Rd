@@ -16,7 +16,7 @@ rc_pool(
 \item{record_data}{Dataframe. Records data export from REDCap. For the
 purposes of this function, only quantitative data will be kept.}
 
-\item{var_roots}{Character. Strings to search for within column names of
+\item{var_roots}{Character. Vector of strings to search for within column names of
 record_data. For each variable root provided, all column names containing the
 root will be pooled into a single column. Regular expressions may be used.}
 
@@ -39,17 +39,16 @@ appended to the end of the dataframe. To see which columns have been pooled,
 run the command \code{attributes([YOUR_DATA_FRAME])$pooled_vars} on the
 returned dataframe.
 
-If desired, the search space of \code{var_roots} can be restricted to only
-columns containing numeric data to reduce false matches. Additionally, exact
-(i.e. full name) matching can be performed with the \code{fields_list} argument.
-Fields provided in this argument will be searched for in all columns. If both
-arguments are provided, \code{fields_list} will be applied first.
+Additionally, exact (i.e. full name) matching can be performed with the
+\code{fields_list} argument. Fields provided in this argument will be
+searched for in all columns. If both arguments are provided,
+\code{fields_list} will be applied first.
 
 Furthermore, if the columns selected to be pooled contain more than one
 data point per row, the first data point will be used. In this case, pooling is
 likely inappropriate and the pooled columns should be reviewed. However, if for
 some reason pooling is still desirable and all data points should be kept,
-use \code{make_repeat = TRUE} for more aggressive pooling.
+use \code{make_repeat = TRUE} to convert the pooled variables into repeats.
 }
 \details{
 The intention of this function is to correct for inefficient

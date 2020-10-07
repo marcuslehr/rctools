@@ -17,7 +17,7 @@ rc_format(
 \item{record_data}{Dataframe. Record data export from REDCap}
 
 \item{data_dict}{Dataframe. REDCap project data data_dictionary. By default,
-this will be fetched from the REDCap bundle option, as created by \code{rc_setup}.
+this will be fetched from the REDCap bundle option, as created by \code{rc_bundle}.
 Otherwise, a data.frame containing the project data dictionary must be supplied.}
 
 \item{factors}{Logical.  Determines if categorical data from the database is
@@ -35,18 +35,9 @@ variables.  If \code{FALSE} labels are applies as "Unchecked"/"Checked".
 If \code{TRUE}, they are applied as ""/"\link{field_label}" where \link{field_label}
 is the label assigned to the level in the data data_dictionary.
 This option is only available after REDCap version 6.0.  See Checkbox Variables
-for more on how this interacts with the \code{factors} argument.}
-}
-\description{
-Uses REDCap project metadata to format records data.
-}
-\details{
-This function takes raw REDCap data and adds column labels, converts
-columns to numeric/character/factor as appropriate, and applies factor and
-checkbox labels.
-}
-\section{Checkbox Variables}{
+for more on how this interacts with the \code{factors} argument.
 
+Checkbox Variables:
 
 There are four ways the data from checkbox variables may be
 represented depending on the values of \code{factors} and
@@ -61,9 +52,16 @@ checked, or an empty string if it is not.
 \code{FALSE}   \tab \code{TRUE}           \tab "" / value \cr
 \code{TRUE}    \tab \code{FALSE}          \tab Unchecked / Checked \cr
 \code{TRUE}    \tab \code{TRUE}           \tab "" / label
+}}
 }
+\description{
+Uses REDCap project metadata to format records data.
 }
-
+\details{
+This function takes raw REDCap data and adds column labels, converts
+columns to numeric/character/factor as appropriate, and applies factor and
+checkbox labels.
+}
 \author{
 Benjamin Nutter
 

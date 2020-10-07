@@ -47,16 +47,15 @@
 #' @param plot Logical, length == 1
 #' @param filtered Logical, length == 1
 #' @param long_format Logical, length == 1
-#' @param table Logical, length == 1
-#' @param numeric_only Logical, length == 1
 #' @param make_repeat Logical, length == 1
+#' @param only_rows Logical, length == 1
+#' @param only_columns Logical, length == 1
 #' 
 #' @param record_data Data.frame; contains record_id and redcap_event_name columns
 #' @param data_dict Data.frame, ncol == 18
 #' @param users Data.frame
 #' @param form_perm Data.frame
 #' @param instruments Data.frame
-#' @param event_data Data.frame
 #' @param arms Data.frame
 #' @param mappings Data.frame
 #' @param proj_info Data.frame
@@ -110,9 +109,9 @@ validate_args <- function(required = NULL,
                           plot = NULL,
                           filtered = NULL,
                           long_format = NULL,
-													table = NULL,
-													numeric_only = NULL,
 													make_repeat = NULL,
+													only_rows = NULL,
+													only_columns = NULL,
                           
                           # Data.frame
                           record_data = NULL,
@@ -120,7 +119,6 @@ validate_args <- function(required = NULL,
                           users = NULL,
                           form_perm = NULL,
                           instruments = NULL,
-                          event_data = NULL,
                           arms = NULL,
                           mappings = NULL,
                           proj_info = NULL,
@@ -225,8 +223,8 @@ validate_args <- function(required = NULL,
 
   # Generate var list
   vars = c('survey','dag','form_complete_auto','format','factors','labels','dates',
-           'checkboxLabels','returnData','plot','filtered','long_format','table',
-					 'numeric_only','make_repeat')
+           'checkboxLabels','returnData','plot','filtered','long_format',
+					 'make_repeat','only_rows','only_columns')
 		
 		# Make formula
 		massert_formula = stats::formula(paste('~',paste(vars,collapse = ' + ')))
@@ -245,7 +243,7 @@ validate_args <- function(required = NULL,
 # Data.frame --------------------------------------------------------------
 
   # Generate var list
-  vars = c('record_data','data_dict','users','form_perm','instruments','event_data',
+  vars = c('record_data','data_dict','users','form_perm','instruments',
 						'arms','mappings','proj_info')
 		
 		# Make formula
@@ -302,9 +300,9 @@ validate_args <- function(required = NULL,
 		bundle_names = c("redcap_url","data_dict","id_field","users","form_perm","instruments",
 										 "event_data","arms","mappings","proj_info","version")
 		
-		if (length(bundle) != 11 | 
+		if (#length(bundle) != 11 | # Need to make sure list items are being called by name only, not number
 				any(!bundle_names %in% names(bundle)))
-			warning("Please supply a bundle exactly as produced by rc_setup()")
+			warning("Please supply a bundle exactly as produced by rc_bundle()")
   }
   
 ##--- record_data
@@ -347,7 +345,7 @@ validate_args <- function(required = NULL,
 			}
 		else if (any(!data_dict_api_names %in% names(data_dict)))
       coll$push("Please supply a data dictionary exactly as produced by REDCap
-			or via a REDCap bundle, as created by rc_setup()")
+			or via a REDCap bundle, as created by rc_bundle()")
 			
 		# Check for bad fields
 		if (!is.null(fields)){
@@ -384,24 +382,25 @@ validate_args <- function(required = NULL,
 	else if (!is.null(fields) | !is.null(forms))
 		warning("The supplied fields or forms cannot be validated without the project
 		data dictionary. Please supply it directly or via a REDCap bundle, as created by
-		rc_setup()")
+		rc_bundle()")
 	
 	
 ##--- event_data validations
 	# Check for bad events
-	if (!is.null(event_data)) {
-		if (!is.null(events)) {
-      events_list <- event_data$unique_event_name
-      events_bad <- events[!events %in% events_list]
+	if (!is.null(events)) {
+	  if (!is.null(bundle)) event_data = bundle$event_data
+	  else event_data = getOption('redcap_bundle')$event_data
+	  
+		if (!is.null(event_data)) {
+      events_bad <- events[!events %in% event_data$unique_event_name]
       if (length(events_bad) > 0)
         coll$push(paste0("The following are not valid event names: ",
                     paste0(events_bad, collapse = ", ")))
-		}
+		} else
+    		warning("The supplied events list cannot be validated without the project
+    		events data. Please ensure a metadata bundle has been uploaded to the 
+    		session options using rc_bundle()")
   }
-  else if (!is.null(events))
-		warning("The supplied events list cannot be validated without the project
-		events data. Please supply it directly or via a REDCap bundle, as created by
-		rc_setup()")
 
 # Report ------------------------------------------------------------------
 

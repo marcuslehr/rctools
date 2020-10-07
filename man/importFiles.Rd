@@ -44,7 +44,7 @@ of REDCap, and passed as NULL, the API will assume a value of 1.}
 
 \item{...}{Arguments to be passed to other methods}
 
-\item{bundle}{A \code{redcapBundle} object as created by \code{rc_setup}.}
+\item{bundle}{A \code{redcapBundle} object as created by \code{rc_bundle}.}
 
 \item{error_handling}{An option for how to handle errors returned by the API.
 see \code{\link{redcap_error}}}

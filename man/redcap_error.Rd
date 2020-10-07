@@ -43,16 +43,14 @@ error handler is set to \code{"null"}, a \code{NULL} is returned.  When the
 error handler is set to \code{"error"}, the error is returned.  The option
 is set globally using \code{options(redcap_error_handler = "null")} and is
 set to \code{"null"} by default.
-}
-\section{Handled Errors}{
 
+Handled Errors:
 Only the errors listed below are handled.  All others throw a hard error.
 
 "ERROR: The value of the parameter \"content\" is not valid"\cr
 "ERROR: You cannot export arms for classic projects"\cr
 "ERROR: You cannot export events for classic projects"
 }
-
 \author{
 Benjamin Nutter
 }

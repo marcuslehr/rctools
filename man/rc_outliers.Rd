@@ -8,9 +8,10 @@ rc_outliers(
   record_data,
   sex_var = NA,
   sd_threshold = 3,
-  data_dict = getOption("redcap_bundle")$data_dict,
   fields = NULL,
-  filtered = FALSE
+  filtered = FALSE,
+  data_dict = getOption("redcap_bundle")$data_dict,
+  id_field = getOption("redcap_bundle")$id_field
 )
 }
 \arguments{
@@ -23,25 +24,29 @@ included, variables will be grouped by sex when determining outliers.}
 \item{sd_threshold}{Integer. Threshold value for the number of standard
 deviations from the mean a value can be before being flagged as an outlier.}
 
-\item{data_dict}{Dataframe. REDCap project data data_dictionary. By default,
-$data_dict is expected in the REDCap bundle option, as created by
-\code{rc_setup}.}
-
 \item{fields}{Character. A vector of field/variable names to be analyzed
 may be passed manually.}
 
 \item{filtered}{Logical. Select whether non-outlier values should be returned.
 Default is \code{FLASE}.}
+
+\item{data_dict}{Dataframe. REDCap project data dictionary. By default,
+$data_dict is expected in the REDCap bundle option, as created by
+\code{rc_bundle}.}
+
+\item{id_field}{Character. Field name corresponding to the 'record_id' field.}
 }
 \description{
 Identifies outliers for each variable, defined as being further
-from the mean than the threshold number of standard deviations. Outliers are
-then returned as a data.frame.
+from the mean than the threshold number of standard deviations. This follows the
+convention used within REDCap, however defaults to a standard deviation threshold
+of 3 rather than 2. Data is returned in long format with a column specifying
+outlier status.
 }
 \details{
 Unless a vector of variables/field names is passed to the
 \code{fields} argument, the fields to be analyzed will be guessed based on
-column type. Furthermore, all non-numeric data will be removed before analysis.
+column type. All non-numeric data will be removed before analysis.
 If mixed numeric/non-numeric data (e.g. "160 cm") are passed, the first numerical
 instance will be extracted from the data. If a sex variable is provided, then
 variables will be grouped by sex for outlier analysis.

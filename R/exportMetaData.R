@@ -25,13 +25,13 @@
 #' @details A record of this export is placed in the REDCap logging page, 
 #' but the file that is exported is not stored in the database.
 #' 
-#' @section REDCap API Documentation:
+#' REDCap API Documentation:
 #' This function allows you to export the metadata for a project
 #' 
-#' @section REDCap Version:
+#' REDCap Version:
 #' 5.8.2+ (and earlier, but we don't know how much earlier)
 #' 
-#' @section Known REDCap Limitations: 
+#' Known REDCap Limitations: 
 #' The API doesn't respond to the \code{fields} and \code{forms} arguments.  It
 #' always returns the full data data_dictionary.
 #' 

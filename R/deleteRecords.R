@@ -19,11 +19,11 @@
 #'   see \code{\link{redcap_error}}
 #' @param ... Additional arguments to pass to other methods.
 #' 
-#' @section REDCap API Documentation:
+#' @details REDCap API Documentation:
 #' This method allows you to delete one or more records from a project in a 
 #' single API request.
 #' 
-#' @section REDCap Version:
+#' REDCap Version:
 #' At least 8.1.17+ (and likely some earlier versions)
 #' 
 #' @return 
