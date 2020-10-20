@@ -20,10 +20,10 @@ rc_plot(
 
 \item{title}{Character. Title of the resulting plot.}
 
-\item{plot_type}{Character. Either 'standard' or 'qq'}
+\item{plot_type}{Character. One of 'standard', 'qq', or 'hist'}
 
 \item{outlier_var}{Character. Name of the column containing logical (T/F)
-data indicating which values are outliers.}
+data indicating which values are outliers. Change to NA when not in use.}
 
 \item{wrap_var}{Character. Name of the column containing variable names.}
 

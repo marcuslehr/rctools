@@ -13,7 +13,7 @@
 #' @param title Character. Title of the resulting plot.
 #' @param plot_type Character. One of 'standard', 'qq', or 'hist'
 #' @param outlier_var Character. Name of the column containing logical (T/F)
-#' data indicating which values are outliers. 
+#' data indicating which values are outliers. Change to NA when not in use.
 #' @param wrap_var Character. Name of the column containing variable names.
 #' @param y Character. Name of the column containing numeric data to
 #' be plotted. 
@@ -46,49 +46,11 @@ rc_plot <- function(molten_data,
   #               x = x,
   #               plot_type = plot_type)
   
-  # This shouldn't be necessary anymore
-  {
-  # # Move into validate_args?
-  # missing_fields = !c(wrap_var,y,outlier_var) %in% names(molten_data)
-  # 
-  # if (any(missing_fields)) {
-  #   
-  #   # Remove unnecessary data and get column types
-  #   molten_data = dplyr::select(molten_data, -contains('redcap'))
-  #   col_types = sapply(molten_data, class) 
-  #   col_types[[x]] = NA # Ignore x
-  #   if (!is.na(sex_var)) col_types[[sex_var]] = NA # Ignore sex field
-  #   
-  #   # Try to find missing columns and rename
-  #   if (missing_fields[1]) {
-  #     col_pos = which(grepl('character|factor', col_types))
-  #     if (length(col_pos)==1) names(molten_data)[col_pos] = wrap_var
-  #   }
-  #   if (missing_fields[2]) {
-  #     col_pos = which(grepl('numeric|integer|double', col_types))
-  #     if (length(col_pos)==1) names(molten_data)[col_pos] = y
-  #   }
-  #   if (missing_fields[3]) {
-  #     col_pos = which(grepl('logical', col_types))
-  #     if (length(col_pos)==1) names(molten_data)[col_pos] = outlier_var
-  #   }
-  #   
-  #   # Recheck for missing columns and exit if so
-  #   missing_fields = !c(wrap_var,y,outlier_var) %in% names(molten_data)
-  #   if (any(missing_fields))
-  #     stop("Please provide a data.frame as produced by rc_outliers(record_data, filtered = FALSE).
-  #           Otherwise, the following columns must be included:
-  #             ID column
-  #             'variable' - Containing variable/field names
-  #             'value' - Containing values of the associated variables
-  #             'outlier' - Logical TRUE/FALSE indicating whether value is an outlier")
-  # }
-  }
   
   # Prep vars --------------------------------------------------------------
   
   # Select relevant data.
-  molten_data = molten_data %>% dplyr::ungroup() %>% 
+  molten_data = molten_data %>% dplyr::ungroup() %>% dplyr::arrange_at(outlier_var) %>% # Make sure outlier points are plotted on top
                   # dplyr::select_at(stats::na.omit(c(x, y, wrap_var, outlier_var))) %>%
                   dplyr::filter(!is.na(!!dplyr::sym(y))) # Remove NAs to avoid issues with mean/sd functions
   
@@ -96,6 +58,7 @@ rc_plot <- function(molten_data,
   if (!is.na(outlier_var) & plot_type!='hist')
     molten_data = molten_data %>% dplyr::mutate_at(outlier_var, ~ ifelse(is.na(.),F,.))
   
+  # This was an attempt to show diff colors for each outlier combo
   {
   ## Make a new column indicating which outlier type the point is (will create duplicate rows where needed)
   # if (length(outlier_var)>1) {
@@ -109,7 +72,7 @@ rc_plot <- function(molten_data,
   # molten_data = mutate(molten_data, hex_codes = rgb(outlier, qq_out, out_of_range))
   # color_palette = unique(molten_data$hex_codes) %>% as.character()
   # names(color_palette) = unique(molten_data$hex_codes) %>% as.character()
-  } # This was an attempt to show diff colors for each outlier combo
+  } 
   
   # Convert IDs to character to treat as categorical
   molten_data[[x]] = as.character(molten_data[[x]])
@@ -140,9 +103,8 @@ rc_plot <- function(molten_data,
   plots = list()
   
   # List of layers applied to all plots
-  gglayers = list(#ggplot2::geom_point(),
-                  ggplot2::scale_color_manual(breaks = c("FALSE","TRUE"), values = c("black","red")),
-                  # scale_color_gradient2(low = "red", mid = "white", high = "red", limits = c(-3,3), na.value = 'red'),
+  # Could potentially use tidy dots to allow users to add more layers
+  gglayers = list(ggplot2::scale_color_manual(breaks = c("FALSE","TRUE"), values = c("black","red")),
                   ggplot2::theme_bw(),
                   ggplot2::theme(axis.title.x=ggplot2::element_blank(),
                                  axis.text.x=ggplot2::element_blank(),
@@ -159,6 +121,7 @@ rc_plot <- function(molten_data,
     else gglayers = c(list(ggplot2::geom_point(ggplot2::aes_string(color = paste0(outlier_var, collapse = '|')))),
                       gglayers)
   }
+  
   
   if (plot_type=='qq') {
     for (v in vars) {
@@ -218,6 +181,7 @@ rc_plot <- function(molten_data,
   }
   
   # # Attempt to add common legend to grid.arrange plot. Not working
+  ## facet_wrap() handles this appropriately
   # #https://github.com/hadley/ggplot2/wiki/Share-a-legend-between-two-ggplot2-graphs
   # g_legend<-function(a.gplot){
   #   tmp <- ggplot_gtable(ggplot_build(a.gplot))
