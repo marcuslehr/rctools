@@ -50,13 +50,14 @@ rc_plot <- function(molten_data,
   # Prep vars --------------------------------------------------------------
   
   # Select relevant data.
-  molten_data = molten_data %>% dplyr::ungroup() %>% dplyr::arrange_at(outlier_var) %>% # Make sure outlier points are plotted on top
+  molten_data = molten_data %>% dplyr::ungroup() %>% 
                   # dplyr::select_at(stats::na.omit(c(x, y, wrap_var, outlier_var))) %>%
                   dplyr::filter(!is.na(!!dplyr::sym(y))) # Remove NAs to avoid issues with mean/sd functions
   
   # Change NAs to FALSE in outlier columns. Otherwise points won't be plotted
   if (!is.na(outlier_var) & plot_type!='hist')
-    molten_data = molten_data %>% dplyr::mutate_at(outlier_var, ~ ifelse(is.na(.),F,.))
+    molten_data = molten_data %>% dplyr::mutate_at(outlier_var, ~ ifelse(is.na(.),F,.)) %>% # Substitute any NAs with F
+                    dplyr::arrange_at(outlier_var) # Make sure outlier points are plotted on top
   
   # This was an attempt to show diff colors for each outlier combo
   {
