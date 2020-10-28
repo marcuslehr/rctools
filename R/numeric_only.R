@@ -53,7 +53,7 @@ numeric_only <- function(record_data,
     if (is.null(attributes(record_data)$redcap_formatting)) {
       # Use data_dict if available
       if (!is.null(data_dict))
-        record_data = rc_format(record_data, data_dict)
+        record_data = suppressWarnings( rc_format(record_data, data_dict) )
       else {
         warning("Please provide data_dict or record_data formatted with rc_format() to avoid
                 inappropriate variables being passed.")

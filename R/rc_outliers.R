@@ -65,7 +65,7 @@ rc_outliers <- function(record_data, sex_var = NA, sd_threshold = 3,
   if (!is.null(data_dict)) {
     record_data = suppressWarnings(
                     data_dict[,1:2] %>% dplyr::rename(variable = field_name) %>% 
-                      dplyr::right_join(record_data, by = 'variable')
+                      dplyr::left_join(record_data, ., by = 'variable')
                   )
     
     if (!is.null(pooled_vars)) {
@@ -104,34 +104,3 @@ rc_outliers <- function(record_data, sex_var = NA, sd_threshold = 3,
   
   return(record_data)
 }
-
-# Recycle bin -------------------------------------------------------------
-
-## This has now been exported as an independent function
-  # # Make plots
-  # if (plot) plot_outliers(outlier_data = record_data, 
-  #                         sex_var = sex_var, 
-  #                         id_field = id_field)
-  
-# # Fill in first level pooled vars without repeat instruments
-      # if (!is.null(mappings)) {
-      #   pooled_vars = suppressWarnings(
-      #                   mappings[,2:3] %>% dplyr::rename(form_name = form, redcap_event_name = unique_event_name) %>% 
-      #                     dplyr::right_join(pooled_vars, by = 'form_name')
-      #                 )
-      #   
-      #   # first_pool_form = pooled_vars %>% dplyr::select(variable, redcap_event_name, form_name) %>% 
-      #   #                                    dplyr::group_by(variable, redcap_event_name) %>% dplyr::summarise_all(~dplyr::first(.))
-      #   # 
-      #   # record_data = suppressWarnings(record_data %>% 
-      #   #                 dplyr::filter(variable %in% unique(pooled_vars$variable) & 
-      #   #                               is.na(redcap_repeat_instrument)) %>%
-      #   #                 dplyr::select(-form_name) %>% 
-      #   #                 dplyr::left_join(first_pool_form, by = c('variable','redcap_event_name')) %>% 
-      #   #                 dplyr::right_join(record_data, by = setdiff(names(record_data),'form_name')) %>% 
-      #   #                 dplyr::mutate(form_name = dplyr::coalesce(form_name.x, form_name.y)) %>% 
-      #   #                 dplyr::select(-form_name.x, -form_name.y)
-      #   #               )
-      #                   
-      # } else if (any(is.na(dplyr::filter(record_data, variable %in% unique(pooled_vars$variable))$redcap_repeat_instrument)))
-      #     warning("Some form names could not be added because 'mappings' is not available.")

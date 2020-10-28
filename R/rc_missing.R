@@ -223,7 +223,7 @@ rc_missing <- function(record_data,
         # Add form names for ease of locating in Redcap
         missing_data = suppressWarnings(
                           data_dict[,1:2] %>% dplyr::rename(variable = field_name) %>% 
-                            dplyr::right_join(missing_data, by = 'variable')
+                            dplyr::left_join(missing_data, ., by = 'variable')
                         )
         
         # Add form names for pooled vars
