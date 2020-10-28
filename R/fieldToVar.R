@@ -118,15 +118,20 @@ fieldToVar <- function(records, data_dict, factors = TRUE,
                makeRedcapFactor(x = records[[i]],
                                 coding = data_dict$select_choices_or_calculations[data_dict$field_name == field_base],
                                 factors = factors, 
-                                var_name = data_dict$field_name),
-             "yesno" = makeRedcapYN(records[[i]], 
-                                    factors),
+                                var_name = data_dict$field_name[data_dict$field_name == field_base]),
+             "yesno" = makeRedcapFactor(x = records[[i]],
+                                        coding = '1, Yes | 0, No',
+                                        factors = factors, 
+                                        var_name = data_dict$field_name[data_dict$field_name == field_base]),
              "truefalse" = 
               {
                 if (factors) 
                   as.logical(records[[i]])
                 else
-                  records[[i]]
+                  makeRedcapFactor(x = records[[i]],
+                                   coding = '1, TRUE | 0, FALSE',
+                                   factors = factors, 
+                                   var_name = data_dict$field_name[data_dict$field_name == field_base])
               },
              "checkbox" = 
               {

@@ -73,7 +73,6 @@ rc_format <- function(record_data, data_dict = getOption("redcap_bundle")$data_d
                             checkboxLabels = checkboxLabels)
   
   if (labels){
-    
     # Get field names
     fields = names(record_data)[names(record_data) %in% data_dict$field_name]
     
@@ -83,16 +82,14 @@ rc_format <- function(record_data, data_dict = getOption("redcap_bundle")$data_d
     
     # Apply column labels
     Hmisc::label(record_data) = as.list(col_labels[match(names(record_data),names(col_labels))])
-    
-    ## Deprecated labelling method
-    # record_data[fields] <-
-    #   mapply(nm = fields,
-    #          lab = col_labels[fields],
-    #          FUN = function(nm, lab){
-    #            labelVector::set_label(record_data[[nm]], lab)
-    #          },
-    #          SIMPLIFY = FALSE)
   }
-  
-  record_data
+  else {
+    # Remove labels
+    # https://stackoverflow.com/questions/2394902/remove-variable-labels-attached-with-foreign-hmisc-spss-import-functions
+    for (col in seq_along(record_data)) {
+      class(record_data[[col]]) <- setdiff(class(record_data[[col]]), 'labelled')
+      attr(record_data[[col]],"label") <- NULL
+    }
+  }
+  return(record_data)
 }
