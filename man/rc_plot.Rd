@@ -8,7 +8,7 @@ rc_plot(
   long_data,
   title = NA,
   plot_type = "standard",
-  outlier_var = "outlier",
+  outlier_var = NA,
   wrap_var = "variable",
   y = "value",
   x = getOption("redcap_bundle")$id_field,
@@ -20,7 +20,7 @@ rc_plot(
 \item{long_data}{Dataframe. A long format data frame, as created by
 \code{rc_outliers}. At minimum there should be a record_id column, a
 column containing variable names, and a column containing values.
-Wide-to-long conversion include reshape2::melt() (used in rctools),
+Wide-to-long conversion functions include reshape2::melt() (used in rctools),
 tidyr::gather(), and tidyr::pivot_longer().}
 
 \item{title}{Character. Title of the resulting plot.}
@@ -28,7 +28,7 @@ tidyr::gather(), and tidyr::pivot_longer().}
 \item{plot_type}{Character. One of 'standard', 'qq', or 'hist'}
 
 \item{outlier_var}{Character. Name of the column containing logical (T/F)
-data indicating which values are outliers. Change to NA when not in use.}
+data indicating which values are outliers.}
 
 \item{wrap_var}{Character. Name of the column containing variable names.}
 

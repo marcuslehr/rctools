@@ -10,7 +10,7 @@ rc_format(
   factors = TRUE,
   labels = TRUE,
   dates = TRUE,
-  checkboxLabels = FALSE
+  checkbox_labels = FALSE
 )
 }
 \arguments{
@@ -22,7 +22,7 @@ Otherwise, a data.frame containing the project data dictionary must be supplied.
 
 \item{factors}{Logical.  Determines if categorical data from the database is
 returned as numeric codes or labelled factors. See 'Checkbox Variables'
-for more on how this interacts with the \code{checkboxLabels} argument.}
+for more on how this interacts with the \code{checkbox_labels} argument.}
 
 \item{labels}{Logical.  Determines if the variable labels are applied to
 the data frame.}
@@ -30,7 +30,7 @@ the data frame.}
 \item{dates}{Logical. Determines if date variables are converted to POSIXct
 format during the download.}
 
-\item{checkboxLabels}{Logical. Determines the format of labels in checkbox
+\item{checkbox_labels}{Logical. Determines the format of labels in checkbox
 variables.  If \code{FALSE} labels are applies as "Unchecked"/"Checked".
 If \code{TRUE}, they are applied as ""/"\link{field_label}" where \link{field_label}
 is the label assigned to the level in the data data_dictionary.
@@ -41,13 +41,13 @@ Checkbox Variables:
 
 There are four ways the data from checkbox variables may be
 represented depending on the values of \code{factors} and
-\code{checkboxLabels}. The most common are the first and third
-rows of the table below.  When \code{checkboxLabels = TRUE}, either
+\code{checkbox_labels}. The most common are the first and third
+rows of the table below.  When \code{checkbox_labels = TRUE}, either
 the coded value or the labelled value is returned if the box is
 checked, or an empty string if it is not.
 
 \tabular{lll}{
-\code{factors} \tab \code{checkboxLabels} \tab Output \cr
+\code{factors} \tab \code{checkbox_labels} \tab Output \cr
 \code{FALSE}   \tab \code{FALSE}          \tab 0 / 1 \cr
 \code{FALSE}   \tab \code{TRUE}           \tab "" / value \cr
 \code{TRUE}    \tab \code{FALSE}          \tab Unchecked / Checked \cr

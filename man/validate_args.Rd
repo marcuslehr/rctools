@@ -39,14 +39,14 @@ validate_args(
   factors = NULL,
   labels = NULL,
   dates = NULL,
-  checkboxLabels = NULL,
+  checkbox_labels = NULL,
   returnData = NULL,
   plot = NULL,
   filtered = NULL,
   long_format = NULL,
   make_repeat = NULL,
-  only_rows = NULL,
-  only_columns = NULL,
+  columns = NULL,
+  rows = NULL,
   sd_guides = NULL,
   record_data = NULL,
   data_dict = NULL,
@@ -132,7 +132,7 @@ the calling function.}
 
 \item{dates}{Logical, length == 1}
 
-\item{checkboxLabels}{Logical, length == 1}
+\item{checkbox_labels}{Logical, length == 1}
 
 \item{returnData}{Logical, length == 1}
 
@@ -144,9 +144,9 @@ the calling function.}
 
 \item{make_repeat}{Logical, length == 1}
 
-\item{only_rows}{Logical, length == 1}
+\item{columns}{Logical, length == 1}
 
-\item{only_columns}{Logical, length == 1}
+\item{rows}{Logical, length == 1}
 
 \item{sd_guides}{Logical, length == 1}
 

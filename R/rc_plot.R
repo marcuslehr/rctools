@@ -11,7 +11,7 @@
 #' @param long_data Dataframe. A long format data frame, as created by 
 #' \code{rc_outliers}. At minimum there should be a record_id column, a
 #' column containing variable names, and a column containing values.
-#' Wide-to-long conversion include reshape2::melt() (used in rctools),
+#' Wide-to-long conversion functions include reshape2::melt() (used in rctools),
 #' tidyr::gather(), and tidyr::pivot_longer().
 #' @param title Character. Title of the resulting plot.
 #' @param plot_type Character. One of 'standard', 'qq', or 'hist'

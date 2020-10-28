@@ -9,7 +9,7 @@ fieldToVar(
   data_dict,
   factors = TRUE,
   dates = TRUE,
-  checkboxLabels = FALSE
+  checkbox_labels = FALSE
 )
 }
 \arguments{
@@ -23,7 +23,7 @@ variables are converted to factors}
 
 \item{dates}{Logical, determines if date variables are converted to POSIXct format}
 
-\item{checkboxLabels}{Logical, determines if checkbox variables are labeled as
+\item{checkbox_labels}{Logical, determines if checkbox variables are labeled as
 "Checked" or using the checkbox label.  Only applicable when \code{factors = TRUE}}
 }
 \description{

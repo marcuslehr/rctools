@@ -6,19 +6,18 @@
 \usage{
 rc_strip(
   record_data,
-  only_rows = FALSE,
-  only_columns = FALSE,
+  columns = TRUE,
+  rows = TRUE,
   id_field = getOption("redcap_bundle")$id_field
 )
 }
 \arguments{
 \item{record_data}{Dataframe. Record data exported from REDCap}
 
-\item{only_rows}{Logical. When \code{TRUE}, only empty rows will
+\item{columns}{Logical. When \code{TRUE}, empty columns will
 be removed.}
 
-\item{only_columns}{Logical. When \code{TRUE}, only empty columns
-will be removed.}
+\item{rows}{Logical. When \code{TRUE}, empty rows will be removed.}
 }
 \description{
 Removes any columns which contain only \code{NA}. Likewise,

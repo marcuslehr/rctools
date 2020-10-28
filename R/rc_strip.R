@@ -6,10 +6,9 @@
 #' (record_id, redcap event/repeat) are ignored.
 #' 
 #' @param record_data Dataframe. Record data exported from REDCap
-#' @param only_rows Logical. When \code{TRUE}, only empty rows will
+#' @param columns Logical. When \code{TRUE}, empty columns will
 #' be removed.
-#' @param only_columns Logical. When \code{TRUE}, only empty columns
-#' will be removed.
+#' @param rows Logical. When \code{TRUE}, empty rows will be removed.
 #' 
 #' @importFrom magrittr '%>%'
 #' 
@@ -19,22 +18,23 @@
 
 
 rc_strip <- function(record_data,
-                     only_rows = FALSE, 
-                     only_columns = FALSE,
+                     columns = TRUE, 
+                     rows = TRUE,
                      id_field = getOption("redcap_bundle")$id_field) {
   
   validate_args(required = 'record_data',
-                only_rows = only_rows, only_columns = only_columns,
+                columns = columns, rows = rows,
                 id_field = id_field)
   
-  if (only_rows & only_columns) stop("`only_rows` and `only_columns` cannot both be TRUE.")
+  if (!(columns|rows)) warning("`columns` and `rows` cannot both be FALSE.
+                               No operations performed.")
   
-  if (!only_rows) {
+  if (columns) {
     # Remove empty columns
     record_data = record_data %>% .[,apply(., 2, function(x) !all(is.na(x)))] 
   }
   
-  if (!only_columns) {
+  if (rows) {
    id_field = getID(record_data = record_data,
                    id_field = id_field)
     

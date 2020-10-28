@@ -55,8 +55,8 @@
 #' @param filtered Logical, length == 1
 #' @param long_format Logical, length == 1
 #' @param make_repeat Logical, length == 1
-#' @param only_rows Logical, length == 1
-#' @param only_columns Logical, length == 1
+#' @param columns Logical, length == 1
+#' @param rows Logical, length == 1
 #' @param sd_guides Logical, length == 1
 #' 
 #' @param record_data Data.frame; contains record_id and redcap_event_name columns
@@ -126,8 +126,8 @@ validate_args <- function(required = NULL,
                           filtered = NULL,
                           long_format = NULL,
 													make_repeat = NULL,
-													only_rows = NULL,
-													only_columns = NULL,
+													columns = NULL,
+													rows = NULL,
 													sd_guides = NULL,
 													
                           # Data.frame
@@ -246,7 +246,7 @@ validate_args <- function(required = NULL,
   # Generate var list
   vars = c('survey','dag','form_complete_auto','format','factors','labels','dates',
            'checkbox_labels','returnData','plot','filtered','long_format',
-					 'make_repeat','only_rows','only_columns','sd_guides')
+					 'make_repeat','columns','rows','sd_guides')
 		
 		# Make formula
 		massert_formula = stats::formula(paste('~',paste(vars,collapse = ' + ')))
