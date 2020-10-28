@@ -16,7 +16,7 @@
 #' @param title Character. Title of the resulting plot.
 #' @param plot_type Character. One of 'standard', 'qq', or 'hist'
 #' @param outlier_var Character. Name of the column containing logical (T/F)
-#' data indicating which values are outliers. Change to NA when not in use.
+#' data indicating which values are outliers.
 #' @param wrap_var Character. Name of the column containing variable names.
 #' @param y Character. Name of the column containing numeric data to
 #' be plotted. 
@@ -33,7 +33,7 @@
 rc_plot <- function(long_data,
                     title = NA,
                     plot_type = 'standard',
-                    outlier_var = 'outlier',
+                    outlier_var = NA,
                     wrap_var = 'variable', 
                     y = 'value', 
                     x = getOption("redcap_bundle")$id_field,
@@ -59,8 +59,6 @@ rc_plot <- function(long_data,
   
   # Prevent 'NA' title. Keep NA default for package consistency
   if (is.na(title)) title = NULL
-  
-  # Should outlier_var be auto-converted to NA if not present? Or default NA?
   
   
   # Prep data --------------------------------------------------------------
@@ -165,39 +163,39 @@ rc_plot <- function(long_data,
   }
   
   else {
-    return(
-        ggplot2::ggplot(long_data, ggplot2::aes_string(x = x, y = y)) +
-          ggplot2::facet_wrap(wrap_var, scales = 'free') +
-          ggplot2::ggtitle(title) + 
-          gglayers +
-          
-          # Standard deviation lines
-          ggplot2::geom_hline(ggplot2::aes_string(yintercept = mean(long_data[[y]])), 
-                              color = '#ffffff', linetype= 3, alpha= 0.25)+
-          # These need to be done one by one in aes_string()
-          # 1 SD lines
-          ggplot2::geom_hline(
-            ggplot2::aes_string(yintercept = mean(long_data[[y]]) + 1*stats::sd(long_data[[y]]) 
-                                ), color = '#ff8080', linetype= 3, alpha= 0.25) +
-          ggplot2::geom_hline(
-            ggplot2::aes_string(yintercept = mean(long_data[[y]]) - 1*stats::sd(long_data[[y]]) 
-            ), color = '#ff8080', linetype= 3, alpha= 0.25) +
-          
-          # 2 SD lines
-          ggplot2::geom_hline(
-            ggplot2::aes_string(yintercept = mean(long_data[[y]]) + 2*stats::sd(long_data[[y]]) 
-                                ), color = '#ff4040', linetype= 3, alpha= 0.25) +
-          ggplot2::geom_hline(
-            ggplot2::aes_string(yintercept = mean(long_data[[y]]) - 2*stats::sd(long_data[[y]]) 
-            ), color = '#ff4040', linetype= 3, alpha= 0.25) +
-          
-          # 3 SD lines
-          ggplot2::geom_hline(
-            ggplot2::aes_string(yintercept = mean(long_data[[y]]) + 3*stats::sd(long_data[[y]]) 
-                                ), color = '#ff0000', linetype= 3, alpha= 0.25) +
-          ggplot2::geom_hline(
-            ggplot2::aes_string(yintercept = mean(long_data[[y]]) - 3*stats::sd(long_data[[y]]) 
-            ), color = '#ff0000', linetype= 3, alpha= 0.25)
-    )
+    plot = ggplot2::ggplot(long_data, ggplot2::aes_string(x = x, y = y)) +
+            ggplot2::facet_wrap(wrap_var, scales = 'free') +
+            ggplot2::ggtitle(title) + 
+            gglayers
+      
+    if (sd_guides) {
+      std_devs = suppressMessages(
+                long_data %>% dplyr::group_by_at(wrap_var) %>% 
+                dplyr::summarize(mean = mean(!!dplyr::sym(y)), 
+                                 sd = sd(!!dplyr::sym(y)))
+                )
+      
+      plot = plot +
+        # Standard deviation lines. Need to be done one-by-one because of aes()
+        # Mean
+        ggplot2::geom_hline(ggplot2::aes(yintercept = mean), data = std_devs,
+                            color = '#ffffff', linetype= 3, alpha= 0.25) +
+        # 1 SD lines
+        ggplot2::geom_hline(mapping = ggplot2::aes(yintercept = mean+1*sd), data = std_devs,
+                            color = '#ff8080', linetype= 3, alpha= 0.25) +
+        ggplot2::geom_hline(mapping = ggplot2::aes(yintercept = mean-1*sd), data = std_devs,
+                            color = '#ff8080', linetype= 3, alpha= 0.25) +
+        # 2 SD lines
+        ggplot2::geom_hline(mapping = ggplot2::aes(yintercept = mean+2*sd), data = std_devs,
+                            color = '#ff4040', linetype= 3, alpha= 0.25) +
+        ggplot2::geom_hline(mapping = ggplot2::aes(yintercept = mean-2*sd), data = std_devs,
+                            color = '#ff4040', linetype= 3, alpha= 0.25) +
+        # 3 SD lines
+        ggplot2::geom_hline(mapping = ggplot2::aes(yintercept = mean+3*sd), data = std_devs,
+                            color = '#ff0000', linetype= 3, alpha= 0.25) +
+        ggplot2::geom_hline(mapping = ggplot2::aes(yintercept = mean-3*sd), data = std_devs,
+                            color = '#ff0000', linetype= 3, alpha= 0.25)
+    }
+    return(plot)
   }
 }
