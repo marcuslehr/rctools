@@ -58,7 +58,7 @@ makeRedcapFactor <- function(x, coding, factors, var_name)
 #   x
 # }
 
-makeRedcapCheckbox <- function(x, suffix, coding, factors, checkboxLabels)
+makeRedcapCheckbox <- function(x, suffix, coding, factors, checkbox_labels)
 {
   # parses the string "0, Birth \\n 1, Death \\n 2, Unknown" into a
   # character vector for creating a factor
@@ -72,25 +72,25 @@ makeRedcapCheckbox <- function(x, suffix, coding, factors, checkboxLabels)
     
     
     use_labels <-
-      if (!factors && !checkboxLabels)
+      if (!factors && !checkbox_labels)
         c("0", "1")
-      else if (!factors && checkboxLabels)
+      else if (!factors && checkbox_labels)
         c("", coding[1])
-      else if (factors && !checkboxLabels)
+      else if (factors && !checkbox_labels)
         c("Unchecked", "Checked")
-      else if (factors && checkboxLabels) 
+      else if (factors && checkbox_labels) 
         c("", coding[2])
       
     
     if (!factors){
-      if (checkboxLabels)
+      if (checkbox_labels)
         x <- use_labels[x+1]
-      # no else needed.  If checkboxLabels = FALSE, leave as 0/1
+      # no else needed.  If checkbox_labels = FALSE, leave as 0/1
       
       class(x) <- c("redcapFactor", class(x))
     }
     else {
-      if (!checkboxLabels)
+      if (!checkbox_labels)
         x <- factor(x,
                     levels = 0:1,
                     labels = c("Unchecked", "Checked"))

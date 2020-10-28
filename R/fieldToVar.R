@@ -10,7 +10,7 @@
 #' @param factors Logical, determines if checkbox, radio button, dropdown and yesno
 #'   variables are converted to factors
 #' @param dates Logical, determines if date variables are converted to POSIXct format
-#' @param checkboxLabels Logical, determines if checkbox variables are labeled as
+#' @param checkbox_labels Logical, determines if checkbox variables are labeled as
 #'   "Checked" or using the checkbox label.  Only applicable when \code{factors = TRUE}
 #' 
 #' @details This function is called internally by \code{rc_export}. It is not 
@@ -19,7 +19,7 @@
 #' @author Jeffrey Horner
 
 fieldToVar <- function(records, data_dict, factors = TRUE, 
-                       dates = TRUE, checkboxLabels = FALSE)
+                       dates = TRUE, checkbox_labels = FALSE)
 { 
   for (i in seq_along(records))
   {
@@ -139,7 +139,7 @@ fieldToVar <- function(records, data_dict, factors = TRUE,
                                    suffix = gsub("^.+___", "", names(records)[i]),
                                    coding = data_dict$select_choices_or_calculations[data_dict$field_name == field_base],
                                    factors = factors,
-                                   checkboxLabels = checkboxLabels)
+                                   checkbox_labels = checkbox_labels)
               },
              "form_complete" = 
              {

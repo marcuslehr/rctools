@@ -50,7 +50,7 @@ numeric_only <- function(record_data,
   # Generate fields if not provided
   if (is.null(fields)) {
     # Check format status of data and format if necessary
-    if (!any(unlist(sapply(record_data, class))=='labelled')) {
+    if (is.null(attributes(record_data)$redcap_formatting)) {
       # Use data_dict if available
       if (!is.null(data_dict))
         record_data = rc_format(record_data, data_dict)

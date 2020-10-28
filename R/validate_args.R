@@ -49,7 +49,7 @@
 #' @param factors Logical, length == 1
 #' @param labels Logical, length == 1
 #' @param dates Logical, length == 1
-#' @param checkboxLabels Logical, length == 1
+#' @param checkbox_labels Logical, length == 1
 #' @param returnData Logical, length == 1
 #' @param plot Logical, length == 1
 #' @param filtered Logical, length == 1
@@ -120,7 +120,7 @@ validate_args <- function(required = NULL,
                           factors = NULL,
                           labels = NULL,
                           dates = NULL,
-                          checkboxLabels = NULL,
+                          checkbox_labels = NULL,
                           returnData = NULL,
                           plot = NULL,
                           filtered = NULL,
@@ -245,7 +245,7 @@ validate_args <- function(required = NULL,
 
   # Generate var list
   vars = c('survey','dag','form_complete_auto','format','factors','labels','dates',
-           'checkboxLabels','returnData','plot','filtered','long_format',
+           'checkbox_labels','returnData','plot','filtered','long_format',
 					 'make_repeat','only_rows','only_columns','sd_guides')
 		
 		# Make formula
