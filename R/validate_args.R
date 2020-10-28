@@ -21,6 +21,11 @@
 #' @param id_field Character, length == 1
 #' @param logfile Character, length == 1
 #' @param completion_field Character, length == 1
+#' @param title Character, length == 1
+#' @param outlier_var Character, length == 1
+#' @param wrap_var Character, length == 1
+#' @param y Character, length == 1
+#' @param x Character, length == 1
 #' 
 #' @param records Character vector
 #' @param fields Character vector
@@ -34,6 +39,8 @@
 #' @param overwriteBehavior Character, defined inputs, length == 1
 #' @param returnContent Character, defined inputs, length == 1
 #' @param error_handling Character, defined inputs, length == 1
+#' @param plot_type Character, defined inputs, length == 1
+#' @param legend_position Character, defined inputs, length == 1
 #' 
 #' @param survey Logical, length == 1 
 #' @param dag Logical, length == 1
@@ -50,6 +57,7 @@
 #' @param make_repeat Logical, length == 1
 #' @param only_rows Logical, length == 1
 #' @param only_columns Logical, length == 1
+#' @param sd_guides Logical, length == 1
 #' 
 #' @param record_data Data.frame; contains record_id and redcap_event_name columns
 #' @param data_dict Data.frame, ncol == 18
@@ -59,6 +67,7 @@
 #' @param arms Data.frame
 #' @param mappings Data.frame
 #' @param proj_info Data.frame
+#' @param long_data Data.frame
 #' 
 #' @param bundle List; redcapBundle
 #' @param fields_list List
@@ -80,6 +89,11 @@ validate_args <- function(required = NULL,
                           id_field = NULL,
                           logfile = NULL,
                           completion_field = NULL,
+                          title = NULL,
+                          outlier_var = NULL,
+                          wrap_var = NULL,
+                          y = NULL,
+                          x = NULL,
                           
                           # Character
                           records = NULL,
@@ -95,8 +109,10 @@ validate_args <- function(required = NULL,
                           overwriteBehavior = NULL,
                           returnContent = NULL,
 													error_handling = NULL,
+													plot_type = NULL,
+													legend_position = NULL,
                           
-                          # Logical
+                          # Logical, len=1
                           survey = NULL,
                           dag = NULL,
                           form_complete_auto = NULL,
@@ -112,7 +128,8 @@ validate_args <- function(required = NULL,
 													make_repeat = NULL,
 													only_rows = NULL,
 													only_columns = NULL,
-                          
+													sd_guides = NULL,
+													
                           # Data.frame
                           record_data = NULL,
                           data_dict = NULL,
@@ -122,6 +139,7 @@ validate_args <- function(required = NULL,
                           arms = NULL,
                           mappings = NULL,
                           proj_info = NULL,
+													long_data = NULL,
                           
                           # List
                           bundle = NULL,
@@ -164,7 +182,8 @@ validate_args <- function(required = NULL,
 # Character, len=1 -------------------------------------------------------------------------
 
   # Input vars
-  vars = c('url','token','id_field','logfile','completion_field')
+  vars = c('url','token','id_field','logfile','completion_field','title','outlier_var','wrap_var',
+           'y','x')
   
 		# Make formula
 		massert_formula = stats::formula(paste('~',paste(vars,collapse = ' + ')))
@@ -202,7 +221,7 @@ validate_args <- function(required = NULL,
 # Match Args ------------------------------------------------------
 
   # Generate var list
-  vars = c('overwriteBehavior','returnContent', 'error_handling')
+  vars = c('overwriteBehavior','returnContent','error_handling','plot_type','legend_position')
 	
 	if (any(vars %in% required)) {
 	
@@ -214,17 +233,20 @@ validate_args <- function(required = NULL,
 						checkmate::matchArg,
 						choices = list(overwriteBehavior = c('normal','overwrite'),
 													 returnContent = c('count', 'ids', 'nothing'),
-													 error_handling = c('null','error')),
+													 error_handling = c('null','error'),
+													 plot_type = c('standard','qq','hist'),
+													 legend_position = c('none','top','bottom','left','right')
+													 ),
 						fixed = list(several.ok = F,
 												 add = coll))
 	}
 
-# Logical ------------------------------------------------------------------
+# Logical, len=1 ------------------------------------------------------------------
 
   # Generate var list
   vars = c('survey','dag','form_complete_auto','format','factors','labels','dates',
            'checkboxLabels','returnData','plot','filtered','long_format',
-					 'make_repeat','only_rows','only_columns')
+					 'make_repeat','only_rows','only_columns','sd_guides')
 		
 		# Make formula
 		massert_formula = stats::formula(paste('~',paste(vars,collapse = ' + ')))
@@ -244,7 +266,7 @@ validate_args <- function(required = NULL,
 
   # Generate var list
   vars = c('record_data','data_dict','users','form_perm','instruments',
-						'arms','mappings','proj_info')
+						'arms','mappings','proj_info','long_data')
 		
 		# Make formula
 		massert_formula = stats::formula(paste('~',paste(vars,collapse = ' + ')))

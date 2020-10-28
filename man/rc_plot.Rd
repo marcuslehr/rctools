@@ -5,18 +5,23 @@
 \title{Plot long format data}
 \usage{
 rc_plot(
-  molten_data,
+  long_data,
   title = NA,
   plot_type = "standard",
   outlier_var = "outlier",
   wrap_var = "variable",
   y = "value",
-  x = getOption("redcap_bundle")$id_field
+  x = getOption("redcap_bundle")$id_field,
+  legend_position = "none",
+  sd_guides = TRUE
 )
 }
 \arguments{
-\item{molten_data}{Dataframe. A long format data frame, as created by
-\code{rc_outliers} using the argument \code{unfiltered = T}.}
+\item{long_data}{Dataframe. A long format data frame, as created by
+\code{rc_outliers}. At minimum there should be a record_id column, a
+column containing variable names, and a column containing values.
+Wide-to-long conversion include reshape2::melt() (used in rctools),
+tidyr::gather(), and tidyr::pivot_longer().}
 
 \item{title}{Character. Title of the resulting plot.}
 
@@ -31,14 +36,20 @@ data indicating which values are outliers. Change to NA when not in use.}
 be plotted.}
 
 \item{x}{Character. Field name corresponding to the 'record_id' field.}
+
+\item{legend_position}{Character. Determines the position of the plot
+legend. One of 'none', 'top', 'bottom', 'left' or 'right'.}
+
+\item{sd_guides}{Logical. Determines if standard deviation lines are
+applied to plots. Only applies to \code{plot_type = 'standard'}.}
 }
 \description{
-Creates a grid of plots for each variable passed from
-\code{rc_outliers}. \emph{NOTE} In order for this function to be useful, the
-argument \code{unfiltered} should be set to \code{FALSE} when running
-\code{rc_outliers}. Outliers are colored in red and horizontal indicator
-lines for +/- 3 standard deviations are included. If a \code{sex_var} is
-included, a list object will be returned containing a plot for each sex.
+Creates a grid of plots for each variable in long format
+data. This function is intended to have data passed from \code{rc_outliers},
+plotting the record_id field on the x-axis and values on the y-axis.
+Outliers are colored in red and horizontal indicator lines for +/- 3
+standard deviations are included by default. Aside from the standard
+plots, normal QQ and histograms can also be created using \code{plot_type}.
 }
 \author{
 Marcus Lehr

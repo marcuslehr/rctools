@@ -14,6 +14,11 @@ validate_args(
   id_field = NULL,
   logfile = NULL,
   completion_field = NULL,
+  title = NULL,
+  outlier_var = NULL,
+  wrap_var = NULL,
+  y = NULL,
+  x = NULL,
   records = NULL,
   fields = NULL,
   forms = NULL,
@@ -25,6 +30,8 @@ validate_args(
   overwriteBehavior = NULL,
   returnContent = NULL,
   error_handling = NULL,
+  plot_type = NULL,
+  legend_position = NULL,
   survey = NULL,
   dag = NULL,
   form_complete_auto = NULL,
@@ -40,6 +47,7 @@ validate_args(
   make_repeat = NULL,
   only_rows = NULL,
   only_columns = NULL,
+  sd_guides = NULL,
   record_data = NULL,
   data_dict = NULL,
   users = NULL,
@@ -48,6 +56,7 @@ validate_args(
   arms = NULL,
   mappings = NULL,
   proj_info = NULL,
+  long_data = NULL,
   bundle = NULL,
   fields_list = NULL,
   sex_var = NULL
@@ -73,6 +82,16 @@ the calling function.}
 
 \item{completion_field}{Character, length == 1}
 
+\item{title}{Character, length == 1}
+
+\item{outlier_var}{Character, length == 1}
+
+\item{wrap_var}{Character, length == 1}
+
+\item{y}{Character, length == 1}
+
+\item{x}{Character, length == 1}
+
 \item{records}{Character vector}
 
 \item{fields}{Character vector}
@@ -94,6 +113,10 @@ the calling function.}
 \item{returnContent}{Character, defined inputs, length == 1}
 
 \item{error_handling}{Character, defined inputs, length == 1}
+
+\item{plot_type}{Character, defined inputs, length == 1}
+
+\item{legend_position}{Character, defined inputs, length == 1}
 
 \item{survey}{Logical, length == 1}
 
@@ -125,6 +148,8 @@ the calling function.}
 
 \item{only_columns}{Logical, length == 1}
 
+\item{sd_guides}{Logical, length == 1}
+
 \item{record_data}{Data.frame; contains record_id and redcap_event_name columns}
 
 \item{data_dict}{Data.frame, ncol == 18}
@@ -140,6 +165,8 @@ the calling function.}
 \item{mappings}{Data.frame}
 
 \item{proj_info}{Data.frame}
+
+\item{long_data}{Data.frame}
 
 \item{bundle}{List; redcapBundle}
 
