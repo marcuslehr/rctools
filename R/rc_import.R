@@ -82,7 +82,7 @@ rc_import <- function(record_data,
   
   
   #** Remove survey identifiers and data access group fields from data
-  # Is survey data not uploadable?
+  # Is survey data not uploadable? Need to test
   w.remove <- 
     which(names(record_data) %in% 
             c("redcap_survey_identifier",
@@ -184,8 +184,6 @@ import_records_batched <- function(url = getOption("redcap_bundle")$redcap_url,
                          each = batch.size, 
                          length.out = nrow(data))
   
-  data[is.na(data)] <- ""
-  
   data <- split(data, 
                 f = ID$batch.number)
   
@@ -236,7 +234,6 @@ import_records_unbatched <- function(url = getOption("redcap_bundle")$redcap_url
                                      token = getOption("redcap_token"),
                                      data, overwriteBehavior,
                                      returnContent) {
-  data[is.na(data)] <- ""
 
   out <- data_frame_to_string(data)
   
@@ -268,7 +265,8 @@ data_frame_to_string <- function(data) {
       utils::write.table(data, 
                          sep = ",",
                          col.names = TRUE,
-                         row.names = FALSE)
+                         row.names = FALSE,
+                         na = '')
     ),
     collapse = "\n"
   )
