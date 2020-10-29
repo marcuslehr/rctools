@@ -64,7 +64,7 @@ viable if the user whose token is being used to make the API request is
 \emph{not} in a data access group. If the user is in a group, then this
 flag will revert to its default value.}
 
-\item{form_complete_auto}{\code{logical(0)}. If \code{fields} are passed,
+\item{form_complete_auto}{Logical. If \code{fields} are passed,
 REDCap does not return form complete fields unless specifically requested.
 However, if \code{TRUE}, the \code{[form]_complete} fields for any form
 from which at least one variable is requested will automatically be

@@ -7,7 +7,7 @@
 #' for making filtering operations more straight forward. 
 #' 
 #' @param record_data Dataframe. Record data exported from REDCap
-#' @param ... Variables to be filled. Variable names can be unquoted or quoted. 
+#' @param ... Variables to be filled. Variable names must be quoted. 
 #' @param group_by Variable(s) to group data by. The project's record_id field
 #' is used by default. 
 #' 

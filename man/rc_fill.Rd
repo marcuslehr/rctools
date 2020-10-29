@@ -9,7 +9,7 @@ rc_fill(record_data, ..., group_by = getOption("redcap_bundle")$id_field)
 \arguments{
 \item{record_data}{Dataframe. Record data exported from REDCap}
 
-\item{...}{Variables to be filled. Variable names can be unquoted or quoted.}
+\item{...}{Variables to be filled. Variable names must be quoted.}
 
 \item{group_by}{Variable(s) to group data by. The project's record_id field
 is used by default.}
