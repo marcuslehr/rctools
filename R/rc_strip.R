@@ -23,6 +23,7 @@ rc_strip <- function(record_data,
                      id_field = getOption("redcap_bundle")$id_field) {
   
   validate_args(required = 'record_data',
+                record_data = record_data,
                 columns = columns, rows = rows,
                 id_field = id_field)
   

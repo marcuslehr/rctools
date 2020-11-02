@@ -25,14 +25,14 @@ rc_logic_check <- function(data_dict = getOption("redcap_bundle")$data_dict,
     branching_logic = data_dict$branching_logic
     fields = data_dict$field_name
     
-    validate_events(branching_logic, events)
+    validate_events(branching_logic, events, fields)
     validate_variables(branching_logic, fields)
-    validate_event_logic(branching_logic)
+    validate_event_logic(branching_logic, fields)
 }
 
 # Validate event names --------------------------------------------------------------------
 
-validate_events <- function(branching_logic, events) {
+validate_events <- function(branching_logic, events, fields) {
 
   # Extract all events matching the pattern "[event-name] (=|!=) 'event_name'"
   eventCalls1 = stringr::str_extract_all(branching_logic, "(?<=\\[event-name\\]\\s?(=|!=)\\s?('|\"))(\\w*)(?=('|\"))")
@@ -59,7 +59,7 @@ validate_events <- function(branching_logic, events) {
 
     # Print results
     message("\nInvalid event names were found in the following fields:")
-    print(data_dict$field_name[invalidIndex])
+    print(fields[invalidIndex])
     message("Invalid event names:")
     print(invalidEvents)
   } else {
@@ -89,7 +89,7 @@ validate_variables <- function(branching_logic, fields) {
 
     # Print results
     message("\nInvalid variable names were found in the following fields:")
-    print(data_dict$field_name[invalidIndex])
+    print(fields[invalidIndex])
     message("Invalid variable names:")
     print(invalidVars)
   } else {
@@ -103,7 +103,7 @@ validate_variables <- function(branching_logic, fields) {
 # Warn user of "[event-name] = 'event_name' AND [event-name] = 'event_name'" (field always hidden)
 # or "[event-name] != 'event_name' OR [event-name] != 'event_name'" logic (field never hidden)
 
-validate_event_logic <- function(branching_logic) {
+validate_event_logic <- function(branching_logic, fields) {
 
   # branching_logic = data_dict$branching_logic
   invalidLogic = data.frame(operator = c('=','!='),
@@ -126,7 +126,7 @@ validate_event_logic <- function(branching_logic) {
               "'event_name'\" logic found.\n",
               "This will result in the field always being ", invalidLogic[i,3],
               ". Please review branching\nlogic in the following fields:")
-      print(data_dict$field_name[invalidIndex])
+      print(fields[invalidIndex])
       logicErrors = logicErrors+1
     }
   }

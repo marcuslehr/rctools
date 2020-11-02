@@ -15,7 +15,8 @@ technical replicates.}
 \description{
 For each variable root supplied, all variables containing the root in the
 record data will be collected and a new column containing difference values for
-each sequential pair will be created.
+each sequential pair will be created. Columns containing '_diff' in the name will
+automatically be excluded.
 }
 \author{
 Marcus Lehr
