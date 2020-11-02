@@ -236,10 +236,16 @@ rc_missing <- function(record_data,
                         )
           # Join form names into missing_data
           missing_data = suppressWarnings(
-                          missing_data %>% dplyr::left_join(pooled_vars, by = c('variable','redcap_repeat_instance')) %>% 
-                            dplyr::mutate(form_name = dplyr::coalesce(form_name.x, form_name.y)) %>% 
-                            dplyr::select(-form_name.x, -form_name.y)
-                        )
+                            missing_data %>% 
+                              # Join form names for repeat vars
+                              dplyr::left_join(pooled_vars, by = c('variable','redcap_repeat_instance')) %>% 
+                              dplyr::mutate(form_name = dplyr::coalesce(form_name.x, form_name.y)) %>% 
+                              dplyr::select(-form_name.x, -form_name.y) %>% 
+                              # Join form names for non-repeat pooled vars. Won't overwrite previous forms
+                              dplyr::left_join(dplyr::select(pooled_vars, -redcap_repeat_instance), by = 'variable') %>% 
+                              dplyr::mutate(form_name = dplyr::coalesce(form_name.x, form_name.y)) %>% 
+                              dplyr::select(-form_name.x, -form_name.y) %>% dplyr::distinct()
+                          )
         }
         
         # Reorder data

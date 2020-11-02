@@ -51,6 +51,15 @@
 rc_pool <- function(record_data, var_roots = NULL, fields_list = NULL,
                     make_repeat = TRUE,
                     id_field = getOption("redcap_bundle")$id_field) {
+
+# Checks ------------------------------------------------------------------
+
+  # Get ID field names
+  id_field = getID(id_field = id_field,
+                   record_data = record_data)
+  rc_fields = c('redcap_event_name','redcap_repeat_instrument','redcap_repeat_instance')
+  rc_factors = c(id_field, rc_fields)
+  
   
   validate_args(required = c('record_data'),
                 record_data = record_data,
@@ -61,15 +70,6 @@ rc_pool <- function(record_data, var_roots = NULL, fields_list = NULL,
   
   if (is.null(var_roots) & is.null(fields_list))
     stop("At least one of either var_roots or fields_list must be provided.")
-  
-  # Get ID field names
-  id_field = getID(id_field = id_field,
-                   record_data = record_data)
-  rc_fields = c('redcap_event_name','redcap_repeat_instrument','redcap_repeat_instance')
-  rc_factors = c(id_field, rc_fields)
-  
-  # Instantiate list to log the affected fields
-  fields_changed = data.frame()
   
   # Check for errors in fields_list
   if (!is.null(fields_list)) {
@@ -90,7 +90,11 @@ rc_pool <- function(record_data, var_roots = NULL, fields_list = NULL,
     }
   }
   
-  # Repeat method
+  # Instantiate list to log the affected fields
+  fields_changed = data.frame()
+
+# Repeat method -----------------------------------------------------------
+
   if (make_repeat) {
     
     # Add missing (repeat) columns. There must be a cleaner way to do this..
@@ -128,9 +132,14 @@ rc_pool <- function(record_data, var_roots = NULL, fields_list = NULL,
 													dplyr::rename(!!names(fields_list[f]) := value) %>% dplyr::select(-variable)
 						
 						# Remove unnecessary repeat instruments to minimize row additions
-						unique_rows = !(duplicated(pool_data[,1:2])) # |duplicated(pool_data[,1:2],fromLast = T) # Adding this condition will convert the first data point into a repeat
-						pool_data$redcap_repeat_instrument[unique_rows] = as.character(NA)
-						pool_data$redcap_repeat_instance[unique_rows] = as.character(NA)
+						# Repeats will be removed for each event in which the pooled variable only occurs once
+						pool_data = pool_data %>% dplyr::group_by_at(c('redcap_event_name','redcap_repeat_instrument')) %>% 
+            						  dplyr::select(-!!id_field,-!!fields_list[f]) %>% dplyr::distinct() %>% 
+            						  dplyr::summarise(n = dplyr::n()) %>% 
+						              dplyr::left_join(pool_data,., by = c('redcap_event_name','redcap_repeat_instrument')) %>%
+            						  dplyr::mutate(redcap_repeat_instrument = ifelse(n==1, NA, redcap_repeat_instrument),
+            						                redcap_repeat_instance = ifelse(n==1, NA, redcap_repeat_instance)) %>% 
+            						  dplyr::select(-n)
 						
 						# Add back to data and remove original columns
 						record_data = record_data %>% dplyr::select(-!!cols) %>% dplyr::full_join(pool_data, by = rc_factors) %>% 
@@ -162,7 +171,7 @@ rc_pool <- function(record_data, var_roots = NULL, fields_list = NULL,
 					
 					# Collect data to be converted, remove empty rows
 					pool_data = record_data[c(rc_factors, cols)] %>% dplyr::filter_at(cols,dplyr::any_vars(!is.na(.)))
-            
+					  
 					if (nrow(pool_data) > 0) {
 						# Melt and fill in repeat columns
 						pool_data = suppressWarnings(reshape2::melt(pool_data, id.vars = rc_factors, na.rm = T))
@@ -170,11 +179,15 @@ rc_pool <- function(record_data, var_roots = NULL, fields_list = NULL,
 						pool_data = pool_data %>% dplyr::mutate(redcap_repeat_instance = as.character(variable)) %>% 
 										dplyr::rename(!!r := value) %>% dplyr::select(-variable)
 						
-						# # Remove unnecessary repeat instruments to minimize row additions
-						# unique_rows = !(duplicated(pool_data[,1:2])) # Removing the first variable prevents form name assignment
-						# # |duplicated(pool_data[,1:2],fromLast = T) # This will preserve first repeats. 
-						# pool_data$redcap_repeat_instrument[unique_rows] = as.character(NA)
-						# pool_data$redcap_repeat_instance[unique_rows] = as.character(NA)
+						# Remove unnecessary repeat instruments to minimize row additions
+						# Repeats will be removed for each event in which the pooled variable only occurs once
+						pool_data = pool_data %>% dplyr::group_by_at(c('redcap_event_name','redcap_repeat_instrument')) %>% 
+            	            dplyr::select(-!!id_field,-!!r) %>% dplyr::distinct() %>% 
+						              dplyr::summarise(n = dplyr::n()) %>% 
+						              dplyr::left_join(pool_data,., by = c('redcap_event_name','redcap_repeat_instrument')) %>%
+						              dplyr::mutate(redcap_repeat_instrument = ifelse(n==1, NA, redcap_repeat_instrument),
+                                        redcap_repeat_instance = ifelse(n==1, NA, redcap_repeat_instance)) %>% 
+            						  dplyr::select(-n)
 						
 						# Add back to data and remove original columns
 						record_data = record_data %>% dplyr::select(-!!cols) %>% dplyr::full_join(pool_data, by = rc_factors) %>% 
@@ -194,7 +207,7 @@ rc_pool <- function(record_data, var_roots = NULL, fields_list = NULL,
     return(record_data)
   }
   
-  # Wide format method
+# Wide format method ------------------------------------------------------
   else {
     
     # Remove repeat columns if not in data
@@ -215,7 +228,8 @@ rc_pool <- function(record_data, var_roots = NULL, fields_list = NULL,
           
           # If selected columns are different classes, convert to character
           col_types = sapply(record_data[cols], function(x) paste(class(x),collapse = ' ')) %>% unlist()
-          col_types = stringr::str_replace_all(col_types, "\\s?labelled\\s?", '') # Remove labelled flag in case of incomplete labelling
+          # Remove labelled flag in case of incomplete labelling
+          col_types = stringr::str_replace_all(col_types, "\\s?labelled\\s?", '') %>% trimws()
           
           if (length(unique(col_types)) > 1){
             message("Classes of columns matching the root ", r, " are non-identical. They will be coerced to character.")
@@ -257,14 +271,15 @@ rc_pool <- function(record_data, var_roots = NULL, fields_list = NULL,
           
           # If selected columns are different classes, convert to character
           col_types = sapply(record_data[cols], function(x) paste(class(x),collapse = ' ')) %>% unlist()
-          col_types = stringr::str_replace_all(col_types, "\\s?labelled\\s?", '') # Remove labelled flag in case of incomplete labelling
+          # Remove labelled flag in case of incomplete labelling. Legacy- rc_format no longer applies labelled class
+          col_types = stringr::str_replace_all(col_types, "\\s?labelled\\s?", '') %>% trimws()
           
           if (length(unique(col_types)) > 1){
             message("Classes of columns matching the root ", r, " are non-identical. They will be coerced to character.")
             record_data[cols] = sapply(record_data[cols], function(x) x = as.character(x))
           }
           
-          # Warn about multiple data points in rows
+          # Warn about multiple data points in rows. Should this be a stop?
           if (any(record_data[cols] %>% is.na() %>% rowSums() < length(record_data[cols]) - 1))
             warning("Same row data points were found within columns: ", paste(cols, collapse = ', '),
                     "\nData from the first column will override other columns. If all data points must be kept,
@@ -281,19 +296,11 @@ rc_pool <- function(record_data, var_roots = NULL, fields_list = NULL,
         else if (length(cols)==0) warning("No columns containing root '", paste(r), "' were found.")
       }
     }
-    
+
     # Append record of pooled vars to dataframe
     attr(record_data, 'pooled_vars') = fields_changed
-    
-    # Append record of pooled vars to bundle for safe keeping (dataframe attributes are easily lost)
-    bundle = getOption('redcap_bundle')
-    bundle$pooled_vars = fields_changed
-    options(redcap_bundle = bundle)
-    
-    message("A record of variables pooled has been appended to the dataframe and
-the options bundle. They can be accessed via either of the following:
-        attributes(record_data)$pooled_vars
-        getOption('redcap_bundle')$pooled_vars")
+    message("An attribute describing the variables pooled has been appended to the dataframe. 
+            To view, use attributes(record_data)$pooled_vars")
     
     return(record_data)
   }
