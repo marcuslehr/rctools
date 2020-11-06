@@ -11,6 +11,7 @@ rc_outliers(
   fields = NULL,
   filtered = FALSE,
   data_dict = getOption("redcap_bundle")$data_dict,
+  mappings = getOption("redcap_bundle")$mappings,
   id_field = getOption("redcap_bundle")$id_field
 )
 }

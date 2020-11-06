@@ -48,6 +48,7 @@ rc_missing <- function(record_data,
                        data_dict = getOption("redcap_bundle")$data_dict,
                        events = getOption("redcap_bundle")$event_data$unique_event_name,
                        form_perm = getOption("redcap_bundle")$form_perm,
+                       mappings = getOption("redcap_bundle")$mappings,
                        id_field = getOption("redcap_bundle")$id_field
                        ) {
 
@@ -60,6 +61,7 @@ rc_missing <- function(record_data,
     if (is.null(data_dict)) data_dict = bundle$data_dict
     if (is.null(events)) events = bundle$event_data$unique_event_name
     if (is.null(form_perm)) form_perm = bundle$form_perm
+    if (is.null(mappings)) mappings = bundle$mappings
   }
   
   validate_args(required = c('record_data','data_dict','events'),
@@ -220,36 +222,8 @@ rc_missing <- function(record_data,
     # Add form names and remove vars from hidden forms
     if (nrow(missing_data) > 0) {
       
-        # Add form names for ease of locating in Redcap
-        missing_data = suppressWarnings(
-                          data_dict[,1:2] %>% dplyr::rename(variable = field_name) %>% 
-                            dplyr::left_join(missing_data, ., by = 'variable')
-                        )
-        
-        # Add form names for pooled vars
-        if (!is.null(pooled_vars)) {
-          # Join form names from data_dict into pooled_vars
-          pooled_vars = suppressWarnings(
-                          pooled_vars %>% dplyr::rename(variable = pooled_vars, field_name = rc_vars) %>% 
-                            dplyr::left_join(data_dict[,1:2], by = 'field_name') %>% 
-                            dplyr::rename(redcap_repeat_instance = field_name)
-                        )
-          # Join form names into missing_data
-          missing_data = suppressWarnings(
-                            missing_data %>% 
-                              # Join form names for repeat vars
-                              dplyr::left_join(pooled_vars, by = c('variable','redcap_repeat_instance')) %>% 
-                              dplyr::mutate(form_name = dplyr::coalesce(form_name.x, form_name.y)) %>% 
-                              dplyr::select(-form_name.x, -form_name.y) %>% 
-                              # Join form names for non-repeat pooled vars. Won't overwrite previous forms
-                              dplyr::left_join(dplyr::select(pooled_vars, -redcap_repeat_instance), by = 'variable') %>% 
-                              dplyr::mutate(form_name = dplyr::coalesce(form_name.x, form_name.y)) %>% 
-                              dplyr::select(-form_name.x, -form_name.y) %>% dplyr::distinct()
-                          )
-        }
-        
-        # Reorder data
-        missing_data = missing_data[c(rc_factors, 'form_name', 'variable')]
+      # Add form names for ease of locating in Redcap
+      missing_data = add_form_names(missing_data, pooled_vars, data_dict, mappings, id_field)
       
       # Remove data from forms where no users have access
       if (!is.null(form_perm)) {

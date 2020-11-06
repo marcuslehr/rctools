@@ -12,6 +12,7 @@ rc_missing(
   data_dict = getOption("redcap_bundle")$data_dict,
   events = getOption("redcap_bundle")$event_data$unique_event_name,
   form_perm = getOption("redcap_bundle")$form_perm,
+  mappings = getOption("redcap_bundle")$mappings,
   id_field = getOption("redcap_bundle")$id_field
 )
 }

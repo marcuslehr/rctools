@@ -38,6 +38,7 @@
 rc_outliers <- function(record_data, sex_var = NA, sd_threshold = 3,
                         fields = NULL, filtered = FALSE,
                         data_dict = getOption("redcap_bundle")$data_dict,
+                        mappings = getOption("redcap_bundle")$mappings,
                         id_field = getOption("redcap_bundle")$id_field) {
   
   validate_args(required = c('record_data'),
@@ -62,36 +63,7 @@ rc_outliers <- function(record_data, sex_var = NA, sd_threshold = 3,
   record_data = numeric_only(record_data, data_dict, sex_var, fields)
   
   # Add form names
-  if (!is.null(data_dict)) {
-    record_data = suppressWarnings(
-                    data_dict[,1:2] %>% dplyr::rename(variable = field_name) %>% 
-                      dplyr::left_join(record_data, ., by = 'variable')
-                  )
-    
-    if (!is.null(pooled_vars)) {
-      # Add form names from data_dict
-      pooled_vars = suppressWarnings(
-                      pooled_vars %>% dplyr::rename(variable = pooled_vars, field_name = rc_vars) %>% 
-                        dplyr::left_join(data_dict[,1:2], by = 'field_name') %>% 
-                        dplyr::rename(redcap_repeat_instance = field_name)
-                    )
-      # Join form names into record_data
-      record_data = suppressWarnings(
-                      record_data %>% 
-                        # Join form names for repeat vars
-                        dplyr::left_join(pooled_vars, by = c('variable','redcap_repeat_instance')) %>% 
-                        dplyr::mutate(form_name = dplyr::coalesce(form_name.x, form_name.y)) %>% 
-                        dplyr::select(-form_name.x, -form_name.y) %>% 
-                        # Join form names for non-repeat pooled vars. Won't overwrite previous forms
-                        dplyr::left_join(dplyr::select(pooled_vars, -redcap_repeat_instance), by = 'variable') %>% 
-                        dplyr::mutate(form_name = dplyr::coalesce(form_name.x, form_name.y)) %>% 
-                        dplyr::select(-form_name.x, -form_name.y) %>% dplyr::distinct()
-                    )
-    }
-    
-    # Reorder data
-    record_data = record_data[stats::na.omit(c(id_field, sex_var, rc_fields, 'form_name', 'variable', 'value'))]
-  } else message("Form names cannot be added unless data_dict is supplied.")
+  record_data = add_form_names(record_data, pooled_vars, data_dict, mappings, id_field)
   
   # Identify outliers for each variable
   groups = c(sex_var, 'variable') %>% stats::na.omit()
