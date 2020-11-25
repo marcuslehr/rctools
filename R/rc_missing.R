@@ -56,7 +56,8 @@ rc_missing <- function(record_data,
 # Checks ------------------------------------------------------------------
 
   # Get individual metadata objects from bundle if not supplied
-	# This allows for local bundle use without loading to option
+	# This allows for local bundle use without loading to options
+  # Will not override existing options
   if (!is.null(bundle)) {
     if (is.null(data_dict)) data_dict = bundle$data_dict
     if (is.null(events)) events = bundle$event_data$unique_event_name
