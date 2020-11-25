@@ -138,7 +138,9 @@ rc_pool <- function(record_data, var_roots = NULL, fields_list = NULL,
             						  dplyr::summarise(n = dplyr::n()) %>% 
 						              dplyr::left_join(pool_data,., by = c('redcap_event_name','redcap_repeat_instrument')) %>%
             						  dplyr::mutate(redcap_repeat_instrument = ifelse(n==1, NA, redcap_repeat_instrument),
-            						                redcap_repeat_instance = ifelse(n==1, NA, redcap_repeat_instance)) %>% 
+            						                redcap_repeat_instance = ifelse(n==1, NA, redcap_repeat_instance),
+            						                redcap_repeat_instrument = as.character(redcap_repeat_instrument),
+            						                redcap_repeat_instance = as.character(redcap_repeat_instance)) %>% 
             						  dplyr::select(-n)
 						
 						# Add back to data and remove original columns
