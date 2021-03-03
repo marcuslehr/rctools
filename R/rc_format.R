@@ -4,7 +4,8 @@
 #' @description  Uses REDCap project metadata to format records data.
 #' @details This function takes raw REDCap data and adds column labels, converts
 #' columns to numeric/character/factor as appropriate, and applies factor and 
-#' checkbox labels.
+#' checkbox labels. Formatting details of the returned dataframe can be found
+#' via attributes(record_data)$redcap_formatting.
 #' 
 #' @param record_data Dataframe. Record data export from REDCap
 #' @param data_dict Dataframe. REDCap project data data_dictionary. By default, 
@@ -24,6 +25,9 @@
 #'   is the label assigned to the level in the data data_dictionary. 
 #'   This option is only available after REDCap version 6.0.  See Checkbox Variables
 #'   for more on how this interacts with the \code{factors} argument.
+#' @param event_names Set to 'label' to apply event labels to redcap_event_name 
+#'   column or 'raw' to invert the operation. If \code{NULL} (Default) no operations
+#'   will be performed.
 #'   
 #' 
 #' Checkbox Variables:
@@ -50,15 +54,17 @@
 #'
 #' @export
 
-rc_format <- function(record_data, data_dict = getOption("redcap_bundle")$data_dict, 
+rc_format <- function(record_data, data_dict = getOption("redcap_bundle")$data_dict,
+                      event_data = getOption("redcap_bundle")$event_data,
                       factors = TRUE, labels = TRUE, dates = TRUE,
-                      checkbox_labels = FALSE)
+                      checkbox_labels = FALSE, event_names = NULL)
 {
   
   validate_args(required = c('record_data','data_dict'),
                 record_data = record_data, data_dict = data_dict,
                 factors = factors, labels = labels, dates = dates,
-                checkbox_labels = checkbox_labels)
+                checkbox_labels = checkbox_labels, event_names = event_names,
+                event_data = event_data)
 
   
   #* for purposes of the export, we don't need the descriptive fields. 
@@ -71,6 +77,12 @@ rc_format <- function(record_data, data_dict = getOption("redcap_bundle")$data_d
                             factors = factors, 
                             dates = dates, 
                             checkbox_labels = checkbox_labels)
+  
+  # All NA cols are formatted as logical and cause join issues
+  if ('redcap_repeat_instrument' %in% names(record_data))
+    record_data$redcap_repeat_instrument = as.character(record_data$redcap_repeat_instrument)
+  if ('redcap_repeat_instance' %in% names(record_data))
+    record_data$redcap_repeat_instance = as.character(record_data$redcap_repeat_instance)
   
   if (labels){
     # Get field names
@@ -90,13 +102,36 @@ rc_format <- function(record_data, data_dict = getOption("redcap_bundle")$data_d
     }
   }
   else {
-    # Remove labels
+    # Remove column labels
     # https://stackoverflow.com/questions/2394902/remove-variable-labels-attached-with-foreign-hmisc-spss-import-functions
     for (col in seq_along(record_data)) {
       class(record_data[[col]]) <- setdiff(class(record_data[[col]]), 'labelled')
       attr(record_data[[col]],"label") <- NULL
     }
   }
+  
+  if (!is.null(event_names)) {
+    # Move check to beginning of function?
+    if (is.null(event_data)) 
+      stop("bundle$event_data must be provided to label redcap_event_name")
+    
+    # Check for previous labeling of events. Using any() is less strict than all() and will introduce NAs for event names not in metadata
+    if (any(record_data$redcap_event_name %in% event_data$event_name))
+        levels = event_data$event_name
+    else levels = event_data$unique_event_name # Default assumption. Could be better to explicitly check
+    
+    if (event_names == 'label')
+      # Convert to labeled values
+      record_data$redcap_event_name = factor(record_data$redcap_event_name, 
+                                             levels = levels, 
+                                             labels = event_data$event_name)
+    else if (event_names == 'raw')
+      # Undo if labeled
+      record_data$redcap_event_name = factor(record_data$redcap_event_name,
+                                             levels = levels,
+                                             labels = event_data$unique_event_name)
+  }
+  
   # Append formatting details to df attributes
   format_record = c(factors,labels,dates,checkbox_labels)
   names(format_record) = c('factors','labels','dates','checkbox_labels')

@@ -7,7 +7,7 @@
 rc_bundle(
   url,
   token,
-  bundle = NULL,
+  to_options = NULL,
   create_option = TRUE,
   return_object = TRUE,
   data_dict = FALSE,
@@ -27,8 +27,9 @@ rc_bundle(
 
 \item{token}{A REDCap API token}
 
-\item{bundle}{A REDCap bundle object. If provided, the local bundle will be
-uploaded to the R session options for use by other rctools functions.}
+\item{to_options}{This argument allows a local REDCap bundle object to be uploaded
+to the R session options. If provided, this will override the rest of the function
+and no further operations will be performed.}
 
 \item{create_option}{Logical. Indicates whether the REDCap bundle should be
 saved to an option.}

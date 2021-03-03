@@ -44,7 +44,9 @@ rc_strip <- function(record_data,
     # Remove empty rows
     record_data = dplyr::select(record_data, -all_of(rc_factors)) %>% 
                     apply(., 1, function(x) !all(is.na(x))) %>% 
-                    record_data[.,] 
+                    record_data[.,]
+    # Reset row index
+    rownames(record_data) = NULL
   }
   return(record_data)
 }

@@ -80,17 +80,24 @@ exportMetaData <- function(url = getOption("redcap_bundle")$redcap_url,
   if (!is.null(fields)) body[['fields']] <- fields
   if (!is.null(forms)) body[['forms']] <- forms
  
-  x <- httr::POST(url = url, 
-                  body = body)
+  # x <- httr::POST(url = url, # Method failing on a new project.. perhaps because it's not longitudinal?
+  #                 body = body)
+  x = RCurl::postForm(uri = url,
+                      token = token,
+                      content = 'metadata',
+                      format = 'csv',
+                      returnFormat = 'csv',
+                      fields = fields,
+                      forms = fields)
 
-  if (x$status_code != 200) return(redcap_error(x, error_handling))
+  # if (x$status_code != 200) return(redcap_error(x, error_handling))
+  # x <- as.character(x)
   
-  x <- as.character(x)
   if (drop_utf8)
   {
     x <- iconv(x, "utf8", "ASCII", sub = "")
   }
-  utils::read.csv(text = x, 
-                  stringsAsFactors = FALSE, 
+  utils::read.csv(text = x,
+                  stringsAsFactors = FALSE,
                   na.strings = "")
 }

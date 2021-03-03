@@ -41,6 +41,7 @@
 #' @param error_handling Character, defined inputs, length == 1
 #' @param plot_type Character, defined inputs, length == 1
 #' @param legend_position Character, defined inputs, length == 1
+#' @param event_names Character, defined inputs, length == 1
 #' 
 #' @param survey Logical, length == 1 
 #' @param dag Logical, length == 1
@@ -68,6 +69,7 @@
 #' @param mappings Data.frame
 #' @param proj_info Data.frame
 #' @param long_data Data.frame
+#' @param event_data Data.frame. As found in bundle$event_data
 #' 
 #' @param bundle List; redcapBundle
 #' @param fields_list List
@@ -111,6 +113,7 @@ validate_args <- function(required = NULL,
 													error_handling = NULL,
 													plot_type = NULL,
 													legend_position = NULL,
+													event_names = NULL,
                           
                           # Logical, len=1
                           survey = NULL,
@@ -140,6 +143,7 @@ validate_args <- function(required = NULL,
                           mappings = NULL,
                           proj_info = NULL,
 													long_data = NULL,
+													event_data = NULL,
                           
                           # List
                           bundle = NULL,
@@ -182,8 +186,8 @@ validate_args <- function(required = NULL,
 # Character, len=1 -------------------------------------------------------------------------
 
   # Input vars
-  vars = c('url','token','id_field','logfile','completion_field','title','outlier_var','wrap_var',
-           'y','x')
+  vars = c('url','token','id_field','logfile','completion_field','title','outlier_var',
+           'wrap_var','y','x')
   
 		# Make formula
 		massert_formula = stats::formula(paste('~',paste(vars,collapse = ' + ')))
@@ -221,7 +225,8 @@ validate_args <- function(required = NULL,
 # Match Args ------------------------------------------------------
 
   # Generate var list
-  vars = c('overwriteBehavior','returnContent','error_handling','plot_type','legend_position')
+  vars = c('overwriteBehavior','returnContent','error_handling','plot_type',
+           'legend_position','event_names')
 	
 	if (any(vars %in% required)) {
 	
@@ -235,7 +240,8 @@ validate_args <- function(required = NULL,
 													 returnContent = c('count', 'ids', 'nothing'),
 													 error_handling = c('null','error'),
 													 plot_type = c('standard','qq','hist'),
-													 legend_position = c('none','top','bottom','left','right')
+													 legend_position = c('none','top','bottom','left','right'),
+													 event_names = c('label','raw')
 													 ),
 						fixed = list(several.ok = F,
 												 add = coll))
@@ -266,7 +272,7 @@ validate_args <- function(required = NULL,
 
   # Generate var list
   vars = c('record_data','data_dict','users','form_perm','instruments',
-						'arms','mappings','proj_info','long_data')
+						'arms','mappings','proj_info','long_data','event_data')
 		
 		# Make formula
 		massert_formula = stats::formula(paste('~',paste(vars,collapse = ' + ')))
@@ -330,9 +336,9 @@ validate_args <- function(required = NULL,
 ##--- record_data
   if (!is.null(record_data)) {
     id_field = suppressWarnings(getID(record_data))
-    if (!id_field %in% names(record_data) |
-        !'redcap_event_name' %in% names(record_data))
-      coll$push("Record_data must contain the record_id and 'redcap_event_name' columns.")
+    if (!id_field %in% names(record_data))# |
+        # !'redcap_event_name' %in% names(record_data)) This makes non-longitudinal projects incompatible
+      coll$push("Record_data must contain the record_id column.")
   }
   
 ##--- data_dict validations

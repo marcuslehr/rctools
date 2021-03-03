@@ -18,7 +18,7 @@
 rc_logic_check <- function(data_dict = getOption("redcap_bundle")$data_dict,
                            events = getOption("redcap_bundle")$event_data$unique_event_name) {
 
-  validate_args(required = c('data_dict','event_data'),
+  validate_args(required = c('data_dict','events'),
                 data_dict = data_dict, events = events)
   
 

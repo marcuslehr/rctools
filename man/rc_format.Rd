@@ -7,10 +7,12 @@
 rc_format(
   record_data,
   data_dict = getOption("redcap_bundle")$data_dict,
+  event_data = getOption("redcap_bundle")$event_data,
   factors = TRUE,
   labels = TRUE,
   dates = TRUE,
-  checkbox_labels = FALSE
+  checkbox_labels = FALSE,
+  event_names = NULL
 )
 }
 \arguments{
@@ -35,7 +37,11 @@ variables.  If \code{FALSE} labels are applies as "Unchecked"/"Checked".
 If \code{TRUE}, they are applied as ""/"\link{field_label}" where \link{field_label}
 is the label assigned to the level in the data data_dictionary.
 This option is only available after REDCap version 6.0.  See Checkbox Variables
-for more on how this interacts with the \code{factors} argument.
+for more on how this interacts with the \code{factors} argument.}
+
+\item{event_names}{Set to 'label' to apply event labels to redcap_event_name
+column or 'raw' to invert the operation. If \code{NULL} (Default) no operations
+will be performed.
 
 Checkbox Variables:
 
@@ -60,7 +66,8 @@ Uses REDCap project metadata to format records data.
 \details{
 This function takes raw REDCap data and adds column labels, converts
 columns to numeric/character/factor as appropriate, and applies factor and
-checkbox labels.
+checkbox labels. Formatting details of the returned dataframe can be found
+via attributes(record_data)$redcap_formatting.
 }
 \author{
 Benjamin Nutter

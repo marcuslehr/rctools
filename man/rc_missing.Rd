@@ -29,8 +29,8 @@ per each event/ID combination. All repeat instruments not supplied here will be 
 excessive false positives.}
 
 \item{bundle}{List. A project metadata bundle as created by \code{rc_bundle}. By default, the
-bundle is expected in the option "redcap_bundle". This option exists so that \code{data_dict},
-\code{events}, and \code{form_perm} can be supplied in a single argument.}
+bundle is expected in the option "redcap_bundle". This option exists so that all of the required
+metadata can be supplied in a single argument.}
 
 \item{data_dict}{Dataframe. REDCap project data data_dictionary. By default,
 $data_dict is expected in a REDCap bundle object, as created by \code{rc_bundle}. Otherwise, an

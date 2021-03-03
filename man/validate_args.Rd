@@ -32,6 +32,7 @@ validate_args(
   error_handling = NULL,
   plot_type = NULL,
   legend_position = NULL,
+  event_names = NULL,
   survey = NULL,
   dag = NULL,
   form_complete_auto = NULL,
@@ -57,6 +58,7 @@ validate_args(
   mappings = NULL,
   proj_info = NULL,
   long_data = NULL,
+  event_data = NULL,
   bundle = NULL,
   fields_list = NULL,
   sex_var = NULL
@@ -118,6 +120,8 @@ the calling function.}
 
 \item{legend_position}{Character, defined inputs, length == 1}
 
+\item{event_names}{Character, defined inputs, length == 1}
+
 \item{survey}{Logical, length == 1}
 
 \item{dag}{Logical, length == 1}
@@ -167,6 +171,8 @@ the calling function.}
 \item{proj_info}{Data.frame}
 
 \item{long_data}{Data.frame}
+
+\item{event_data}{Data.frame. As found in bundle$event_data}
 
 \item{bundle}{List; redcapBundle}
 

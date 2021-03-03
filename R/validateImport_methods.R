@@ -13,8 +13,8 @@ validate_import_form_complete <- function(x, field_name, logfile)
             replacement = "2", 
             x = x)
   
-  w <- which(!grepl("[0-2]", x = x))
-  x[w] <- NA
+  w <- which(!grepl("[0-2]", x = x) & !is.na(x)) # NAs getting flagged inappropriately here
+  x[w] <- NA # If overwrite is on in rc_import invalid values will erase current values
   
   print_validation_message(
     field_name, 
@@ -62,7 +62,7 @@ validate_import_date <- function(x, field_name, field_min, field_max, logfile)
   
   x <- format(x, format = "%Y-%m-%d")
   
-  w <- which(is.na(x))
+  w <- which(is.na(x)) # Same issue as above, natural NAs will be flagged and invalid values will erase when overwrite = T
   
   print_validation_message(
     field_name, 
@@ -109,7 +109,7 @@ validate_import_datetime <- function(x, field_name, field_min, field_max, logfil
   
   x <- format(x, format = "%Y-%m-%d %H:%M")
   
-  w <- which(is.na(x))
+  w <- which(is.na(x)) # Same issue as above, natural NAs will be flagged and invalid values will erase when overwrite = T
   
   print_validation_message(
     field_name, 
@@ -156,7 +156,7 @@ validate_import_datetime_seconds <- function(x, field_name, field_min, field_max
   
   x <- format(x, format = "%Y-%m-%d %H:%M:%S")
   
-  w <- which(is.na(x))
+  w <- which(is.na(x)) # Same issue as above, natural NAs will be flagged and invalid values will erase when overwrite = T
   
   print_validation_message(
     field_name, 
