@@ -49,6 +49,7 @@ validate_args(
   columns = NULL,
   rows = NULL,
   sd_guides = NULL,
+  strip = NULL,
   record_data = NULL,
   data_dict = NULL,
   users = NULL,
@@ -153,6 +154,8 @@ the calling function.}
 \item{rows}{Logical, length == 1}
 
 \item{sd_guides}{Logical, length == 1}
+
+\item{strip}{Logical, length == 1}
 
 \item{record_data}{Data.frame; contains record_id and redcap_event_name columns}
 

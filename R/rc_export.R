@@ -47,6 +47,9 @@
 #' @param format Logical.  Determines whether the data will be formatted with
 #' \code{rc_format} (Default = FALSE)
 #' @param ... Additional arguments to be passed to \code{rc_format}
+#' @param strip Logical. If \code{TRUE}, empty rows and columns will be removed from
+#' record_data. See \code{rc_strip} for more information or call seperately for more
+#' options. 
 #' 
 #' @param colClasses A (named) vector of colum classes passed to 
 #'   \code{\link[utils]{read.csv}} calls. 
@@ -138,7 +141,7 @@ rc_export <- function(report_id = NULL,
                        records = NULL, fields = NULL, forms = NULL,
                        events = NULL, survey = TRUE, dag = TRUE,
                        form_complete_auto = FALSE,
-                       format = FALSE, ...,
+                       format = FALSE, ..., strip = TRUE,
                        colClasses = NA, batch.size = -1, 
                        error_handling = getOption("redcap_error_handling")
                        ) {
@@ -159,7 +162,7 @@ rc_export <- function(report_id = NULL,
                 records = records, survey = survey, dag = dag,
                 form_complete_auto = form_complete_auto, format = format,
                 colClasses = colClasses, batch.size = batch.size,
-                error_handling = error_handling)
+                error_handling = error_handling, strip = strip)
     
 
 # Export Report -----------------------------------------------------------
@@ -262,10 +265,12 @@ rc_export <- function(report_id = NULL,
         }
       }
 
-# Format ------------------------------------------------------------------
+# Formatting ------------------------------------------------------------------
 
     
     if (format) x = rc_format(x, data_dict = data_dict, ...)
+  
+    if (strip) x = rc_strip(x)
     
     x
   }

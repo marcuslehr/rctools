@@ -12,7 +12,8 @@ rc_format(
   labels = TRUE,
   dates = TRUE,
   checkbox_labels = FALSE,
-  event_names = NULL
+  event_names = NULL,
+  strip = FALSE
 )
 }
 \arguments{
@@ -41,7 +42,11 @@ for more on how this interacts with the \code{factors} argument.}
 
 \item{event_names}{Set to 'label' to apply event labels to redcap_event_name
 column or 'raw' to invert the operation. If \code{NULL} (Default) no operations
-will be performed.
+will be performed.}
+
+\item{strip}{Logical. If \code{TRUE}, empty rows and columns will be removed from
+record_data. See \code{rc_strip} for more information or call seperately for more
+options.
 
 Checkbox Variables:
 
@@ -70,7 +75,7 @@ checkbox labels. Formatting details of the returned dataframe can be found
 via attributes(record_data)$redcap_formatting.
 }
 \author{
-Benjamin Nutter
-
 Marcus Lehr
+
+Benjamin Nutter
 }

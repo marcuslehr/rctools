@@ -18,6 +18,7 @@ rc_export(
   form_complete_auto = FALSE,
   format = FALSE,
   ...,
+  strip = TRUE,
   colClasses = NA,
   batch.size = -1,
   error_handling = getOption("redcap_error_handling")
@@ -74,6 +75,10 @@ retrieved.}
 \code{rc_format} (Default = FALSE)}
 
 \item{...}{Additional arguments to be passed to \code{rc_format}}
+
+\item{strip}{Logical. If \code{TRUE}, empty rows and columns will be removed from
+record_data. See \code{rc_strip} for more information or call seperately for more
+options.}
 
 \item{colClasses}{A (named) vector of colum classes passed to
 \code{\link[utils]{read.csv}} calls.

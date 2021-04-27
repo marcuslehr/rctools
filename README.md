@@ -27,7 +27,7 @@ saveRDS(bundle, 'redcap_bundle.RDS')
 # Providing the bundle option here will override the rest of the
 # function and the API will not be called.
 bundle = readRDS("Path/to/redcap_bundle.RDS")
-rc_bundle(bundle = bundle)
+rc_bundle(to_options = bundle)
 ```
 Now that you've loaded the project metadata, you're ready to use other functions. Keep in mind that all functions other than import/export/bundle functions can be used without API access. All functions have arguments for the pieces of metadata they need, so that that data can be supplied without the use of `rc_bundle()`/API access. For example, the most important piece of metadata is the "Data Dictionary", which can be downloaded manually from REDCap and supplied via `data_dict` arguments. 
 
@@ -97,7 +97,7 @@ pooled_data = rc_fill(record_data = pooled_data, "visit_1_sex")
 5     26479 visit_1_arm_1     Female          56  98.1
 6     26479 visit_2_arm_1     Female          72  99.1
 ```
-Another useful thing to do is to check for any data that appears to be missing. The `rc_missing()` function will produce a report of such data. The essential logic of the function is that if a particular event/variable combination has a value for any record, it is expected in all records. For more details, see the function documentation(`?rc_missing`).
+Another useful thing to do is to check for any data that appears to be missing. The `rc_missing()` function will produce a report of such data. The essential logic of the function is such that if a particular event/variable combination has a value for any record, it is expected in all records. For more details, see the function documentation(`?rc_missing`).
 ```r
 # We will go ahead and invoke the `plot` and `table` arguments. These are useful
 # for investigating the structure of the missing data

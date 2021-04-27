@@ -28,6 +28,9 @@
 #' @param event_names Set to 'label' to apply event labels to redcap_event_name 
 #'   column or 'raw' to invert the operation. If \code{NULL} (Default) no operations
 #'   will be performed.
+#' @param strip Logical. If \code{TRUE}, empty rows and columns will be removed from
+#' record_data. See \code{rc_strip} for more information or call seperately for more
+#' options. 
 #'   
 #' 
 #' Checkbox Variables:
@@ -48,23 +51,23 @@
 #' }
 #' 
 #' @importFrom magrittr '%>%'
-#'
-#' @author Benjamin Nutter
+#' 
 #' @author Marcus Lehr
+#' @author Benjamin Nutter
 #'
 #' @export
 
 rc_format <- function(record_data, data_dict = getOption("redcap_bundle")$data_dict,
                       event_data = getOption("redcap_bundle")$event_data,
                       factors = TRUE, labels = TRUE, dates = TRUE,
-                      checkbox_labels = FALSE, event_names = NULL)
+                      checkbox_labels = FALSE, event_names = NULL, strip = FALSE)
 {
   
   validate_args(required = c('record_data','data_dict'),
                 record_data = record_data, data_dict = data_dict,
                 factors = factors, labels = labels, dates = dates,
                 checkbox_labels = checkbox_labels, event_names = event_names,
-                event_data = event_data)
+                event_data = event_data, strip = strip)
 
   
   #* for purposes of the export, we don't need the descriptive fields. 
@@ -131,6 +134,8 @@ rc_format <- function(record_data, data_dict = getOption("redcap_bundle")$data_d
                                              levels = levels,
                                              labels = event_data$unique_event_name)
   }
+  
+  if (strip) record_data = rc_strip(record_data)
   
   # Append formatting details to df attributes
   format_record = c(factors,labels,dates,checkbox_labels)
