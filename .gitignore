@@ -2,15 +2,11 @@
 .Rhistory
 .RData
 R/.RData
-# Example code in package build process
-*-Ex.R
 .Rproj.user
+*.Rproj
 src/*.dll
 src/*.o
 zz_lendingclub/*
 tests/testthat/local-token.R
 tests/testthat/local-token.Rdata
-# OSX-generated files
-.DS_Store
-.RData
-.Rproj
+
