@@ -6,8 +6,8 @@
 \usage{
 rc_plot(
   long_data,
-  title = NA,
-  plot_type = "standard",
+  title = NULL,
+  plot_type = c("standard", "qq", "hist"),
   outlier_var = NA,
   wrap_var = "variable",
   y = "value",
@@ -19,9 +19,8 @@ rc_plot(
 \arguments{
 \item{long_data}{Dataframe. A long format data frame, as created by
 \code{rc_outliers}. At minimum there should be a record_id column, a
-column containing variable names, and a column containing values.
-Wide-to-long conversion functions include reshape2::melt() (used in rctools),
-tidyr::gather(), and tidyr::pivot_longer().}
+variable name column, and a value column. Wide-to-long conversion functions
+include reshape2::melt(), tidyr::gather(), and tidyr::pivot_longer().}
 
 \item{title}{Character. Title of the resulting plot.}
 

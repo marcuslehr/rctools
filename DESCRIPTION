@@ -34,11 +34,9 @@ Imports:
     tidyr,
     magrittr,
     reshape2,
-    ggplot2,
-    gridExtra,
-    formattable
+    ggplot2
 LazyLoad: no
-URL: https://github.com/chillywings/redcapAPI
+URL: https://github.com/chillywings/rctools
 RoxygenNote: 7.1.1
 Roxygen: list(markdown = TRUE)
 Encoding: UTF-8

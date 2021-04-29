@@ -67,7 +67,7 @@ rc_bundle <- function(url,token, to_options = NULL,
     return(message("Bundle uploaded to options."))
   }
   
-  ## Error checking. Cannot use validate_args() here
+  ## Error checking. Cannot use validate_args() here because of terminology devations
   coll <- checkmate::makeAssertCollection()
   
   massert(~ url + token,
@@ -85,8 +85,8 @@ rc_bundle <- function(url,token, to_options = NULL,
   
   checkmate::reportAssertions(coll)
   
-  # If no data types are specificed, default to TRUE for all
-  if (!any(data_dict, users, instruments, event_data, arms, mappings, proj_info, version)) {
+  # If no data types are specified, default to TRUE for all
+  if (!any(data_dict,users,instruments,event_data,arms,mappings,proj_info,version)) {
     data_dict=TRUE
     users=TRUE
     instruments=TRUE

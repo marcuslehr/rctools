@@ -10,9 +10,8 @@
 #' 
 #' @param long_data Dataframe. A long format data frame, as created by 
 #' \code{rc_outliers}. At minimum there should be a record_id column, a
-#' column containing variable names, and a column containing values.
-#' Wide-to-long conversion functions include reshape2::melt() (used in rctools),
-#' tidyr::gather(), and tidyr::pivot_longer().
+#' variable name column, and a value column. Wide-to-long conversion functions 
+#' include reshape2::melt(), tidyr::gather(), and tidyr::pivot_longer().
 #' @param title Character. Title of the resulting plot.
 #' @param plot_type Character. One of 'standard', 'qq', or 'hist'
 #' @param outlier_var Character. Name of the column containing logical (T/F)
@@ -31,8 +30,8 @@
 
 
 rc_plot <- function(long_data,
-                    title = NA,
-                    plot_type = 'standard',
+                    title = NULL,
+                    plot_type = c('standard','qq','hist'),
                     outlier_var = NA,
                     wrap_var = 'variable', 
                     y = 'value', 
@@ -44,6 +43,8 @@ rc_plot <- function(long_data,
   
   x = getID(record_data = long_data,
                    id_field = x)
+									 
+	plot_type = plot_type[1]
   
   validate_args(required = c('long_data', 'y'),
                 long_data  = long_data,
@@ -56,9 +57,6 @@ rc_plot <- function(long_data,
                 legend_position = legend_position,
                 sd_guides = sd_guides
                 )
-  
-  # Prevent 'NA' title. Keep NA default for package consistency
-  if (is.na(title)) title = NULL
   
   
   # Prep data --------------------------------------------------------------

@@ -13,3 +13,4 @@ tests/testthat/local-token.Rdata
 # OSX-generated files
 .DS_Store
 .RData
+.Rproj

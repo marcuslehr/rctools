@@ -53,51 +53,46 @@ exportMetaData <- function(url = getOption("redcap_bundle")$redcap_url,
                            error_handling = getOption("redcap_error_handling"), 
                            ..., drop_utf8 = FALSE)
 {
+  # Error checking
   coll <- checkmate::makeAssertCollection()
-  
   checkmate::assert_character(x = url,
                           add = coll)
-
   checkmate::assert_character(x = token,
                           add = coll)
-  
   massert(~ fields + forms,
           fun = checkmate::assert_character,
           fixed = list(null.ok = TRUE,
                        add = coll))
-  
   checkmate::assert_logical(x = drop_utf8,
                             len = 1,
                             add = coll)
-  
   checkmate::reportAssertions(coll)
   
+  # Assemble call info
   body <- list(token = token,
                content = "metadata",
                format = "csv",
                returnFormat = "csv")
-
   if (!is.null(fields)) body[['fields']] <- fields
   if (!is.null(forms)) body[['forms']] <- forms
  
-  # x <- httr::POST(url = url, # Method failing on a new project.. perhaps because it's not longitudinal?
-  #                 body = body)
-  x = RCurl::postForm(uri = url,
-                      token = token,
-                      content = 'metadata',
-                      format = 'csv',
-                      returnFormat = 'csv',
-                      fields = fields,
-                      forms = fields)
+  # Execute API call
+  x <- httr::POST(url = url, 
+                  body = body) # RC suggests using encode = "form"
 
-  # if (x$status_code != 200) return(redcap_error(x, error_handling))
-  # x <- as.character(x)
+  # Check for connection/http errors
+  if (x$status_code != 200) return(redcap_error(x, error_handling))
   
-  if (drop_utf8)
-  {
-    x <- iconv(x, "utf8", "ASCII", sub = "")
-  }
-  utils::read.csv(text = x,
-                  stringsAsFactors = FALSE,
-                  na.strings = "")
+  # Extract data.frame
+  httr::content(x) 
+  
+  # content <- as.character(x) # Required for read.csv()
+  # # This was added due to a prior issue, not sure if it's still relevant
+  # if (drop_utf8) 
+  # {
+  #   x <- iconv(x, "utf8", "ASCII", sub = "")
+  # }
+  # utils::read.csv(text = content,
+  #                 stringsAsFactors = FALSE,
+  #                 na.strings = "")
 }
