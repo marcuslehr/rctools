@@ -84,7 +84,7 @@ exportMetaData <- function(url = getOption("redcap_bundle")$redcap_url,
   if (x$status_code != 200) return(redcap_error(x, error_handling))
   
   # Extract data.frame
-  httr::content(x) 
+  suppressMessages( httr::content(x) )
   
   # content <- as.character(x) # Required for read.csv()
   # # This was added due to a prior issue, not sure if it's still relevant

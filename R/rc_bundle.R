@@ -109,7 +109,7 @@ rc_bundle <- function(url,token, to_options = NULL,
       list(
     		redcap_url = url,
         data_dict = if (data_dict) meta_data else NULL,
-    		id_field = if(data_dict) meta_data[1,1] else NULL,
+    		id_field = if(data_dict) meta_data$field_name[1] else NULL,
         users = if (users) userData$Users else NULL,
         form_perm = if (users) userData$Form_Permissions else NULL,
         instruments = if (instruments) exportInstruments(url, token) else NULL,
