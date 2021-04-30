@@ -152,7 +152,7 @@ rc_export <- function(report_id = NULL,
   
   if (format | form_complete_auto) {
     if (is.null(data_dict)) 
-      stop("data_dict must be supplied when using the 'format' (default = T) or 'form_complete_auto' arguments.")
+      stop("data_dict must be supplied when the 'format' or 'form_complete_auto' arguments are TRUE.")
     required = c(required,'data_dict')
   }
   
