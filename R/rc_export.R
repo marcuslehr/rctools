@@ -206,7 +206,7 @@ rc_export <- function(report_id = NULL,
                        data_dict = data_dict)
       
       # Append default and complete fields to the export
-      if (!is.null(fields))
+      if (!is.null(fields)|!is.null(forms))
         # Append default fields
         fields <- unique(c(id_field,
                            "redcap_event_name","redcap_repeat_instrument","redcap_repeat_instance",
@@ -220,8 +220,8 @@ rc_export <- function(report_id = NULL,
         ## I believe this only affected checkbox_suffixes (no longer used here)
         data_dict <- data_dict[!data_dict$field_type %in% "descriptive",]
         
+        # Auto append complete fields if desired. Auto only useful when manually selecting fields
         if (!is.null(fields) & form_complete_auto) {
-          # Auto append complete fields if desired
           form_complete_fields <- sprintf("%s_complete", unique(data_dict$form_name[data_dict$field_name %in% fields]))
           form_complete_fields <- form_complete_fields[!is.na(form_complete_fields)]
           fields <- unique(c(fields, form_complete_fields))
