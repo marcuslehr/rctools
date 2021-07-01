@@ -28,6 +28,7 @@ rc_logic_check <- function(data_dict = getOption("redcap_bundle")$data_dict,
     validate_events(branching_logic, events, fields)
     validate_variables(branching_logic, fields)
     validate_event_logic(branching_logic, fields)
+    validate_value_logic(branching_logic, fields)
 }
 
 # Validate event names --------------------------------------------------------------------
@@ -35,7 +36,7 @@ rc_logic_check <- function(data_dict = getOption("redcap_bundle")$data_dict,
 validate_events <- function(branching_logic, events, fields) {
 
   # Extract all events matching the pattern "[event-name] (=|!=) 'event_name'"
-  eventCalls1 = stringr::str_extract_all(branching_logic, "(?<=\\[event-name\\]\\s?(=|!=)\\s?('|\"))(\\w*)(?=('|\"))")
+  eventCalls1 = stringr::str_extract_all(branching_logic, "(?<=\\[event-name\\]\\s?(=|!=)\\s?('|\"))(\\w+)(?=('|\"))")
   # Extract all events matching the pattern "[event-name][var_name]"
   eventCalls2 = stringr::str_extract_all(branching_logic, "(?<=\\[)(\\w*)(?=\\]\\[)")
 
@@ -71,7 +72,7 @@ validate_events <- function(branching_logic, events, fields) {
 
 validate_variables <- function(branching_logic, fields) {
 
-  # Extract varaible names used in branching logic by mathcing the pattern "[var_name]"
+  # Extract varaible names used in branching logic by matching the pattern "[var_name]"
   # without capturing events by excluding bracketed words followed by "["
   varCalls = stringr::str_extract_all(branching_logic, "(?<=\\[)(\\w+)(?=\\]([^\\[]|$))")
   varCalls = unlist(
@@ -131,4 +132,24 @@ validate_event_logic <- function(branching_logic, fields) {
     }
   }
   if (logicErrors == 0) message("\nNo [event-name] logic errors were found.")
+}
+
+
+# Check value logic ---------------------------------------------------
+
+validate_value_logic <- function(branching_logic, fields) {
+  
+  # Find logic matching the pattern [variable] = digits, without quotes surrounding digits
+	# I believe this only relevant when evaluating yes/no fields? Or _complete fields that default to 0
+  invalidIndex = which(
+                    stringr::str_detect(branching_logic, "\\[\\w+\\]\\s?(=|!=)\\s?\\d+")
+                  )
+  
+  # Print results
+  if (length(invalidIndex)) {
+    message("\nNumeric values must be quoted to work properly. Errors were found in the following fields:")
+    print(fields[invalidIndex])
+  } else {
+    message("\nNo invalid numeric value logic was found.")
+  }
 }
