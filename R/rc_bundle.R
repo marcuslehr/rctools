@@ -20,12 +20,9 @@
 #' token within an object or workspace is not recommended. 
 #'   
 #' @param url A url address to connect to the REDCap API
-#' @param token A REDCap API token
-#' @param to_options This argument allows a local REDCap bundle object to be uploaded
-#' to the R session options. If provided, this will override the rest of the function
-#' and no further operations will be performed.
-#' @param create_option Logical. Indicates whether the REDCap bundle should be
-#' saved to an option.
+#' @param token Path to a text file containing your REDCap API token
+#' @param create_options Logical. Indicates whether the REDCap bundle, token, and
+#' url should be uploaded to the R session options.
 #' @param return_object Logical. Indicates whether the REDCap bundle should be
 #' returned as an object.
 #' @param data_dict Logical.  Indicates if the meta data (data data_dictionary) 
@@ -51,21 +48,13 @@
 #' 
 #' @export
 
-rc_bundle <- function(url,token, to_options = NULL,
-                      create_option=TRUE, return_object=TRUE,
+rc_bundle <- function(url,token,
+                      create_options=TRUE, return_object=TRUE,
                       data_dict=FALSE, users=FALSE, instruments=FALSE,
                       event_data=FALSE, arms=FALSE, mappings=FALSE,
                       proj_info=FALSE, version=FALSE,
                       dates=TRUE, labels=TRUE
                       ){
-  
-  # If provided, upload bundle to options.
-  # This is provided simply to reduce the amount of syntax users must remember
-  if (!is.null(to_options)) {
-    validate_args(bundle = bundle)
-    options(redcap_bundle = to_options)
-    return(message("Bundle uploaded to options."))
-  }
   
   ## Error checking. Cannot use validate_args() here because of terminology devations
   coll <- checkmate::makeAssertCollection()
@@ -123,11 +112,12 @@ rc_bundle <- function(url,token, to_options = NULL,
     )
   
   # Save the data to options
-  if (create_option) {
+  if (create_options) {
     options(redcap_bundle = bundle)
     options(redcap_token = token)
-    message("Project metadata has been saved as an option. You can access it via getOption('redcap_bundle')
-            and getOption('redcap_token')")
+    options(redcap_url = url)
+    message("Project metadata has been saved to options as 'redcap_bundle', 'redcap_token', 'redcap_url'. 
+            You can access these options via getOption()")
     
     if (return_object==F)
       message("Option data will not persist across R sessions. Consider saving bundle data as an object for

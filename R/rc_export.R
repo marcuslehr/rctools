@@ -278,8 +278,8 @@ rc_export <- function(report_id = NULL,
 # Non-exported functions ----------------------------------------------------
 
 #*** UNBATCHED EXPORT
-unbatched <- function(url = getOption("redcap_bundle")$redcap_url,
-                      token = getOption("redcap_token"),
+unbatched <- function(url = url,
+                      token = token,
                       body, id, colClasses, error_handling)
 {
   colClasses[[id]] <- "character"
@@ -306,8 +306,8 @@ unbatched <- function(url = getOption("redcap_bundle")$redcap_url,
 
 
 #*** BATCHED EXPORT
-batched <- function(url = getOption("redcap_bundle")$redcap_url,
-                    token = getOption("redcap_token"),
+batched <- function(url = url,
+                    token = token,
                     body, batch.size, id, colClasses, error_handling)
 {
   colClasses[[id]] <- "character"

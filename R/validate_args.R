@@ -312,8 +312,28 @@ validate_args <- function(required = NULL,
 
 ##--- token
   if (!is.null(token))
-    if (!grepl("[[:alnum:]]{32}",token))
-				coll$push("REDCap tokens must be exactly 32 alpha-numeric characters.")
+    
+    # Attempt to read token from file. Catch errors to handle token strings instead of paths
+    invalid_path = F
+		tryCatch(token <- readr::read_lines(token)[1],
+		         error = function(cond) invalid_path <<- T)
+    
+		# Check token format
+		invalid_format = F
+    if (!grepl("^[[:alnum:]]{32}$", token)) invalid_format = T
+		
+		
+		# File doesn't exist and the string isn't a token
+		if (invalid_path & invalid_format) 
+		  coll$push("Please provide a valid path to the token file.")
+		# File exists but doesn't contain a token
+		else if (invalid_format)
+		  coll$push("REDCap tokens must be exactly 32 alpha-numeric characters.")
+		# Format is valid, therefore string is a valid token. 
+		# Edge case of 32 character invalid path could make it here also
+		else
+		  token <<- token
+				
   
 ##--- sex_var
 	if (!is.null(sex_var))
