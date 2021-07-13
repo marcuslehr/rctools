@@ -9,6 +9,7 @@ rc_export(
   url = getOption("redcap_bundle")$redcap_url,
   token = getOption("redcap_token"),
   data_dict = getOption("redcap_bundle")$data_dict,
+  id_field = getOption("redcap_bundle")$id_field,
   records = NULL,
   fields = NULL,
   forms = NULL,
@@ -34,6 +35,8 @@ rc_export(
 \item{data_dict}{Dataframe. REDCap project data data_dictionary. By default,
 this will be fetched from the REDCap bundle option, as created by \code{rc_bundle}.
 Otherwise, a data.frame containing the project data dictionary must be supplied.}
+
+\item{id_field}{Character. The name of the record_id field for your REDCap project.}
 
 \item{records}{Character. A vector of study id's to be returned.  If \code{NULL}, all
 subjects are returned.}

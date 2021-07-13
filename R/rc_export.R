@@ -13,6 +13,7 @@
 #' @param data_dict Dataframe. REDCap project data data_dictionary. By default, 
 #' this will be fetched from the REDCap bundle option, as created by \code{rc_bundle}.
 #' Otherwise, a data.frame containing the project data dictionary must be supplied.
+#' @param id_field Character. The name of the record_id field for your REDCap project.
 #' 
 #' @param records Character. A vector of study id's to be returned.  If \code{NULL}, all 
 #'   subjects are returned.
@@ -138,6 +139,7 @@ rc_export <- function(report_id = NULL,
                        url = getOption("redcap_bundle")$redcap_url,
                        token = getOption("redcap_token"),
                        data_dict = getOption("redcap_bundle")$data_dict,
+                       id_field = getOption("redcap_bundle")$id_field,
                        records = NULL, fields = NULL, forms = NULL,
                        events = NULL, survey = TRUE, dag = TRUE,
                        form_complete_auto = FALSE,
@@ -154,6 +156,13 @@ rc_export <- function(report_id = NULL,
     if (is.null(data_dict)) 
       stop("data_dict must be supplied when the 'format' or 'form_complete_auto' arguments are TRUE.")
     required = c(required,'data_dict')
+  }
+  
+  if (!is.null(fields)|!is.null(forms) & is.null(report_id)) {
+    # Get record_id field name
+    id_field = getID(id_field = id_field,
+                     data_dict = data_dict)
+    required = c(required,'id_field')
   }
   
   validate_args(required = required,
@@ -200,11 +209,6 @@ rc_export <- function(report_id = NULL,
 # Export Records ----------------------------------------------------------
 
     else {
-      
-      # Get record_id field name
-      id_field = getID(id_field = getOption("redcap_bundle")$id_field,
-                       data_dict = data_dict)
-      
       # Append default and complete fields to the export
       if (!is.null(fields)|!is.null(forms))
         # Append default fields
