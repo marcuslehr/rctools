@@ -13,6 +13,7 @@
 #' @param data_dict Dataframe. REDCap project data data_dictionary. By default, 
 #' this will be fetched from the REDCap bundle option, as created by \code{rc_bundle}.
 #' Otherwise, a data.frame containing the project data dictionary must be supplied.
+#' @param id_field Character. The name of the record_id field for your REDCap project.
 #' 
 #' @param records Character. A vector of study id's to be returned.  If \code{NULL}, all 
 #'   subjects are returned.
@@ -51,7 +52,7 @@
 #' record_data. See \code{rc_strip} for more information or call seperately for more
 #' options. 
 #' 
-#' @param colClasses A (named) vector of colum classes passed to 
+#' @param colClasses A (named) vector of column classes passed to 
 #'   \code{\link[utils]{read.csv}} calls. 
 #'   Useful to force the interpretation of a column in a specific type and 
 #'   avoid an unexpected recast.
@@ -138,6 +139,7 @@ rc_export <- function(report_id = NULL,
                        url = getOption("redcap_bundle")$redcap_url,
                        token = getOption("redcap_token"),
                        data_dict = getOption("redcap_bundle")$data_dict,
+                       id_field = getOption("redcap_bundle")$id_field,
                        records = NULL, fields = NULL, forms = NULL,
                        events = NULL, survey = TRUE, dag = TRUE,
                        form_complete_auto = FALSE,
@@ -154,6 +156,13 @@ rc_export <- function(report_id = NULL,
     if (is.null(data_dict)) 
       stop("data_dict must be supplied when the 'format' or 'form_complete_auto' arguments are TRUE.")
     required = c(required,'data_dict')
+  }
+  
+  if ((!is.null(fields)|!is.null(forms)|batch.size>0) & is.null(report_id)) {
+    # Get record_id field name
+    id_field = getID(id_field = id_field,
+                     data_dict = data_dict)
+    required = c(required,'id_field')
   }
   
   validate_args(required = required,
@@ -200,11 +209,6 @@ rc_export <- function(report_id = NULL,
 # Export Records ----------------------------------------------------------
 
     else {
-      
-      # Get record_id field name
-      id_field = getID(id_field = getOption("redcap_bundle")$id_field,
-                       data_dict = data_dict)
-      
       # Append default and complete fields to the export
       if (!is.null(fields)|!is.null(forms))
         # Append default fields
@@ -252,7 +256,7 @@ rc_export <- function(report_id = NULL,
                        token = token,
                        body = body,
                        id = id_field,
-                       colClasses = colClasses,
+                       # colClasses = colClasses,
                        error_handling = error_handling)
       } else {
         x <- batched(url = url,
@@ -260,7 +264,7 @@ rc_export <- function(report_id = NULL,
                      body = body,
                      batch.size = batch.size,
                      id = id_field,
-                     colClasses = colClasses,
+                     # colClasses = colClasses,
                      error_handling = error_handling)
         }
       }
@@ -282,10 +286,10 @@ unbatched <- function(url = url,
                       token = token,
                       body, id, colClasses, error_handling)
 {
-  colClasses[[id]] <- "character"
-  colClasses <- colClasses[!vapply(colClasses,
-                                   is.na,
-                                   logical(1))]
+  # colClasses[[id]] <- "character"
+  # colClasses <- colClasses[!vapply(colClasses,
+  #                                  is.na,
+  #                                  logical(1))]
   
   x <- httr::POST(url = url, 
                   body = body)
@@ -301,7 +305,8 @@ unbatched <- function(url = url,
   utils::read.csv(text = x, 
                   stringsAsFactors = FALSE, 
                   na.strings = "",
-                  colClasses = colClasses)
+                  # colClasses = colClasses
+                  )
 }
 
 
@@ -310,11 +315,11 @@ batched <- function(url = url,
                     token = token,
                     body, batch.size, id, colClasses, error_handling)
 {
-  colClasses[[id]] <- "character"
-  colClasses <- colClasses[!vapply(colClasses,
-                                   is.na,
-                                   logical(1))]
-  
+  # colClasses[[id]] <- "character"
+  # colClasses <- colClasses[!vapply(colClasses,
+  #                                  is.na,
+  #                                  logical(1))]
+ 
   #* 1. Get the IDs column
   #* 2. Restrict to unique IDs
   #* 3. Determine if the IDs look hashed (de-identified)
@@ -338,7 +343,7 @@ batched <- function(url = url,
   IDs <- utils::read.csv(text = IDs,
                          stringsAsFactors = FALSE,
                          na.strings = "",
-                         colClasses = colClasses[id])
+                         colClasses = 'character') #colClasses[id]
   
   #* 2. Restrict to unique IDs
   unique_id <- unique(IDs[[id]])
@@ -376,7 +381,8 @@ batched <- function(url = url,
     batch_list[[i]] <- utils::read.csv(text = x,
                                        stringsAsFactors = FALSE,
                                        na.strings = "",
-                                       colClasses = colClasses)
+                                       # colClasses = colClasses
+                                       )
     Sys.sleep(1)
   }
   
