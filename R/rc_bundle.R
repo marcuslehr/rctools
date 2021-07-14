@@ -137,8 +137,7 @@ rc_bundle <- function(url,token,
   if (create_options) {
     options(redcap_bundle = bundle)
     options(redcap_token = token)
-    options(redcap_url = url)
-    message("Project metadata has been saved to options as 'redcap_bundle', 'redcap_token', 'redcap_url'. 
+    message("Project metadata has been saved to options as 'redcap_bundle', 'redcap_token'. 
             You can access these options via getOption()")
     
     if (return_object==F)

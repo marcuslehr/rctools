@@ -3,35 +3,35 @@ rctools
 
 The goal of this package is to provide simple, streamlined functions for interfacing with the REDCap API (http://www.project-redcap.org/) and working with REDCap data sets. rctools is an actively developed fork of [redcapAPI](https://github.com/nutterb/redcapAPI). 
 
-It is not yet on [CRAN](https://cran.r-project.org/), however it can be easily installed by downloading the .tar.gz file in the main directory of this repository and running:
+This package is not yet on [CRAN](https://cran.r-project.org/), however it can be easily installed by downloading the .tar.gz file in the main directory of this repository and running:
 ```r
 install.packages("Path/to/file/rctools_0.4.6.tar.gz", repos = NULL, type = "source", quiet = T)
 
 # You may now load the package with normal library() syntax
 library(rctools)
 ```
-In an effort to both reduce the number of API calls (important for network traffic and audits) and streamline the package, rctools makes use of R's "session options". These are a special set of variables which are instantiated at the start of an R session. You can see a list of all options by running `options()` or access individual items using `getOption("option_name")`. However, all rctools functions are written with the flexibility to be used without options, provided the user is able to supply the necessary arguments.
+In an effort to both reduce the number of API calls (important for network traffic and audits) and streamline the package, rctools makes use of R's "session options". These are a special set of variables which are instantiated at the beginning of an R session and do not persist beyond that session. You can see a list of all options by running `options()` or access individual items using `getOption("option_name")`. 
 
-The workflow of rctools is- 1)Run `rc_bundle()`, 2)Run other functions as needed. `rc_bundle()` downloads project metadata from the REDCap API and makes it available for other rctools functions. However, for those without API or internet access, all functions have metadata arguments so that the necessary items can be supplied directly and are written to operate without project metadata where possible.
+The intended workflow of rctools is to run `rc_bundle()` then run other functions as needed. `rc_bundle()` downloads project metadata then uploads it to an option called "redcap_bundle". For security purposes, your token is not saved in the bundle but rather as a separate option called "redcap_token". Additionally, a bundle object will be returned so that it is readily accessible. Ensure that the token is stored as-is in a plain text file. You will also want to ensure that your token is stored in a secure place that is not publicly accessible. 
 
-By default, `rc_bundle()` will export all project metadata and save that metadata to an option called "redcap_bundle". For security purposes, your token will be saved as a separate option called "redcap_token". Neither of these options will persist across R sessions- if you wish to further reduce API calls, consider saving the bundle for future use. 
+To demonstrate, we'll walk through an example workflow. Beginning with running `rc_bundle()`:
 ```r
-# Gather project metadata for use with other functions
-bundle = rc_bundle(url = <Your REDCap API URL>,
-                   token = <Your project API token>)
+# Run rc_bundle() to download metadata and make it accessible to other rc_ functions
+bundle = rc_bundle(url = 'https://your.redcap.server.com/api/',
+                   token = 'path/to/token.txt')
+```
+Your project metadata has now been uploaded to the "redcap_bundle" option and other rctools functions will check there by default for metadata. However, all the functions have metadata arguments so it can be supplied manually and are written to operate without project metadata where possible. Note that if you are manually supplying metadata, it should be formatted exactly as exported by REDCap or as it is stored in the rctools metadata bundle. 
 
+Note that the session options do not persist across R sessions. If you would like to reduce API calls/network traffic, you can save the bundle locally for future use. You can then use `rc_to_options()` to upload your bundle and token to the session options when beginning a new session.
+```
 # Save metadata for use in future sessions
 saveRDS(bundle, 'redcap_bundle.RDS')
 
-# If you already have a saved bundle, you can load it into options.
-# Providing the bundle option here will override the rest of the
-# function and the API will not be called.
-bundle = readRDS("Path/to/redcap_bundle.RDS")
-rc_bundle(to_options = bundle)
+# Load bundle from disk and upload the bundle and token to the session options
+bundle = readRDS('Path/to/redcap_bundle.RDS')
+rc_to_options(bundle = bundle, token = 'path/to/token.txt')
 ```
-Now that you've loaded the project metadata, you're ready to use other functions. Keep in mind that all functions other than import/export/bundle functions can be used without API access. All functions have arguments for the pieces of metadata they need, so that that data can be supplied without the use of `rc_bundle()`/API access. For example, the most important piece of metadata is the "Data Dictionary", which can be downloaded manually from REDCap and supplied via `data_dict` arguments. 
-
-However, assuming we've saved our metadata bundle to an option like we did above, let's go ahead and walk through an example workflow, starting with exporting some data.
+Now let's try exporting some data from REDCap:
 ```r
 # For this example we'll use a previously setup REDCap report
 report_data = rc_export(<Your report ID number>)
