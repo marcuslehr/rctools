@@ -9,7 +9,7 @@
 #' @param report_id Numeric. ID number for a report created in REDCap. 
 #'   
 #' @param url Character. A url address to connect to the REDCap API
-#' @param token Character. A REDCap API token
+#' @param token Character. Path to a text file containing your REDCap API token
 #' @param data_dict Dataframe. REDCap project data data_dictionary. By default, 
 #' this will be fetched from the REDCap bundle option, as created by \code{rc_bundle}.
 #' Otherwise, a data.frame containing the project data dictionary must be supplied.

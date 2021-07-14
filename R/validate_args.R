@@ -311,12 +311,12 @@ validate_args <- function(required = NULL,
 # Special Checks ----------------------------------------------------------
 
 ##--- token
-  if (!is.null(token))
+  if (!is.null(token)) {
     
     # Attempt to read token from file. Catch errors to handle token strings instead of paths
     invalid_path = F
 		tryCatch(token <- readr::read_lines(token)[1],
-		         error = function(cond) invalid_path <<- T)
+		         error = function(cond) assign('invalid_path',T,env=parent.frame()))
     
 		# Check token format
 		invalid_format = F
@@ -332,8 +332,8 @@ validate_args <- function(required = NULL,
 		# Format is valid, therefore string is a valid token. 
 		# Edge case of 32 character invalid path could make it here also
 		else
-		  token <<- token
-				
+		  assign('token', token, env = parent.frame())
+  }
   
 ##--- sex_var
 	if (!is.null(sex_var))

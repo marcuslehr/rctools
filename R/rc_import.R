@@ -4,7 +4,7 @@
 #' @description Imports records from a \code{data.frame} to a REDCap Database
 #'
 #' @param url A url address to connect to the REDCap API
-#' @param token A REDCap API token
+#' @param token Path to a text file containing your REDCap API token
 #' @param record_data A \code{data.frame} to be imported to the REDCap project.
 #' @param data_dict A \code{redcapBundle} object as created by
 #'   \code{rc_bundle}.
