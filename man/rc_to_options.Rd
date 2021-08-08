@@ -4,14 +4,12 @@
 \alias{rc_to_options}
 \title{Upload local bundle or token to options}
 \usage{
-rc_to_options(bundle = NULL, token = NULL, url = NULL)
+rc_to_options(bundle = NULL, token = NULL)
 }
 \arguments{
 \item{bundle}{A REDCap bundle object}
 
 \item{token}{Path to a text file containing your REDCap API token}
-
-\item{url}{Web address to REDCap API server}
 }
 \description{
 a local REDCap bundle object to be uploaded

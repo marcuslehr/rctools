@@ -21,7 +21,7 @@ rc_import(
 
 \item{url}{A url address to connect to the REDCap API}
 
-\item{token}{A REDCap API token}
+\item{token}{Path to a text file containing your REDCap API token}
 
 \item{data_dict}{A \code{redcapBundle} object as created by
 \code{rc_bundle}.}

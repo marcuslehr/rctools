@@ -30,7 +30,7 @@ rc_export(
 
 \item{url}{Character. A url address to connect to the REDCap API}
 
-\item{token}{Character. A REDCap API token}
+\item{token}{Character. Path to a text file containing your REDCap API token}
 
 \item{data_dict}{Dataframe. REDCap project data data_dictionary. By default,
 this will be fetched from the REDCap bundle option, as created by \code{rc_bundle}.
@@ -83,7 +83,7 @@ retrieved.}
 record_data. See \code{rc_strip} for more information or call seperately for more
 options.}
 
-\item{colClasses}{A (named) vector of colum classes passed to
+\item{colClasses}{A (named) vector of column classes passed to
 \code{\link[utils]{read.csv}} calls.
 Useful to force the interpretation of a column in a specific type and
 avoid an unexpected recast.}
