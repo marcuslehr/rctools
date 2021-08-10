@@ -1,7 +1,7 @@
 Package: rctools
 Type: Package
 Title: Tools for REDCap API and data manipulation
-Version: 0.4.8
+Version: 0.4.9
 Authors@R: c(
     person("Marcus", "Lehr", email = "marcus.j.lehr@gmail.com", 
            role = c("aut","cre","ctb")),
