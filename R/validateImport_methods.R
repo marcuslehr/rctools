@@ -13,7 +13,7 @@ validate_import_form_complete <- function(x, field_name, logfile)
             replacement = "2", 
             x = x)
   
-  w <- which(!grepl("[0-2]", x = x) & !is.na(x)) # NAs getting flagged inappropriately here
+  w <- which(!grepl("[0-2]", x) & !is.na(x)) # NAs getting flagged inappropriately here
   x[w] <- NA # If overwrite is on in rc_import invalid values will erase current values
   
   print_validation_message(
@@ -59,10 +59,14 @@ validate_import_date <- function(x, field_name, field_min, field_max, logfile)
     logfile = logfile
   )
   
+  # Note natural NAs
+  w_na = which(is.na(x))
   
+  # Apply formatting. This will create NAs when the value cannot be coerced
   x <- format(x, format = "%Y-%m-%d")
   
-  w <- which(is.na(x)) # Same issue as above, natural NAs will be flagged and invalid values will erase when overwrite = T
+  # Identify new NAs after formatting
+  w <- setdiff(which(is.na(x)), w_na) # Same issue as above, invalid values will erase when overwrite = T
   
   print_validation_message(
     field_name, 

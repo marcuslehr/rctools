@@ -12,7 +12,7 @@ rc_format(
   labels = TRUE,
   dates = TRUE,
   checkbox_labels = FALSE,
-  event_names = NULL,
+  event_names = "raw",
   strip = FALSE
 )
 }
@@ -41,11 +41,10 @@ This option is only available after REDCap version 6.0.  See Checkbox Variables
 for more on how this interacts with the \code{factors} argument.}
 
 \item{event_names}{Set to 'label' to apply event labels to redcap_event_name
-column or 'raw' to invert the operation. If \code{NULL} (Default) no operations
-will be performed.}
+column or 'raw'  (Default) to use unique event names.}
 
 \item{strip}{Logical. If \code{TRUE}, empty rows and columns will be removed from
-record_data. See \code{rc_strip} for more information or call seperately for more
+record_data. See \code{rc_strip} for more information or call separately for more
 options.
 
 Checkbox Variables:

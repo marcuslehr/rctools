@@ -19,7 +19,7 @@
 #'   for import.  This is sometimes helpful if the API import fails without
 #'   providing an informative message. The data frame can be written to a csv
 #'   and uploaded using the interactive tools to troubleshoot the
-#'   problem.  Please shoot me an e-mail if you find errors I havne't
+#'   problem.  Please shoot me an e-mail if you find errors I haven't
 #'   accounted for.
 #' @param logfile An optional filepath (preferably .txt) in which to print the
 #'   log of errors and warnings about the data.
@@ -113,6 +113,19 @@ rc_import <- function(record_data,
     message("The variable(s) '", 
             paste(fields_calc, collapse="', '"),
             "' are calculated fields and cannot be imported. ",
+            "They have been removed from the imported data frame.")
+  }
+  
+  # Remove descriptive fields
+  fields_descr <- data_dict$field_name[data_dict$field_type == "descriptive"]
+  fields_descr = fields_descr[fields_descr %in% names(record_data)]
+  
+  if (length(fields_descr) > 0) {
+    record_data <- record_data[!names(record_data) %in% fields_descr]
+    
+    message("The variable(s) '", 
+            paste(fields_descr, collapse="', '"),
+            "' are descriptive fields and cannot be imported. ",
             "They have been removed from the imported data frame.")
   }
   

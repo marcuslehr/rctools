@@ -121,7 +121,7 @@ validateImport <- function(data, data_dict, logfile = "")
     
     if (!length(field_type))
     {
-      if (grepl("complete$", field_name))
+      if (field_name %in% paste0(unique(data_dict$form_name),'_complete'))
       {
         field_type <- "form_complete"
       }
