@@ -42,6 +42,10 @@ ordering of events must be ensured.}
 \item{form_perm}{Dataframe. User access permissions for REDCap forms. By default, $form_perm
 is expected in the REDCap bundle, as created by \code{rc_bundle}. Otherwise, an equivalent
 data.frame containing form permission data must be supplied.}
+
+\item{mappings}{Dataframe. Redcap metadata that maps forms to events.}
+
+\item{id_field}{Character. The name of the record_id field for your REDCap project.}
 }
 \description{
 Finds data points which are ostensibly missing from Redcap records data.

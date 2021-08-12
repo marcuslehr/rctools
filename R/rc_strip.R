@@ -9,6 +9,7 @@
 #' @param columns Logical. When \code{TRUE}, empty columns will
 #' be removed.
 #' @param rows Logical. When \code{TRUE}, empty rows will be removed.
+#' @param id_field Character. The name of the record_id field for your REDCap project.
 #' 
 #' @importFrom magrittr '%>%'
 #' 

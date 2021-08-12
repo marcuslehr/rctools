@@ -8,11 +8,10 @@ rc_format(
   record_data,
   data_dict = getOption("redcap_bundle")$data_dict,
   event_data = getOption("redcap_bundle")$event_data,
-  factors = TRUE,
-  labels = TRUE,
+  factor_labels = TRUE,
+  col_labels = TRUE,
   dates = TRUE,
-  checkbox_labels = FALSE,
-  event_names = "raw",
+  event_labels = TRUE,
   strip = FALSE
 )
 }
@@ -23,46 +22,25 @@ rc_format(
 this will be fetched from the REDCap bundle option, as created by \code{rc_bundle}.
 Otherwise, a data.frame containing the project data dictionary must be supplied.}
 
-\item{factors}{Logical.  Determines if categorical data from the database is
-returned as numeric codes or labelled factors. See 'Checkbox Variables'
-for more on how this interacts with the \code{checkbox_labels} argument.}
+\item{event_data}{Dataframe. REDCap event data. By default, this will be fetched
+from the REDCap bundle option, as created by \code{rc_bundle}.}
 
-\item{labels}{Logical.  Determines if the variable labels are applied to
-the data frame.}
+\item{factor_labels}{Logical.  Determines whether categorical fields (eg radio,
+dropdown, checkbox) will be formatted as numeric codes or labels. Note that
+for checkbox fields, 0 (representing an unchecked box) will be replaced with NA.}
+
+\item{col_labels}{Logical.  Determines if the field labels are applied to the
+dataframe columns.}
 
 \item{dates}{Logical. Determines if date variables are converted to POSIXct
 format during the download.}
 
-\item{checkbox_labels}{Logical. Determines the format of labels in checkbox
-variables.  If \code{FALSE} labels are applies as "Unchecked"/"Checked".
-If \code{TRUE}, they are applied as ""/"\link{field_label}" where \link{field_label}
-is the label assigned to the level in the data data_dictionary.
-This option is only available after REDCap version 6.0.  See Checkbox Variables
-for more on how this interacts with the \code{factors} argument.}
+\item{event_labels}{Logical. Determines if event labels are applied to redcap_event_name
+column (Default = \code{TRUE}) or left as unique event names.}
 
-\item{event_names}{Set to 'label' to apply event labels to redcap_event_name
-column or 'raw'  (Default) to use unique event names.}
-
-\item{strip}{Logical. If \code{TRUE}, empty rows and columns will be removed from
+\item{strip}{Logical. If \code{FALSE}, empty rows and columns will be removed from
 record_data. See \code{rc_strip} for more information or call separately for more
-options.
-
-Checkbox Variables:
-
-There are four ways the data from checkbox variables may be
-represented depending on the values of \code{factors} and
-\code{checkbox_labels}. The most common are the first and third
-rows of the table below.  When \code{checkbox_labels = TRUE}, either
-the coded value or the labelled value is returned if the box is
-checked, or an empty string if it is not.
-
-\tabular{lll}{
-\code{factors} \tab \code{checkbox_labels} \tab Output \cr
-\code{FALSE}   \tab \code{FALSE}          \tab 0 / 1 \cr
-\code{FALSE}   \tab \code{TRUE}           \tab "" / value \cr
-\code{TRUE}    \tab \code{FALSE}          \tab Unchecked / Checked \cr
-\code{TRUE}    \tab \code{TRUE}           \tab "" / label
-}}
+options.}
 }
 \description{
 Uses REDCap project metadata to format records data.

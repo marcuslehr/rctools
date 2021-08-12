@@ -1,36 +1,40 @@
-makeRedcapFactor <- function(x, coding, factors, var_name)
+makeRedcapFactor <- function(x, coding, factor_labels, var_name, checkbox = F, suffix = NULL)
 {
   if (is.na(coding)){
     warning(sprintf("- No coding available for variable `%s`. Data is left in raw form.\n      This may indicate an problem in the Data data_dictionary.\n", var_name))
     return(x)
   }
-  # parses the string "0, Birth \\n 1, Death \\n 2, Unknown" into a
-  # character vector for creating a factor
-  coding <- unlist(strsplit(coding,"[\n|]"))
-  if (length(coding) > 0) {
+  
+  # Check if checkbox field condensed is condensed
+  if (checkbox & identical(suffix,var_name)) 
+    suffix = NULL
     
-    # Structure choices data from data_dict
-    coding <- regmatches(coding, regexpr(",", coding), invert = TRUE)
-    coding <- do.call("rbind", coding)
-    coding <- trimws(coding)
+    # If not true it's wide format
+    else x[x==0] = NA # Not reinstating 0's will cause import issues
+
+  coding = parse_field_choices(coding, suffix)
+  
+  if (nrow(coding) > 0) { # Don't remember why this is here
     
     # Determine data format
-    if ( all(unique(na.omit(x)) %in% coding[,1]) ) raw = T else raw = F
-    if ( all(unique(na.omit(x)) %in% coding[,2]) ) labeled = T else labeled = F
+    if ( all(unique(na.omit(x)) %in% coding$numbers) ) raw = T else raw = F
+    if ( all(unique(na.omit(x)) %in% coding$labels) ) labeled = T else labeled = F
     
     # Set factor codings
-    if (factors) labels = coding[,2] else labels = coding[,1]
-    if (raw) levels = coding[,1] else if (labeled) levels = coding[,2] 
+    if (factor_labels) labels = coding$labels
+      else if (checkbox & labeled & grepl('___\\d+$',var_name)) labels = 1
+      else labels = coding$numbers
+    if (raw) levels = coding$numbers else if (labeled) levels = coding$labels
     
     
+    # Format data
     if (raw | labeled) {
       x <- factor(x, levels=levels, labels=labels)
-      class(x) <- c("redcapFactor", "factor")
-      attr(x,'redcapLabels') <- coding[, 2]
+      attr(x,'redcapLabels') <- coding$labels
       attr(x,'redcapLevels') <- 
-        suppressWarnings(tryCatch(as.integer(coding[, 1]),
-                                  warning = function(cond) coding[, 1]))
-    } 
+        suppressWarnings(tryCatch(as.integer(coding$numbers),
+                                  warning = function(cond) coding$numbers))
+    }
     else {
       warning(paste0("Invalid factor levels found in variable ",var_name,".
                      Factor labels will not be applied."))
@@ -44,73 +48,79 @@ makeRedcapFactor <- function(x, coding, factors, var_name)
                    Data will be factored as is."))
     x <- suppressWarnings(as.factor(x))
   }
-  x
+  return(x)
 }
 
-# makeRedcapYN <- function(x, factors)
-# {
-#   if (factors)
-#     x <- factor(x, 0:1, c("No", "Yes"))
-#   
-#   class(x) <- c("redcapFactor", class(x))
-#   attr(x,'redcapLabels') <- c("No", "Yes")
-#   attr(x,'redcapLevels') <- 0:1
-#   x
-# }
-
-makeRedcapCheckbox <- function(x, suffix, coding, factors, checkbox_labels)
-{
+parse_field_choices = function(coding, suffix=NULL) {
+  
   # parses the string "0, Birth \\n 1, Death \\n 2, Unknown" into a
   # character vector for creating a factor
   coding <- unlist(strsplit(coding,"[\n|]"))
-  if (length(coding) > 0) 
-  {
+  if (length(coding) > 0) {
+    
+    # Structure choices data from data_dict
     coding <- regmatches(coding, regexpr(",", coding), invert = TRUE)
     coding <- do.call("rbind", coding)
     coding <- trimws(coding)
-    coding <- coding[coding[, 1] == suffix, ]
     
+    # Apply col names just to make usage more readable
+    coding = as.data.frame(coding)
+    names(coding) = c('numbers','labels')
     
-    use_labels <-
-      if (!factors && !checkbox_labels)
-        c("0", "1")
-      else if (!factors && checkbox_labels)
-        c("", coding[1])
-      else if (factors && !checkbox_labels)
-        c("Unchecked", "Checked")
-      else if (factors && checkbox_labels) 
-        c("", coding[2])
-      
-    
-    if (!factors){
-      if (checkbox_labels)
-        x <- use_labels[x+1]
-      # no else needed.  If checkbox_labels = FALSE, leave as 0/1
-      
-      class(x) <- c("redcapFactor", class(x))
+    if (!is.null(suffix)) { # For wide-format checkbox fields
+      # Remove other coding options
+      coding <- coding[coding$numbers == suffix,]
+      # Change numeric code to 1
+      coding$numbers = 1
+      }
     }
-    else {
-      if (!checkbox_labels)
-        x <- factor(x,
-                    levels = 0:1,
-                    labels = c("Unchecked", "Checked"))
-      else 
-        x <- factor(x, 
-                    levels = 0:1,
-                    labels = use_labels)
-      
-      class(x) <- c("redcapFactor", "factor")
-    }
-    
-    attr(x,'redcapLabels') <- use_labels
-    attr(x,'redcapLevels') <- 0:1
-    
-  }
-  else 
-  {
-    # Create integer since the meta data about choices are bungled.
-    x <- suppressWarnings(as.integer(x))
-  }
-  x
+  return(coding)
 }
 
+condensed_checkbox_to_factor = function(x, coding, factor_labels, var_name, checkbox = T) {
+  
+  # Split on commas for prviously formatted cols
+  if (any(grepl(',',x))) x = stringr::str_split(x, ',')
+  else x = stringr::str_split(x, '')
+  
+  # convert to df
+  x = list2df(x)
+  
+  # Pass cols through makeRedcapFactor
+  x = apply(x, 1, function(x) makeRedcapFactor(x, coding, factor_labels, var_name, checkbox)) %>%
+    # Paste all options together
+        as.data.frame() %>% dplyr::summarise_all(~paste(na.omit(.),collapse = ',')) %>% 
+        as.character()
+  
+  # The above method adds blanks. Remove them
+  x[x==''] = NA
+  
+  # Apply attributes
+  coding = parse_field_choices(coding)
+  attr(x,'redcapLabels') <- coding$labels
+  attr(x,'redcapLevels') <- 
+    suppressWarnings(tryCatch(as.integer(coding$numbers),
+                              warning = function(cond) coding$numbers))
+  
+  return(x)
+}
+
+# This function will covert lists with unequal numbers of items into a dataframe
+list2df = function(list) {
+  
+  # Create an appropriately-sized empty matrix
+  mat = matrix(NA,
+               ncol = max(unlist(lapply(list, function(x) length(x)))),
+               nrow = length(list))
+  
+  # Fill in the matrix using the list
+  for (i in 1:length(list)) {
+    x = list[[i]]
+    for (j in 1:length(x)) {
+      mat[i,j] = x[j]
+    }
+  }
+  ## The whole frame can be filtered by keeping as a matrix, using grepl, then converting back to a df.
+  
+  as.data.frame(mat)
+}

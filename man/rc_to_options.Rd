@@ -12,11 +12,7 @@ rc_to_options(bundle = NULL, token = NULL)
 \item{token}{Path to a text file containing your REDCap API token}
 }
 \description{
-a local REDCap bundle object to be uploaded
-to the R session options.
-}
-\details{
-
+Uploads a local REDCap bundle object to the R session options.
 }
 \author{
 Marcus Lehr

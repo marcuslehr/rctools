@@ -41,16 +41,15 @@
 #' @param error_handling Character, defined inputs, length == 1
 #' @param plot_type Character, defined inputs, length == 1
 #' @param legend_position Character, defined inputs, length == 1
-#' @param event_names Character, defined inputs, length == 1
 #' 
 #' @param survey Logical, length == 1 
 #' @param dag Logical, length == 1
 #' @param form_complete_auto Logical, length == 1
 #' @param format Logical, length == 1
-#' @param factors Logical, length == 1
+#' @param factor_labels Logical, length == 1
 #' @param labels Logical, length == 1
+#' @param col_labels Logical, length == 1
 #' @param dates Logical, length == 1
-#' @param checkbox_labels Logical, length == 1
 #' @param returnData Logical, length == 1
 #' @param plot Logical, length == 1
 #' @param filtered Logical, length == 1
@@ -60,6 +59,7 @@
 #' @param rows Logical, length == 1
 #' @param sd_guides Logical, length == 1
 #' @param strip Logical, length == 1
+#' @param event_labels Logical, length == 1
 #' 
 #' @param record_data Data.frame; contains record_id and redcap_event_name columns
 #' @param data_dict Data.frame, ncol == 18
@@ -114,17 +114,16 @@ validate_args <- function(required = NULL,
 													error_handling = NULL,
 													plot_type = NULL,
 													legend_position = NULL,
-													event_names = NULL,
                           
                           # Logical, len=1
                           survey = NULL,
                           dag = NULL,
                           form_complete_auto = NULL,
                           format = NULL,
-                          factors = NULL,
+                          factor_labels = NULL,
                           labels = NULL,
+													col_labels = NULL,
                           dates = NULL,
-                          checkbox_labels = NULL,
                           returnData = NULL,
                           plot = NULL,
                           filtered = NULL,
@@ -134,6 +133,7 @@ validate_args <- function(required = NULL,
 													rows = NULL,
 													sd_guides = NULL,
 													strip = NULL,
+													event_labels = NULL,
 													
                           # Data.frame
                           record_data = NULL,
@@ -228,7 +228,7 @@ validate_args <- function(required = NULL,
 
   # Generate var list
   vars = c('overwriteBehavior','returnContent','error_handling','plot_type',
-           'legend_position','event_names')
+           'legend_position')
 	
 	if (any(vars %in% required)) {
 	
@@ -252,9 +252,9 @@ validate_args <- function(required = NULL,
 # Logical, len=1 ------------------------------------------------------------------
 
   # Generate var list
-  vars = c('survey','dag','form_complete_auto','format','factors','labels','dates',
-           'checkbox_labels','returnData','plot','filtered','long_format',
-					 'make_repeat','columns','rows','sd_guides','strip')
+  vars = c('survey','dag','form_complete_auto','format','factor_labels','labels','dates',
+           'returnData','plot','filtered','long_format','make_repeat','columns',
+					 'rows','sd_guides','strip','col_labels','event_labels')
 		
 		# Make formula
 		massert_formula = stats::formula(paste('~',paste(vars,collapse = ' + ')))

@@ -9,6 +9,8 @@
 #' redcap_event_name column, and a column containing variable names.
 #' Wide-to-long conversion functions include reshape2::melt() 
 #' (used in rctools), tidyr::gather(), and tidyr::pivot_longer().
+#' @param pooled_vars Dataframe. Dataframe attribute appended to record_data by
+#' \code{pooled_vars}.
 #' @param data_dict Dataframe. REDCap project data data_dictionary. By default, 
 #' this will be fetched from the REDCap bundle option, as created by \code{rc_bundle}.
 #' Otherwise, a data.frame containing the project data dictionary must be supplied.

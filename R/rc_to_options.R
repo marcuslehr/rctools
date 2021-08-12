@@ -1,8 +1,6 @@
 #' @name rc_to_options
 #' @title Upload local bundle or token to options
-#' @description a local REDCap bundle object to be uploaded
-#' to the R session options.
-#' @details 
+#' @description Uploads a local REDCap bundle object to the R session options.
 #'
 #' @param bundle A REDCap bundle object
 #' @param token Path to a text file containing your REDCap API token
@@ -13,6 +11,7 @@
 
 rc_to_options <- function(bundle = NULL, token = NULL) {
   
+  # Checks
   validate_args(bundle = bundle, token = token)
   
   # Upload any provided args to options

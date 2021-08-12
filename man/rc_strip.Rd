@@ -18,6 +18,8 @@ rc_strip(
 be removed.}
 
 \item{rows}{Logical. When \code{TRUE}, empty rows will be removed.}
+
+\item{id_field}{Character. The name of the record_id field for your REDCap project.}
 }
 \description{
 Removes any columns which contain only \code{NA}. Likewise,

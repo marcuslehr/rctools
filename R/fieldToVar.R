@@ -7,19 +7,17 @@
 #' @param records A data frame of records returned by \code{rc_export} 
 #' @param data_dict A data frame giving the data data_dictionary, as returned 
 #'   by \code{exportMetaData}
-#' @param factors Logical, determines if checkbox, radio button, dropdown and yesno
-#'   variables are converted to factors
+#' @param factor_labels Logical, determines if checkbox, radio button, dropdown and yesno
+#'   variables are labelled.
 #' @param dates Logical, determines if date variables are converted to POSIXct format
-#' @param checkbox_labels Logical, determines if checkbox variables are labeled as
-#'   "Checked" or using the checkbox label.  Only applicable when \code{factors = TRUE}
 #' 
 #' @details This function is called internally by \code{rc_export}. It is not 
 #' available to the user.
 #'   
 #' @author Jeffrey Horner
 
-fieldToVar <- function(records, data_dict, factors = TRUE, 
-                       dates = TRUE, checkbox_labels = FALSE)
+fieldToVar <- function(records, data_dict, factor_labels = TRUE, 
+                       dates = TRUE)
 { 
   for (i in seq_along(records))
   {
@@ -37,7 +35,7 @@ fieldToVar <- function(records, data_dict, factors = TRUE,
     #* pass to switch.
     if (!length(field_type)) 
     {
-      if (grepl("_complete$", field_base))
+      if (field_base %in% paste0(unique(data_dict$form_name),'_complete'))
       {
         field_type <- "form_complete"
       }
@@ -107,45 +105,55 @@ fieldToVar <- function(records, data_dict, factors = TRUE,
              "select" = 
                makeRedcapFactor(x = records[[i]],
                                 coding = data_dict$select_choices_or_calculations[data_dict$field_name == field_base],
-                                factors = factors, 
+                                factor_labels = factor_labels, 
                                 var_name = data_dict$field_name[data_dict$field_name == field_base]),
              "radio" = 
                makeRedcapFactor(x = records[[i]],
                                 coding = data_dict$select_choices_or_calculations[data_dict$field_name == field_base],
-                                factors = factors, 
+                                factor_labels = factor_labels, 
                                 var_name = data_dict$field_name[data_dict$field_name == field_base]),
              "dropdown" = 
                makeRedcapFactor(x = records[[i]],
                                 coding = data_dict$select_choices_or_calculations[data_dict$field_name == field_base],
-                                factors = factors, 
+                                factor_labels = factor_labels, 
                                 var_name = data_dict$field_name[data_dict$field_name == field_base]),
              "yesno" = makeRedcapFactor(x = records[[i]],
                                         coding = '1, Yes | 0, No',
-                                        factors = factors, 
+                                        factor_labels = factor_labels, 
                                         var_name = data_dict$field_name[data_dict$field_name == field_base]),
              "truefalse" = 
               {
-                if (factors) 
+                if (factor_labels) 
                   as.logical(records[[i]])
                 else
                   makeRedcapFactor(x = records[[i]],
                                    coding = '1, TRUE | 0, FALSE',
-                                   factors = factors, 
+                                   factor_labels = factor_labels, 
                                    var_name = data_dict$field_name[data_dict$field_name == field_base])
               },
              "checkbox" = 
               {
-                makeRedcapCheckbox(x = records[[i]],
-                                   suffix = gsub("^.+___", "", names(records)[i]),
+                var_name = names(records)[i]
+                suffix = gsub("^.+___", "", var_name)
+                
+                if (!suffix == var_name) # Checkbox is in wide-format
+                  makeRedcapFactor(x = records[[i]],
                                    coding = data_dict$select_choices_or_calculations[data_dict$field_name == field_base],
-                                   factors = factors,
-                                   checkbox_labels = checkbox_labels)
+                                   factor_labels = factor_labels,
+                                   var_name = var_name,
+                                   checkbox = T,
+                                   suffix = suffix)
+                else
+                  condensed_checkbox_to_factor(x = records[[i]],
+                                               coding = data_dict$select_choices_or_calculations[data_dict$field_name == field_base],
+                                               factor_labels = factor_labels,
+                                               var_name = var_name)
               },
              "form_complete" = 
              {
                makeRedcapFactor(x = records[[i]],
                                 coding = "0, Incomplete | 1, Unverified | 2, Complete",
-                                factors, 
+                                factor_labels, 
                                 var_name = data_dict$field_name[data_dict$field_name == field_base])
              },
              records[[i]]

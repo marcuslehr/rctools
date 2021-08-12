@@ -32,15 +32,14 @@ validate_args(
   error_handling = NULL,
   plot_type = NULL,
   legend_position = NULL,
-  event_names = NULL,
   survey = NULL,
   dag = NULL,
   form_complete_auto = NULL,
   format = NULL,
-  factors = NULL,
+  factor_labels = NULL,
   labels = NULL,
+  col_labels = NULL,
   dates = NULL,
-  checkbox_labels = NULL,
   returnData = NULL,
   plot = NULL,
   filtered = NULL,
@@ -50,6 +49,7 @@ validate_args(
   rows = NULL,
   sd_guides = NULL,
   strip = NULL,
+  event_labels = NULL,
   record_data = NULL,
   data_dict = NULL,
   users = NULL,
@@ -121,8 +121,6 @@ the calling function.}
 
 \item{legend_position}{Character, defined inputs, length == 1}
 
-\item{event_names}{Character, defined inputs, length == 1}
-
 \item{survey}{Logical, length == 1}
 
 \item{dag}{Logical, length == 1}
@@ -131,13 +129,13 @@ the calling function.}
 
 \item{format}{Logical, length == 1}
 
-\item{factors}{Logical, length == 1}
+\item{factor_labels}{Logical, length == 1}
 
 \item{labels}{Logical, length == 1}
 
-\item{dates}{Logical, length == 1}
+\item{col_labels}{Logical, length == 1}
 
-\item{checkbox_labels}{Logical, length == 1}
+\item{dates}{Logical, length == 1}
 
 \item{returnData}{Logical, length == 1}
 
@@ -156,6 +154,8 @@ the calling function.}
 \item{sd_guides}{Logical, length == 1}
 
 \item{strip}{Logical, length == 1}
+
+\item{event_labels}{Logical, length == 1}
 
 \item{record_data}{Data.frame; contains record_id and redcap_event_name columns}
 

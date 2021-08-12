@@ -22,12 +22,11 @@ Depends:
     R (>= 3.6.1)
 Imports:
     checkmate,
+		httr,
     chron,
-    DBI,
-    httr,
+    lubridate,
     labelVector,
     Hmisc,
-    lubridate,
     readr,
     dplyr,
     stringr,
