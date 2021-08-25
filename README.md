@@ -1,13 +1,18 @@
 rctools
 ======
 
-The goal of this package is to provide simple, streamlined functions for interfacing with the REDCap API (http://www.project-redcap.org/) and working with REDCap data sets. rctools is an actively developed fork of [redcapAPI](https://github.com/nutterb/redcapAPI). 
+The goal of this package is to provide simple, streamlined functions for interfacing with the REDCap API (http://www.project-redcap.org/) and working with REDCap data sets. rctools is a heavily modified fork of the [redcapAPI](https://github.com/nutterb/redcapAPI) package.
 
 This package is not yet on [CRAN](https://cran.r-project.org/), however it can be easily installed by downloading the .tar.gz file in the main directory of this repository and running:
 ```r
-install.packages("Path/to/file/rctools_0.4.6.tar.gz", repos = NULL, type = "source", quiet = T)
+# First install package dependencies from CRAN
+install.packages(c('checkmate','httr','chron','lubridate','labelVector','Hmisc',
+                   'readr','dplyr','stringr','tidyr','magrittr','reshape2','ggplot2'))
 
-# You may now load the package with normal library() syntax
+# Install rctools
+install.packages("Path/to/rctools_0.4.9.tar.gz", repos = NULL, type = "source", quiet = T)
+
+# You may now load the package with the normal library() syntax
 library(rctools)
 ```
 In an effort to both reduce the number of API calls (important for network traffic and audits) and streamline the package, rctools makes use of R's "session options". These are a special set of variables which are instantiated at the beginning of an R session and do not persist beyond that session. You can see a list of all options by running `options()` or access individual items using `getOption("option_name")`. 
@@ -38,11 +43,11 @@ report_data = rc_export(<Your report ID number>)
 
 > head(report_data)
   record_id redcap_event_name visit_1_sex visit_1_weight visit_2_weight visit_1_temp visit_2_temp
-1     11435     visit_1_arm_1      Female             65             NA         96.7           NA
+1     11435     visit_1_arm_1           0             65             NA         96.7           NA
 2     11435     visit_2_arm_1        <NA>             NA             89           NA         98.6
-3     11945     visit_1_arm_1        Male             72             NA         97.8           NA
+3     11945     visit_1_arm_1           1             72             NA         97.8           NA
 4     11945     visit_2_arm_1        <NA>             NA             64           NA         96.9
-5     26479     visit_1_arm_1      Female             56             NA         98.1           NA
+5     26479     visit_1_arm_1           0             56             NA         98.1           NA
 6     26479     visit_2_arm_1        <NA>             NA             72           NA         99.1
 ```
 As you can see, `rc_export` automatically converts factors from numerical coding (e.g. 0,1) to the human-readable choices in the data dictionary. It does this by calling `rc_format()`- and you can use this function at any point to change the formatting of the data. For example, we can quickly change our sex variable back to numerical codings like so:
