@@ -54,7 +54,7 @@ rc_format <- function(record_data, data_dict = getOption("redcap_bundle")$data_d
   # Apply formatting/type conversions
   record_data <- fieldToVar(records = record_data, 
                             data_dict = data_dict, 
-                            factors = factor_labels, 
+                            factor_labels = factor_labels, 
                             dates = dates)
   
   # All NA cols are formatted as logical and cause join issues
