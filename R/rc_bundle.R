@@ -52,11 +52,12 @@ rc_bundle <- function(url,token,
                       create_options=TRUE, return_object=TRUE,
                       data_dict=FALSE, users=FALSE, instruments=FALSE,
                       event_data=FALSE, arms=FALSE, mappings=FALSE,
-                      proj_info=FALSE, version=FALSE,
-                      dates=TRUE, labels=TRUE
+                      proj_info=FALSE, version=FALSE
                       ){
   
-  ## Error checking. Cannot use validate_args() here because of terminology devations
+  ### Error checking ------------
+  
+  # Cannot use validate_args() here because of terminology devations
   coll <- checkmate::makeAssertCollection()
   
   ##--- token
@@ -87,7 +88,7 @@ rc_bundle <- function(url,token,
                       add = coll)
           )
 
-  massert(~ dates + labels + data_dict + users + instruments + 
+  massert(~ data_dict + users + instruments + 
             event_data + arms + mappings + version + proj_info,
           fun = checkmate::assert_logical,
           fixed = list(len = 1,
@@ -95,6 +96,8 @@ rc_bundle <- function(url,token,
           )
   
   checkmate::reportAssertions(coll)
+
+# Assemble bundle ---------------------------------------------------------
   
   # If no data types are specified, default to TRUE for all
   if (!any(data_dict,users,instruments,event_data,arms,mappings,proj_info,version)) {
@@ -110,10 +113,83 @@ rc_bundle <- function(url,token,
   
   # The dictionary and user data are used for 2 bundle objects.
   # Exporting them first avoids duplicate API calls
-  if (data_dict) meta_data = exportMetaData(url, token)
-	if (users) userData = exportUsers(url, token, 
-                                    dates = dates,
-                                    labels = labels)
+  if (data_dict) meta_data = rc_api_call(url,token, 'metadata')
+	if (users) {
+    
+	  # Return data as raw bc type_convert() can't do it's job after the fact
+	  user_data = rc_api_call(url,token, 'user', content_as = 'raw')
+    
+    # Specify column types
+	  col_types <- readr::cols(
+	    username                      = readr::col_character(),
+	    email                         = readr::col_character(),
+	    firstname                     = readr::col_character(),
+	    lastname                      = readr::col_character(),
+	    expiration                    = readr::col_date(),
+	    data_access_group             = readr::col_character(),
+	    data_access_group_id          = readr::col_character(),
+	    design                        = readr::col_logical(),
+	    user_rights                   = readr::col_logical(),
+	    data_access_groups            = readr::col_logical(),
+	    data_export                   = readr::col_character(),
+	    reports                       = readr::col_logical(),
+	    stats_and_charts              = readr::col_logical(),
+	    manage_survey_participants    = readr::col_logical(),
+	    calendar                      = readr::col_logical(),
+	    data_import_tool              = readr::col_logical(),
+	    data_comparison_tool          = readr::col_logical(),
+	    logging                       = readr::col_logical(),
+	    file_repository               = readr::col_logical(),
+	    data_quality_create           = readr::col_logical(),
+	    data_quality_execute          = readr::col_logical(),
+	    api_export                    = readr::col_logical(),
+	    api_import                    = readr::col_logical(),
+	    mobile_app                    = readr::col_logical(),
+	    mobile_app_download_data      = readr::col_logical(),
+	    record_create                 = readr::col_logical(),
+	    record_rename                 = readr::col_logical(),
+	    record_delete                 = readr::col_logical(),
+	    lock_records_all_forms        = readr::col_logical(),
+	    lock_records                  = readr::col_logical(),
+	    lock_records_customization    = readr::col_logical(),
+	    forms                         = readr::col_character()
+	  )
+	  
+	  # Convert data to data.frame and remove spec attritube as it may cause issues
+    user_data = readr::read_csv(user_data, col_types = col_types)
+    attr(user_data, "spec") <- NULL
+    
+    # Restructure form permission data
+    FormPerm <- user_data %>%
+                  dplyr::select(username, forms) %>%
+                  tidyr::separate_rows(forms, sep = ",") %>%
+                  tidyr::separate(
+                    col     = forms,
+                    into    = c("form_name", "permission"),
+                    sep     = ":",
+                    convert = FALSE
+                  )
+    
+    # Remove forms column and format dates
+    user_data <- dplyr::select(user_data, -forms)
+    user_data$expiration <- as.POSIXct(user_data$expiration, format="%Y-%m-%d")
+    
+    # Apply labels to factors
+    user_data$data_export <- 
+      factor(user_data$data_export, 
+             levels = c(0, 2, 1), 
+             labels = c("No access", "De-identified", "Full data set")
+      )
+    FormPerm$permission <- 
+      factor(FormPerm$permission, 
+             levels = c(0, 2, 1, 3), 
+             labels = c("No access", "Read only", 
+                        "Edit records", "Edit survey responses")
+      )
+	}
+
+# Assemble bundle ---------------------------------------------------------
+  
   # Create the bundle
   bundle = 
     structure(
@@ -121,17 +197,19 @@ rc_bundle <- function(url,token,
     		redcap_url = url,
         data_dict = if (data_dict) meta_data else NULL,
     		id_field = if(data_dict) meta_data$field_name[1] else NULL,
-        users = if (users) userData$Users else NULL,
-        form_perm = if (users) userData$Form_Permissions else NULL,
-        instruments = if (instruments) exportInstruments(url, token) else NULL,
-        event_data = if (event_data) exportEvents(url, token) else NULL,
-        arms = if (arms) exportArms(url, token) else NULL,
-        mappings = if (mappings) exportMappings(url, token) else NULL,
-        proj_info = if (proj_info) exportProjectInformation(url, token) else NULL,
-        version = if (version) exportVersion(url, token) else NULL
+        users = if (users) user_data else NULL,
+        form_perm = if (users) FormPerm else NULL,
+        instruments = if (instruments) rc_api_call(url,token, 'instrument') else NULL,
+        event_data = if (event_data) rc_api_call(url,token, 'event') else NULL,
+        arms = if (arms) rc_api_call(url,token, 'arm') else NULL,
+        mappings = if (mappings) rc_api_call(url,token, 'formEventMapping') else NULL,
+        proj_info = if (proj_info) rc_api_call(url,token, 'project') else NULL,
+        version = if (version) rc_api_call(url,token, 'version') else NULL
       ),
-      class = c("redcapBundle", "redcapProject", "list")
+      class = c("redcapBundle", "list")
     )
+  
+  rc_api_call(url,token, 'version')
   
   # Save the data to options
   if (create_options) {

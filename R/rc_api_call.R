@@ -15,6 +15,11 @@
 #' 'surveyQueueLink', 'user', 'userDagMapping', 'userRole', 'userRoleMapping', and 'version'
 #' @param action Action to perform when calling the endpoint. Either 'import',
 #' 'export', 'delete', 'rename', or 'switch'
+#' @param content_as Passed to \code{httr::content()}, determines how the server reponse
+#'   will be returned from this function. This is mostly useful for returning the
+#'   raw response when needed. Options are 'raw', 'text', and 'parsed'. 'raw' returns
+#'   raw byte data, 'text' converts it to character, and 'parsed' returns a tibble
+#'   (see the \code{tidyr} package for more details).
 #' @param ... Additional arguments to be passed to the API
 #' 
 #' @param arms Vector of arm numbers
@@ -68,7 +73,8 @@
 
 
 rc_api_call <- function(url, token,
-                        content='version', action='export', ...,
+                        content='version', action='export', 
+                        content_as=NULL, ...,
                         
                         
                         arms=NULL, fields=NULL, forms=NULL, 
@@ -77,7 +83,7 @@ rc_api_call <- function(url, token,
                         beginTime='',
                         csvDelimiter='',
                         dag='',
-                        data='',
+                        data=NULL,
                         endTime='',
                         event='',
                         exportCheckboxLabel='false',
@@ -172,6 +178,10 @@ rc_api_call <- function(url, token,
            )
   }
   
-  # Extract data.frame
-  suppressMessages( as.data.frame(httr::content(response)) )
+  # Extract data
+  if (content=='version') content_as = 'text'
+  if (any(c('raw','text') %in% content_as)) # writing this way avoids NULL errors
+      return(httr::content(response,content_as))
+  else 
+    return(suppressMessages(as.data.frame( httr::content(response,content_as) )))
 }
