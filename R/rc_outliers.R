@@ -73,7 +73,7 @@ rc_outliers <- function(record_data, sex_var = NA, sd_threshold = 3,
   
   # NAs result from single values and (I think) standard deviations of 0. Replace them with FALSE
   record_data$outlier[is.na(record_data$outlier)] = FALSE
-  record_data$outlier = as.logical(record_data$outlier) # Preserve fomatting
+  record_data$outlier = as.logical(record_data$outlier) # Preserve formatting
   
   # Filter data
   if (filtered) record_data = record_data %>% 

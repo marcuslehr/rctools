@@ -1,0 +1,177 @@
+#' @name rc_api_call
+#' 
+#' @title Execute a call to the REDCap API
+#' @description This is a generic API function. It is intended to provide a more 
+#' flexible interface to the API while still improving usability. It does not
+#' have the same level of checks and fail safes as other package functions.
+#' 
+#' @param url URL of the REDCap API
+#' @param token Project API token
+#' 
+#' @param content API endpoint. The options are 'arm', 'dag', 'event', 'exportFieldNames',
+#' 'file', 'formEventMapping', 'generateNextRecordName', 'instrument', 'log', 
+#' 'metadata', 'participantList', 'pdf', 'project', 'project_settings', 'project_xml',
+#' 'record', 'repeatingFormsEvents', 'report', 'surveyLink', 'surveyReturnCode',
+#' 'surveyQueueLink', 'user', 'userDagMapping', 'userRole', 'userRoleMapping', and 'version'
+#' @param action Action to perform when calling the endpoint. Either 'import',
+#' 'export', 'delete', 'rename', or 'switch'
+#' @param ... Additional arguments to be passed to the API
+#' 
+#' @param arms Vector of arm numbers
+#' @param fields Vector of field names
+#' @param forms Vector of form names
+#' @param events Vector of event names
+#' @param records Vector of record IDs
+#' @param dags Vector of data access groups
+#' 
+#' @param beginTime Filter for log exports. Format is 'YYYY-MM-DD HH:MM'
+#' @param endTime Filter for log exports. Format is 'YYYY-MM-DD HH:MM'
+#' @param csvDelimiter Operator to delimit csv exports with. For exporting records
+#'   and reports. Options are ',', 'tab', ';', '|', and '^'
+#' @param dag Specifies a data access group to switch to
+#' @param data Data to import
+#' @param event Event name. For file import/export
+#' @param exportCheckboxLabel Logical. Will use the choice label or NA to fill 
+#'   fields instead of Checked or Unchecked. Requires rawOrLabel to be set to 
+#'   'true', otherwise does nothing.
+#' @param exportDataAccessGroups Logical
+#' @param exportSurveyFields Logical
+#' @param field Field name for file import/export
+#' @param file Path to file for import
+#' @param forceAutoNumber Logical. For importing records
+#' @param logtype Unknown
+#' @param overWriteBehavior Determines whether import data will overwrite existing
+#'   data. Options are 'normal or 'overwrite'. Pay careful attention to NA values
+#'   when using this option, as they will overwrite existing values. In normal
+#'   mode, existing values cannot be replaced with another value or NA.
+#' @param rawOrLabel For choice fields such as radio and drop-down. 'raw' will
+#'   fill the data using the choice numbers while 'label' will use the choice labels.
+#' @param rawOrLabelHeaders Determines whether to use field names or field labels
+#'   for column names
+#' @param record Specify record ID for file import/export or log filtering
+#' @param report_id ID number of report for export. May be supplied as either 
+#'   character or numeric.
+#' @param returnContent Specify response type when importing records. Options are
+#'   'count', 'ids', 'auto_ids', and 'nothing'. 'count' returns the number of 
+#'   records which were updated. 'ids' returns a list of updated IDs. 'auto_ids'
+#'   appears to be the same as 'count'? 'nothing' returns nothing.
+#' @param returnMetadataOnly Logical. For 'project_xml' export.
+#' @param type For record imports/exports. Options are 'flat' and 'eav'
+#' @param user Specify a user for log exports
+#' @param format Specify format of imported or exported data. Options are 'csv',
+#'   'json', or 'xml'
+#' @param returnFormat Specify format for errors. Options are 'csv', 'json', or 'xml'
+#' @param encode Encoding format to be passed to \code{httr::POST()}. Options are
+#'   'form', 'multipart', or 'identity'
+#' 
+#' @author Marcus Lehr
+
+
+rc_api_call <- function(url, token,
+                        content='version', action='export', ...,
+                        
+                        
+                        arms=NULL, fields=NULL, forms=NULL, 
+                        events=NULL, records=NULL, dags=NULL,
+                        
+                        beginTime='',
+                        csvDelimiter='',
+                        dag='',
+                        data='',
+                        endTime='',
+                        event='',
+                        exportCheckboxLabel='false',
+                        exportDataAccessGroups='false',
+                        exportSurveyFields='false',
+                        field='',
+                        file='path/to/file',
+                        forceAutoNumber='false',
+                        logtype='',
+                        overwriteBehavior='normal',
+                        rawOrLabel='raw',
+                        rawOrLabelHeaders='raw',
+                        record='',
+                        report_id='',
+                        returnContent='count',
+                        returnMetadataOnly='false',
+                        type='flat',
+                        user='',
+                        
+                        format='csv',
+                        returnFormat='csv',
+                        encode='form'
+                        ){
+  
+  # This is mostly for the token coercion 
+  validate_args(c('url','token'), url=url, token=token)
+  
+  # Initial assembly of body args
+  body = list(content=content, token=token,
+              action=action,
+              beginTime=beginTime,
+              csvDelimiter=csvDelimiter,
+              dag=dag,
+              data=data,
+              endTime=endTime,
+              event=event,
+              exportCheckboxLabel=exportCheckboxLabel,
+              exportDataAccessGroups=exportDataAccessGroups,
+              exportSurveyFields=exportSurveyFields,
+              field=field,
+              forceAutoNumber=forceAutoNumber,
+              format=format,
+              logtype=logtype,
+              overwriteBehavior=overwriteBehavior,
+              rawOrLabel=rawOrLabel,
+              rawOrLabelHeaders=rawOrLabelHeaders,
+              record=record,
+              report_id=report_id,
+              returnContent=returnContent,
+              returnFormat=returnFormat,
+              returnMetadataOnly=returnMetadataOnly,
+              type=type,
+              user=user
+  )
+  
+  # Expand body to include provided selections
+  body = c(body, list(...))
+  if (!is.null(fields)) body[['fields']] <- paste0(fields, collapse=",")
+  if (!is.null(forms)) body[['forms']] <- paste0(forms, collapse=",")
+  if (!is.null(events)) body[['events']] <- paste0(events, collapse=",")
+  if (!is.null(records)) body[['records']] <- paste0(records, collapse=",")
+  if (!is.null(arms)) body[['arms']] <- paste0(arms, collapse=",")
+  if (!is.null(dags)) body[['dags']] <- paste0(dags, collapse=",")
+  
+  # Make modifications for specific API endpoints (defined by content argument)
+  if (action=='import') {
+    if (content=='file') {
+      body[['file']] = httr::upload_file(file)
+      encode = 'multipart'
+    } 
+    if (content=='project') content = 'project_settings'
+  }
+  
+  
+  # Call API
+  response <- httr::POST(url, body = body, encode = encode)
+  
+  # Check for connection/http errors
+  if (response$status_code != 200) return( as.character(response) )
+      # httr::content(response, 'text') also works
+  
+  # Check for data
+  if (action=='export' & length(response$content)<=1) stop("No data were returned.")
+  if (action=='import') { 
+    if (content=='file') return("Upload successful") # NULL returned for content
+    if (content=='records') switch(returnContent,
+           'count' = return(paste0('Number of records updated: ', as.character(response))),
+           'auto_ids' = return(paste0('Number of records updated: ', as.character(response))),
+           'nothing' = return(), # 'Upload successful'?
+           'ids' = return(paste0("Records updated: ", 
+                          paste(utils::read.csv(text=as.character(response))$id,collapse=', ')))
+           )
+  }
+  
+  # Extract data.frame
+  suppressMessages( as.data.frame(httr::content(response)) )
+}

@@ -44,10 +44,10 @@ rc_cast <- function(record_data,
   # Convert events to factors while preserving order
   record_data$redcap_event_name = factor(record_data$redcap_event_name, levels = events)
   
-  # Remove first repeats for more compact output
-  first_reps = which(record_data$redcap_repeat_instance == 1)
-  record_data$redcap_repeat_instrument[first_reps] = NA
-  record_data$redcap_repeat_instance[first_reps] = NA
+  ## Remove first repeats for more compact output
+  # first_reps = which(record_data$redcap_repeat_instance == 1)
+  # record_data$redcap_repeat_instrument[first_reps] = NA
+  # record_data$redcap_repeat_instance[first_reps] = NA
   
   # Determine which vars are long format
   agg_vars = reshape2::melt(dplyr::select(record_data, -contains('redcap_')), id.vars = id_field, na.rm = T)

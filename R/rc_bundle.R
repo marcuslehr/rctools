@@ -63,11 +63,11 @@ rc_bundle <- function(url,token,
   # Attempt to read token from file. Catch errors to handle token strings instead of paths
   invalid_path = F
   tryCatch(token <- readr::read_lines(token)[1],
-           error = function(cond) assign('invalid_path',T,env=parent.frame()))
+           error = function(cond) invalid_path <<- T)
   
   # Check token format
-  invalid_format = F
   if (!grepl("^[[:alnum:]]{32}$", token)) invalid_format = T
+  else invalid_format = F
   
   
   # File doesn't exist and the string isn't a token

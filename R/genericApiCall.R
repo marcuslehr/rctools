@@ -25,13 +25,14 @@
 #' @export
 
 genericApiCall <- function(url = getOption("redcap_bundle")$redcap_url,
-token = getOption("redcap_token"),
- content,
-                                 make_data_frame = TRUE,
-                                 colClasses = NA,
-                                 returnFormat = "csv",
-                                 ...,
-                                 error_handling = getOption("redcap_error_handling")){
+                           token = getOption("redcap_token"),
+                           content,
+                           make_data_frame = TRUE,
+                           colClasses = NA,
+                           returnFormat = "csv",
+                           ...,
+                           error_handling = getOption("redcap_error_handling")){
+  
   coll <- checkmate::makeAssertCollection()
   
   checkmate::assert_character(x = url,

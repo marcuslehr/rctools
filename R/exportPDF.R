@@ -49,11 +49,12 @@
 #' @author Benjamin Nutter
 
 exportPdf <- function(url = getOption("redcap_bundle")$redcap_url,
-token = getOption("redcap_token"),
- dir, filename = "redcap_forms_download",
-                           record = NULL, events = NULL,
-                           instruments = NULL, all_records = FALSE, ...,
-                           error_handling = getOption("redcap_error_handling"))
+                      token = getOption("redcap_token"),
+                      dir = getwd(), 
+                      filename = "redcap_forms_download",
+                      record = NULL, events = NULL,
+                      instruments = NULL, all_records = FALSE, ...,
+                      error_handling = getOption("redcap_error_handling"))
 {
   coll <- checkmate::makeAssertCollection()
   

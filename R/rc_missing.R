@@ -22,10 +22,6 @@
 #' ONLY be used for repeat instruments which are expected to have a consistent number of occurrences
 #' per each event/ID combination. All repeat instruments not supplied here will be removed to avoid
 #' excessive false positives.
-#'
-#' @param bundle List. A project metadata bundle as created by \code{rc_bundle}. By default, the 
-#' bundle is expected in the option "redcap_bundle". This option exists so that all of the required
-#' metadata can be supplied in a single argument.
 #' 
 #' @param data_dict Dataframe. REDCap project data data_dictionary. By default, 
 #' $data_dict is expected in a REDCap bundle object, as created by \code{rc_bundle}. Otherwise, an 
@@ -46,7 +42,6 @@
 
 rc_missing <- function(record_data, 
                        completion_field = NULL, repeats = NULL,
-                       bundle = getOption("redcap_bundle"),
                        data_dict = getOption("redcap_bundle")$data_dict,
                        events = getOption("redcap_bundle")$event_data$unique_event_name,
                        form_perm = getOption("redcap_bundle")$form_perm,
@@ -56,16 +51,6 @@ rc_missing <- function(record_data,
 
 
 # Checks ------------------------------------------------------------------
-
-  # Get individual metadata objects from bundle if not supplied
-	# This allows for local bundle use without loading to options
-  # Will not override existing options
-  if (!is.null(bundle)) {
-    if (is.null(data_dict)) data_dict = bundle$data_dict
-    if (is.null(events)) events = bundle$event_data$unique_event_name
-    if (is.null(form_perm)) form_perm = bundle$form_perm
-    if (is.null(mappings)) mappings = bundle$mappings
-  }
   
   validate_args(required = c('record_data','data_dict','events'),
                 record_data = record_data,
@@ -147,6 +132,12 @@ rc_missing <- function(record_data,
   rc_fields = c('redcap_event_name','redcap_repeat_instrument','redcap_repeat_instance')
   rc_factors = intersect(c(id_field, rc_fields), names(record_data))
   
+  # This is a potential fix for being fed formatted data, but I'm not sure if it's a good idea
+  # bc rc_format requires event_data, which isn't fed into this function. Also could return data
+  # in a different format than submitted. Will just let it error out for now. 
+  # # Attempt to coerce event names to raw
+  # record_data = rc_format(record_data, data_dict, event_labels = F)
+  
   # Convert data to long format. Globally empty events and IDs will be lost
   record_data = suppressWarnings(
               reshape2::melt(record_data, id.vars = rc_factors, na.rm = T) %>% dplyr::as_tibble() %>%
@@ -154,9 +145,6 @@ rc_missing <- function(record_data,
                           )
   # # Ensure ID field is always character for joins
   # record_data[[id_field]] = as.character(record_data[[id_field]]) 
-  
-  # Filter events for those remaining in the data
-  events = events[events %in% record_data$redcap_event_name]
 
   # Collecting IDs outside the loop allows capturing of (non-globally) empty events
   # IDs = as.character(unique(record_data[[id_field]]))
@@ -177,6 +165,10 @@ rc_missing <- function(record_data,
   cast_formula = paste(paste(rc_factors,collapse = ' + '),"~ variable")
   data_wide_full = dplyr::full_join(expected_data, record_data, by = c(rc_factors, 'variable')) %>% 
                           reshape2::dcast(., cast_formula)
+  
+  # Filter events for those remaining in the data
+  events = events[events %in% record_data$redcap_event_name]
+  if (!length(events)) stop("Events in data do not match supplied events")
   
   # Ensure proper event ordering for logic
   data_wide_full$redcap_event_name = factor(data_wide_full$redcap_event_name, levels = events)
