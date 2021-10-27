@@ -109,6 +109,11 @@ rc_api_call <- function(url = getOption("redcap_bundle")$redcap_url,
                         returnFormat='csv',
                         encode='form'
                         ){
+
+# Construct body for POST() -----------------------------------------------
+
+  # Check for directionality conflict
+  if (action=='export' & !is.null(data)) stop('Error: Data supplied export call')
   
   # Perform token coercion.
   validate_args(c('url','token'), url=url, token=token)
@@ -152,42 +157,56 @@ rc_api_call <- function(url = getOption("redcap_bundle")$redcap_url,
   
   # Make modifications for specific API endpoints (defined by content argument)
   if (action=='import') {
-    if (content=='file') {
-      body[['file']] = httr::upload_file(file)
-      encode = 'multipart'
-    } 
-    if (content=='project') content = 'project_settings'
-  }
-  
-  
-  # Call API
-  response <- httr::POST(url, body = body, encode = encode)
-  
-  # Check for connection/http errors
-  if (response$status_code != 200) stop(as.character(response))
-  
-  # Check for data
-  if (action=='export' & length(response$content)<=1) stop("No data were returned.")
-  if (action=='import') { 
-    if (content=='file') return("Upload successful") # NULL returned for content in this case
-    if (content=='records') switch(returnContent,
-           'count' = return(paste0('Number of records updated: ', as.character(response))),
-           'auto_ids' = return(paste0('Number of records updated: ', as.character(response))),
-           'nothing' = return(), # 'Upload successful'?
-           'ids' = return(paste0("Records updated: ", 
-                          paste(utils::read.csv(text=as.character(response))$id,collapse=', ')))
+    switch(content,
+           'file' = {
+             body[['file']] = httr::upload_file(file)
+             encode = 'multipart'
+             },
+           'project' = {content = 'project_settings'},
+           'record' = {
+             if (is.null(data)) 
+               stop("ERROR: No data was provided.")
+             else if ('data.frame' %in% class(data)) 
+               body[['data']] = data_frame_to_string(data)
+             }
            )
   }
   
-  # Extract data
-  if (content=='version') return_as = 'text'
-  if (return_as=='text') return(as.character(response)) # httr::content(response,content_as)
-  else if (return_as=='raw') return(response$content)
-  else if (return_as=='dataframe')
-    return(utils::read.csv(text = as.character(response),
-                           stringsAsFactors = FALSE,
-                           na.strings = ""))
-  # Using httr::content() returns the blue '0s' text in front of everything, even when using suppressMessages()
-  # suppressMessages(as.data.frame( httr::content(response,content_as)))
-  else stop("Argument return_as must be one of 'raw', 'text', or 'dataframe'")
+
+# Call API and parse response ---------------------------------------------
+
+  # API call
+  response <- httr::POST(url, body = body, encode = encode)
+  
+  # Check for http errors
+  if (response$status_code != 200) stop(as.character(response))
+  
+  # Parse response
+  if (action=='import') { 
+    if (content=='file') return("Upload successful") # NULL returned for content in this case
+    if (content=='record') switch(returnContent,
+           'count' = message(paste0('Number of records updated: ', as.character(response))),
+           'auto_ids' = message(paste0('Number of records updated: ', as.character(response))),
+           'nothing' = return(), 
+           'ids' = message(paste0("Records updated: ", 
+                          paste(utils::read.csv(text=as.character(response))$id,
+                                collapse=', ')))
+           )
+  }
+    else if (action=='export') {
+      # Check for data
+      if (length(response$content)<=1) stop("No data were returned.")
+  
+      # Extract data
+      if (content=='version') return_as = 'text'
+      if (return_as=='text') return(as.character(response)) # httr::content(response,content_as)
+        else if (return_as=='raw') return(response$content)
+        else if (return_as=='dataframe')
+          return(utils::read.csv(text = as.character(response),
+                                 stringsAsFactors = FALSE,
+                                 na.strings = ""))
+        # Using httr::content() returns the blue '0s' text in front of everything, even when using suppressMessages()
+        # suppressMessages(as.data.frame( httr::content(response,content_as)))
+        else stop("Argument return_as must be one of 'raw', 'text', or 'dataframe'")
+    }
 }

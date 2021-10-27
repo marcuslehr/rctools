@@ -18,11 +18,9 @@ rc_export(
   dag = TRUE,
   form_complete_auto = FALSE,
   format = FALSE,
-  ...,
-  strip = TRUE,
-  colClasses = NA,
+  strip = ifelse(!is.null(report_id) | !is.null(fields), F, T),
   batch_size = -1,
-  error_handling = getOption("redcap_error_handling")
+  ...
 )
 }
 \arguments{
@@ -78,21 +76,21 @@ retrieved.}
 \item{format}{Logical.  Determines whether the data will be formatted with
 \code{rc_format} (Default = FALSE)}
 
-\item{...}{Additional arguments to be passed to \code{rc_format}}
-
 \item{strip}{Logical. If \code{TRUE}, empty rows and columns will be removed from
 record_data. See \code{rc_strip} for more information or call seperately for more
 options.}
-
-\item{colClasses}{A (named) vector of column classes passed to
-\code{\link[utils]{read.csv}} calls.
-Useful to force the interpretation of a column in a specific type and
-avoid an unexpected recast.}
 
 \item{batch_size}{Integer.  Specifies the number of subjects to be included
 in each batch of a batched export.  Non-positive numbers export the
 entire project in a single batch. Batching the export may be beneficial
 to prevent tying up smaller servers.  See details for more explanation.}
+
+\item{...}{Additional arguments to be passed to \code{rc_format}}
+
+\item{colClasses}{A (named) vector of column classes passed to
+\code{\link[utils]{read.csv}} calls.
+Useful to force the interpretation of a column in a specific type and
+avoid an unexpected recast.}
 
 \item{error_handling}{An option for how to handle errors returned by the API.
 see \code{\link{redcap_error}}}

@@ -9,11 +9,12 @@ rc_import(
   url = getOption("redcap_bundle")$redcap_url,
   token = getOption("redcap_token"),
   data_dict = getOption("redcap_bundle")$data_dict,
+  event_data = getOption("redcap_bundle")$event_data,
   overwriteBehavior = "normal",
   returnContent = "count",
   returnData = FALSE,
   logfile = "",
-  batch.size = -1
+  batch_size = -1
 )
 }
 \arguments{
@@ -46,7 +47,7 @@ accounted for.}
 log of errors and warnings about the data.
 If \code{""}, the log is printed to the console.}
 
-\item{batch.size}{Specifies size of batches.  A negative value
+\item{batch_size}{Specifies size of batches.  A negative value
 indicates no batching.}
 }
 \description{

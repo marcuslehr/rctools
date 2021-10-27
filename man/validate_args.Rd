@@ -157,7 +157,7 @@ the calling function.}
 
 \item{event_labels}{Logical, length == 1}
 
-\item{record_data}{Data.frame; contains record_id and redcap_event_name columns}
+\item{record_data}{Data.frame; contains record_id column}
 
 \item{data_dict}{Data.frame, ncol == 18}
 

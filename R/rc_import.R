@@ -67,17 +67,21 @@ rc_import <- function(record_data,
                       url = getOption("redcap_bundle")$redcap_url,
                       token = getOption("redcap_token"),
                       data_dict = getOption("redcap_bundle")$data_dict,
+                      event_data = getOption("redcap_bundle")$event_data,
                       overwriteBehavior = 'normal',
                       returnContent = 'count',
                       returnData = FALSE, logfile = "", batch_size = -1
                       ) {
-  
+
+# Validations -------------------------------------------------------------
+
   fields = names(record_data)
   
-  validate_args(required = c('url','token','record_data','data_dict'),
+  validate_args(required = c('url','token','record_data','data_dict','event_data'),
                 record_data = record_data, url = url, token = token,
+                data_dict = data_dict, event_data = event_data,
                 overwriteBehavior = overwriteBehavior, returnContent = returnContent,
-                logfile = logfile, data_dict = data_dict, batch_size = batch_size,
+                logfile = logfile, batch_size = batch_size,
                 fields = fields)
   
   
@@ -161,22 +165,28 @@ rc_import <- function(record_data,
                          data_dict = data_dict,
                          logfile = logfile)
   
+  # Undo any record data formatting
+  record_data = rc_format(record_data, data_dict = data_dict, event_data = event_data,
+                            factor_labels = F, col_labels = F, event_labels = F)
+
+# Import ------------------------------------------------------------------
+
+  # Return data if requested. For testing/diagnostics. Data will not be uploaded
   if (returnData) return(record_data)
   
-  if (batch_size > 0) {
-    import_records_batched(url = url,
-						               token = token, 
-                           data = record_data,
-                           batch_size = batch_size,
-                           overwriteBehavior = overwriteBehavior,
-                           returnContent = returnContent)
+  # Import data
+  if (batch_size < 1) {
+    rc_api_call(url = url, token = token, 
+                content='record', action = 'import', data = record_data,
+                overwriteBehavior = overwriteBehavior, returnContent = returnContent)
   }
   else {
-    import_records_unbatched(url = url,
-							               token = token,
-                             data = record_data,
-                             overwriteBehavior = overwriteBehavior,
-                             returnContent = returnContent)
+    batched_import(url = url,
+		               token = token, 
+                   data = record_data,
+                   batch_size = batch_size,
+                   overwriteBehavior = overwriteBehavior,
+                   returnContent = returnContent)
   }
 }
 
@@ -184,11 +194,12 @@ rc_import <- function(record_data,
 ## UNEXPORTED FUNCTIONS
 #####################################################################
 
-import_records_batched <- function(url = getOption("redcap_bundle")$redcap_url,
-                                   token = getOption("redcap_token"),
-                                   data, batch_size, 
-                                   overwriteBehavior,
-                                   returnContent) {
+batched_import <- function(url = getOption("redcap_bundle")$redcap_url,
+                           token = getOption("redcap_token"),
+                           data, batch_size, 
+                           overwriteBehavior,
+                           returnContent) {
+  
   n.batch <- nrow(data) %/% batch_size + 1
   
   ID <- data.frame(row = 1:nrow(data))
@@ -200,87 +211,8 @@ import_records_batched <- function(url = getOption("redcap_bundle")$redcap_url,
   data <- split(data, 
                 f = ID$batch.number)
   
-  out <- lapply(X = data, 
-                FUN = data_frame_to_string)
-  
-  att <- list("Content-Type" = 
-                structure(c("text/html", "utf-8"),
-                          .Names = c("", "charset")))
-  out <- lapply(X = out, 
-                FUN = function(d){
-                  attributes(d) <- att; 
-                  return(d)
-                })
-  
-  x <- vector("list", length = length(out))
-  
-  for (i in seq_along(out)) {
-    httr::POST(url=url,
-               body=list(token = token, 
-                         content = 'record', 
-                         format = 'csv',
-                         type = 'flat', 
-                         overwriteBehavior = overwriteBehavior,
-                         returnContent = returnContent,
-                         returnFormat = 'csv', 
-                         data = out[[i]]))
+  for (batch in data) {
+    rc_api_call(url,token, content='record', action = 'import', data = batch,
+                overwriteBehavior = overwriteBehavior, returnContent = returnContent)
   }
-  
-  if (all(unlist(sapply(X = x, 
-                        FUN = function(y) y["status_code"])) == "200")) {
-    vapply(x, as.character, character(1))
-  }
-  else {
-    status.code <- unlist(sapply(X = x, 
-                                 FUN = function(y) y["status_code"]))
-    msg <- sapply(x, as.character)
-    
-    stop(paste(paste0(status.code[status.code != "200"], 
-                      ": ", 
-                      msg[status.code != "200"]), 
-               collapse="\n"))
-  }
-}
-
-
-import_records_unbatched <- function(url = getOption("redcap_bundle")$redcap_url,
-                                     token = getOption("redcap_token"),
-                                     data, overwriteBehavior,
-                                     returnContent) {
-
-  out <- data_frame_to_string(data)
-  
-  ## Reattach attributes
-  attributes(out) <- 
-    list("Content-Type" = structure(c("text/html", "utf-8"),
-                                    .Names = c("", "charset")))
-  
-  x <- httr::POST(url=url,
-                  body=list(token = token, 
-                            content = 'record', 
-                            format = 'csv',
-                            type = 'flat', 
-                            overwriteBehavior = overwriteBehavior,
-                            returnContent = returnContent,
-                            returnFormat = 'csv', 
-                            dateFormat = "YMD",
-                            data = out))
-  
-  if (x$status_code == "200") 
-    as.character(x) 
-  else 
-    redcap_error(x, error_handling = "error")
-}
-
-data_frame_to_string <- function(data) {
-  paste0(
-    utils::capture.output(
-      utils::write.table(data, 
-                         sep = ",",
-                         col.names = TRUE,
-                         row.names = FALSE,
-                         na = '')
-    ),
-    collapse = "\n"
-  )
 }

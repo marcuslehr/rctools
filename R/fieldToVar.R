@@ -154,7 +154,7 @@ fieldToVar <- function(records, data_dict, factor_labels = TRUE,
                makeRedcapFactor(x = records[[i]],
                                 coding = "0, Incomplete | 1, Unverified | 2, Complete",
                                 factor_labels, 
-                                var_name = data_dict$field_name[data_dict$field_name == field_base])
+                                var_name = field_base)
              },
              records[[i]]
       ) # End switch
