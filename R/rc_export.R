@@ -57,7 +57,7 @@
 #'   \code{\link[utils]{read.csv}} calls. 
 #'   Useful to force the interpretation of a column in a specific type and 
 #'   avoid an unexpected recast.
-#' @param batch.size Integer.  Specifies the number of subjects to be included 
+#' @param batch_size Integer.  Specifies the number of subjects to be included 
 #'   in each batch of a batched export.  Non-positive numbers export the 
 #'   entire project in a single batch. Batching the export may be beneficial 
 #'   to prevent tying up smaller servers.  See details for more explanation.
@@ -79,11 +79,11 @@
 #' to wait on a larger job.  The batched export is performed by first 
 #' calling the API to export the subject identifier field (the first field
 #' in the meta data).  The unique ID's are then assigned a batch number with 
-#' no more than \code{batch.size} ID's in any single batch.  The batches are 
+#' no more than \code{batch_size} ID's in any single batch.  The batches are 
 #' exported from the API and stacked together.
 #' 
-#' In longitudinal projects, \code{batch.size} may not necessarily be the 
-#' number of records exported in each batch.  If \code{batch.size} is 10 and 
+#' In longitudinal projects, \code{batch_size} may not necessarily be the 
+#' number of records exported in each batch.  If \code{batch_size} is 10 and 
 #' there are four records per patient, each batch will consist of 40 records.  
 #' Thus, if you are concerned about tying up the server with a large, 
 #' longitudinal project, it would be prudent to use a smaller batch size.
@@ -104,7 +104,7 @@
 #' Batched calls to the API are not a feature of the REDCap API, but may be imposed 
 #' by making multiple calls to the API.  The process of batching the export requires
 #' that an initial call be made to the API to retrieve only the record IDs.  The
-#' list of IDs is then broken into chunks, each about the size of \code{batch.size}.
+#' list of IDs is then broken into chunks, each about the size of \code{batch_size}.
 #' The batched calls then force the \code{records} argument in each call.
 #' 
 #' When a user's permissions require a de-identified data export, a batched call 
@@ -114,7 +114,7 @@
 #' database.  No matches will be found, and the export will fail.
 #' 
 #' Users who are exporting de-identified data will have to settle for using unbatched
-#' calls to the API (ie, \code{batch.size = -1})
+#' calls to the API (ie, \code{batch_size = -1})
 #' 
 #' @author Jeffrey Horner
 #' @author Marcus Lehr
@@ -143,13 +143,12 @@ rc_export <- function(report_id = NULL,
                        id_field = getOption("redcap_bundle")$id_field,
                        records = NULL, fields = NULL, forms = NULL,
                        events = NULL, survey = TRUE, dag = TRUE,
-                       form_complete_auto = FALSE,
-                       format = FALSE, ..., strip = TRUE,
-                       colClasses = NA, batch.size = -1, 
-                       error_handling = getOption("redcap_error_handling")
+                       form_complete_auto = FALSE, format = FALSE,
+                       strip = ifelse(!is.null(report_id)|!is.null(fields),F,T),
+                       batch_size = -1, ...
                        ) {
 
-# Checks ------------------------------------------------------------------
+# Checks
   
   required = c('url','token')
   
@@ -159,57 +158,26 @@ rc_export <- function(report_id = NULL,
     required = c(required,'data_dict')
   }
   
-  if ((!is.null(fields)|!is.null(forms)|batch.size>0) & is.null(report_id)) {
-    # Get record_id field name
+  if ((!is.null(fields)|!is.null(forms)|batch_size>0) & is.null(report_id)) {
+    # Get record_id field names
     id_field = getID(id_field = id_field,
                      data_dict = data_dict)
     required = c(required,'id_field')
   }
   
-  validate_args(required = required,
-                url = url, token = token, data_dict = data_dict,
+  validate_args(required = required, record_data = NULL,
+                url = url, token = token, data_dict = data_dict, id_field = id_field,
                 fields = fields, forms = forms, events = events,
                 records = records, survey = survey, dag = dag,
                 form_complete_auto = form_complete_auto, format = format,
-                colClasses = colClasses, batch.size = batch.size,
-                error_handling = error_handling, strip = strip)
-    
+                batch_size = batch_size, strip = strip)
 
-# Export Report -----------------------------------------------------------
-
-    if (!is.null(report_id)) {
-      
-      # Create body for POST
-      body <- list(token = token, 
-                   content = 'report',
-                   format = 'csv', 
-                   report_id = report_id,
-                   csvDelimiter = '',
-                   rawOrLabel = 'raw',
-                   rawOrLabelHeaders = 'raw',
-                   exportCheckboxLabel = 'false',
-                   returnFormat = 'csv')
-      
-      # Export data
-      x <- httr::POST(url = url, 
-                      body = body)
-      
-      # Report errors
-      if (x$status_code != 200) redcap_error(x, error_handling)
-      
-      # Check for data
-      if (length(x$content)==1) stop("No records were returned from report ", report_id)
-      
-      # Convert data to data.frame
-      x <- utils::read.csv(text = as.character(x), 
-                           stringsAsFactors = FALSE, 
-                           na.strings = "")
-    }
-    
-
-# Export Records ----------------------------------------------------------
-
+  # If a report ID is provided, export the report
+  if (!is.null(report_id)) x = rc_api_call(url,token,'report', report_id = report_id)
+  
+  # Else export records
     else {
+      ## Adding default fields may now be redundant 
       # Append default and complete fields to the export
       if (!is.null(fields)|!is.null(forms))
         # Append default fields
@@ -218,6 +186,7 @@ rc_export <- function(report_id = NULL,
                            fields))
       
       
+      # Add _complete fields
       if (!is.null(data_dict)) {
         
         #* for purposes of the export, we don't need the descriptive fields.
@@ -233,94 +202,37 @@ rc_export <- function(report_id = NULL,
         }
       }
       
-      # Create body for POST()
-      body <- list(token = token,
-                   content = 'record',
-                   format = 'csv',
-                   type = 'flat',
-                   csvDelimiter = '',
-                   rawOrLabel = 'raw',
-                   rawOrLabelHeaders = 'raw',
-                   exportCheckboxLabel = 'false',
-                   exportSurveyFields = tolower(survey),
-                   exportDataAccessGroups = tolower(dag),
-                   returnFormat = 'csv')
-      
-      # Expand body to include provided selections
-      if (!is.null(fields)) body[['fields']] <- paste0(fields, collapse=",")
-      if (!is.null(forms)) body[['forms']] <- paste0(forms, collapse=",")
-      if (!is.null(events)) body[['events']] <- paste0(events, collapse=",")
-      if (!is.null(records)) body[['records']] <- paste0(records, collapse=",")
-      
-      if (batch.size < 1) {
-        x <- unbatched(url = url,
-                       token = token,
-                       body = body,
-                       id = id_field,
-                       # colClasses = colClasses,
-                       error_handling = error_handling)
+      # Call API
+      if (batch_size < 1) {
+        x = rc_api_call(url,token,'record',
+                         fields = fields, forms = forms, 
+                         events = events, records = records,
+                         exportSurveyFields = tolower(survey),
+                         exportDataAccessGroups = tolower(dag))
       } else {
-        x <- batched(url = url,
-                     token = token,
-                     body = body,
-                     batch.size = batch.size,
-                     id = id_field,
-                     # colClasses = colClasses,
-                     error_handling = error_handling)
+        x <- batched_export(url, token,
+                             batch_size = batch_size,
+                             id_field = id_field)
         }
       }
 
 # Formatting ------------------------------------------------------------------
 
     
-    if (format) x = rc_format(x, data_dict = data_dict, ...)
+  if (format) x = rc_format(x, data_dict = data_dict, ...)
   
-    if (strip) x = rc_strip(x)
-    
-    x
+  if (strip) x = rc_strip(x, id_field = id_field)
+  
+  return(x)
   }
 
 # Non-exported functions ----------------------------------------------------
 
-#*** UNBATCHED EXPORT
-unbatched <- function(url = url,
-                      token = token,
-                      body, id, colClasses, error_handling)
-{
-  # colClasses[[id]] <- "character"
-  # colClasses <- colClasses[!vapply(colClasses,
-  #                                  is.na,
-  #                                  logical(1))]
-  
-  x <- httr::POST(url = url, 
-                  body = body)
-  
-  if (x$status_code != 200) redcap_error(x, error_handling = error_handling)
-  
-  # Check for data
-  if (length(x$content)==1) stop("No records were returned")
-  
-  x <- as.character(x)
-  # probably not necessary for data.  Useful for meta data though. (See Issue #99)
-  # x <- iconv(x, "utf8", "ASCII", sub = "")
-  utils::read.csv(text = x, 
-                  stringsAsFactors = FALSE, 
-                  na.strings = "",
-                  # colClasses = colClasses
-                  )
-}
-
-
 #*** BATCHED EXPORT
-batched <- function(url = url,
-                    token = token,
-                    body, batch.size, id, colClasses, error_handling)
+batched_export <- function(url, token,
+                            batch_size, id_field)
 {
-  # colClasses[[id]] <- "character"
-  # colClasses <- colClasses[!vapply(colClasses,
-  #                                  is.na,
-  #                                  logical(1))]
- 
+ ## Function overview:
   #* 1. Get the IDs column
   #* 2. Restrict to unique IDs
   #* 3. Determine if the IDs look hashed (de-identified)
@@ -331,27 +243,14 @@ batched <- function(url = url,
   
   
   #* 1. Get the IDs column
-  id_body <- body
-  id_body[['fields']] <- id
-  IDs <- httr::POST(url = url,
-                    body = id_body)
-  
-  if (IDs$status_code != 200) redcap_error(IDs, error_handling)
-  
-  IDs <- as.character(IDs)
-  # probably not necessary for data.  Useful for meta data though. (See Issue #99)
-  # IDs <- iconv(IDs, "utf8", "ASCII", sub = "")
-  IDs <- utils::read.csv(text = IDs,
-                         stringsAsFactors = FALSE,
-                         na.strings = "",
-                         colClasses = 'character') #colClasses[id]
+  IDs = rc_api_call(url,token,'record', fields = id_field)
   
   #* 2. Restrict to unique IDs
-  unique_id <- unique(IDs[[id]])
+  unique_ids <- unique(IDs[[id_field]])
   
   #* 3. Determine if the IDs look hashed (de-identified)
   #* 4. Give warning about potential problems joining hashed IDs
-  if (all(nchar(unique_id) == 32L))
+  if (all(nchar(unique_ids) == 32L))
   {
     warning("The record IDs in this project appear to be de-identified. ",
             "Subject data may not match across batches. ",
@@ -359,9 +258,9 @@ batched <- function(url = url,
   }
   
   #* Determine batch numbers for the IDs.
-  batch.number <- rep(seq_len(ceiling(length(unique_id) / batch.size)),
-                      each = batch.size,
-                      length.out = length(unique_id))
+  batch.number <- rep(seq_len(ceiling(length(unique_ids) / batch_size)),
+                      each = batch_size,
+                      length.out = length(unique_ids))
   
   #* Make a list to hold each of the batched calls
   #* Borrowed from http://stackoverflow.com/a/8099431/1017276
@@ -370,23 +269,13 @@ batched <- function(url = url,
   #* 5. Read batches
   for (i in unique(batch.number))
   {
-    body[['records']] <- paste0(unique_id[batch.number == i], collapse = ",")
-    x <- httr::POST(url = url, 
-                    body = body)
-    
-    if (x$status_code != 200) redcap_error(x, error_handling = "error")
-    
-    x <- as.character(x)
-    # probably not necessary for data.  Useful for meta data though. (See Issue #99)
-    # x <- iconv(x, "utf8", "ASCII", sub = "")
-    batch_list[[i]] <- utils::read.csv(text = x,
-                                       stringsAsFactors = FALSE,
-                                       na.strings = "",
-                                       # colClasses = colClasses
-                                       )
+    # Export batch
+    batch_list[[i]] = rc_api_call(url,token,'record',
+                    records = paste0(unique_ids[batch.number == i], collapse = ","))
+    # Pause
     Sys.sleep(1)
   }
   
   #* 6. Combine tables and return
-  do.call("rbind", batch_list)
+  return( do.call("rbind", batch_list) )
 }

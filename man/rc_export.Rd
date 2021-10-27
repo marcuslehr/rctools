@@ -21,7 +21,7 @@ rc_export(
   ...,
   strip = TRUE,
   colClasses = NA,
-  batch.size = -1,
+  batch_size = -1,
   error_handling = getOption("redcap_error_handling")
 )
 }
@@ -32,9 +32,10 @@ rc_export(
 
 \item{token}{Character. Path to a text file containing your REDCap API token}
 
-\item{data_dict}{Dataframe. REDCap project data data_dictionary. By default,
-this will be fetched from the REDCap bundle option, as created by \code{rc_bundle}.
-Otherwise, a data.frame containing the project data dictionary must be supplied.}
+\item{data_dict}{Dataframe. REDCap project data data_dictionary. Required only
+if the \code{format} or \code{form_complet_auto} options are \code{TRUE}.
+By default, this will be fetched from the REDCap bundle option, as created by
+\code{rc_bundle}.}
 
 \item{id_field}{Character. The name of the record_id field for your REDCap project.}
 
@@ -88,7 +89,7 @@ options.}
 Useful to force the interpretation of a column in a specific type and
 avoid an unexpected recast.}
 
-\item{batch.size}{Integer.  Specifies the number of subjects to be included
+\item{batch_size}{Integer.  Specifies the number of subjects to be included
 in each batch of a batched export.  Non-positive numbers export the
 entire project in a single batch. Batching the export may be beneficial
 to prevent tying up smaller servers.  See details for more explanation.}
@@ -117,11 +118,11 @@ this may prevent a single user from tying up the server and forcing others
 to wait on a larger job.  The batched export is performed by first
 calling the API to export the subject identifier field (the first field
 in the meta data).  The unique ID's are then assigned a batch number with
-no more than \code{batch.size} ID's in any single batch.  The batches are
+no more than \code{batch_size} ID's in any single batch.  The batches are
 exported from the API and stacked together.
 
-In longitudinal projects, \code{batch.size} may not necessarily be the
-number of records exported in each batch.  If \code{batch.size} is 10 and
+In longitudinal projects, \code{batch_size} may not necessarily be the
+number of records exported in each batch.  If \code{batch_size} is 10 and
 there are four records per patient, each batch will consist of 40 records.
 Thus, if you are concerned about tying up the server with a large,
 longitudinal project, it would be prudent to use a smaller batch size.
@@ -140,7 +141,7 @@ Deidentified Batched Calls:
 Batched calls to the API are not a feature of the REDCap API, but may be imposed
 by making multiple calls to the API.  The process of batching the export requires
 that an initial call be made to the API to retrieve only the record IDs.  The
-list of IDs is then broken into chunks, each about the size of \code{batch.size}.
+list of IDs is then broken into chunks, each about the size of \code{batch_size}.
 The batched calls then force the \code{records} argument in each call.
 
 When a user's permissions require a de-identified data export, a batched call
@@ -150,7 +151,7 @@ REDCap will try to match the hashed identifiers to the unhashed identifiers in t
 database.  No matches will be found, and the export will fail.
 
 Users who are exporting de-identified data will have to settle for using unbatched
-calls to the API (ie, \code{batch.size = -1})
+calls to the API (ie, \code{batch_size = -1})
 }
 \references{
 Please refer to your institution's API documentation.

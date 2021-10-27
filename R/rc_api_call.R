@@ -2,8 +2,10 @@
 #' 
 #' @title Execute a call to the REDCap API
 #' @description This is a generic API function. It is intended to provide a more 
-#' flexible interface to the API while still improving usability. It does not
-#' have the same level of checks and fail safes as other package functions.
+#' flexible interface to the API than \code{rc_import} and \code{rc_export} while 
+#' still improving usability. It is also a barebones type function by natures 
+#' and does not have the same level of checks and other embellishments as 
+#' other package functions.
 #' 
 #' @param url URL of the REDCap API
 #' @param token Project API token
@@ -15,11 +17,10 @@
 #' 'surveyQueueLink', 'user', 'userDagMapping', 'userRole', 'userRoleMapping', and 'version'
 #' @param action Action to perform when calling the endpoint. Either 'import',
 #' 'export', 'delete', 'rename', or 'switch'
-#' @param content_as Passed to \code{httr::content()}, determines how the server reponse
-#'   will be returned from this function. This is mostly useful for returning the
-#'   raw response when needed. Options are 'raw', 'text', and 'parsed'. 'raw' returns
-#'   raw byte data, 'text' converts it to character, and 'parsed' returns a tibble
-#'   (see the \code{tidyr} package for more details).
+#' @param return_as Determines how the server reponse will be returned from this 
+#' function. This is mostly useful for returning the raw response when needed. 
+#' Options are 'raw', 'text', and 'dataframe'. 'raw' returns raw byte data, 'text' 
+#' converts it to character, and 'dataframe' returns a data.frame.
 #' @param ... Additional arguments to be passed to the API
 #' 
 #' @param arms Vector of arm numbers
@@ -72,9 +73,10 @@
 #' @author Marcus Lehr
 
 
-rc_api_call <- function(url, token,
+rc_api_call <- function(url = getOption("redcap_bundle")$redcap_url,
+                        token = getOption("redcap_token"),
                         content='version', action='export', 
-                        content_as=NULL, ...,
+                        return_as='dataframe', ...,
                         
                         
                         arms=NULL, fields=NULL, forms=NULL, 
@@ -83,7 +85,7 @@ rc_api_call <- function(url, token,
                         beginTime='',
                         csvDelimiter='',
                         dag='',
-                        data=NULL,
+                        data=NULL, # Cannot use '' default. Empty frames will be imported even when action='export'
                         endTime='',
                         event='',
                         exportCheckboxLabel='false',
@@ -108,7 +110,7 @@ rc_api_call <- function(url, token,
                         encode='form'
                         ){
   
-  # This is mostly for the token coercion 
+  # Perform token coercion.
   validate_args(c('url','token'), url=url, token=token)
   
   # Initial assembly of body args
@@ -162,13 +164,12 @@ rc_api_call <- function(url, token,
   response <- httr::POST(url, body = body, encode = encode)
   
   # Check for connection/http errors
-  if (response$status_code != 200) return( as.character(response) )
-      # httr::content(response, 'text') also works
+  if (response$status_code != 200) stop(as.character(response))
   
   # Check for data
   if (action=='export' & length(response$content)<=1) stop("No data were returned.")
   if (action=='import') { 
-    if (content=='file') return("Upload successful") # NULL returned for content
+    if (content=='file') return("Upload successful") # NULL returned for content in this case
     if (content=='records') switch(returnContent,
            'count' = return(paste0('Number of records updated: ', as.character(response))),
            'auto_ids' = return(paste0('Number of records updated: ', as.character(response))),
@@ -179,9 +180,14 @@ rc_api_call <- function(url, token,
   }
   
   # Extract data
-  if (content=='version') content_as = 'text'
-  if (any(c('raw','text') %in% content_as)) # writing this way avoids NULL errors
-      return(httr::content(response,content_as))
-  else 
-    return(suppressMessages(as.data.frame( httr::content(response,content_as) )))
+  if (content=='version') return_as = 'text'
+  if (return_as=='text') return(as.character(response)) # httr::content(response,content_as)
+  else if (return_as=='raw') return(response$content)
+  else if (return_as=='dataframe')
+    return(utils::read.csv(text = as.character(response),
+                           stringsAsFactors = FALSE,
+                           na.strings = ""))
+  # Using httr::content() returns the blue '0s' text in front of everything, even when using suppressMessages()
+  # suppressMessages(as.data.frame( httr::content(response,content_as)))
+  else stop("Argument return_as must be one of 'raw', 'text', or 'dataframe'")
 }

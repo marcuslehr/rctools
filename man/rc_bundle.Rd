@@ -16,9 +16,7 @@ rc_bundle(
   arms = FALSE,
   mappings = FALSE,
   proj_info = FALSE,
-  version = FALSE,
-  dates = TRUE,
-  labels = TRUE
+  version = FALSE
 )
 }
 \arguments{

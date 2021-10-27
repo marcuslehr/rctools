@@ -13,7 +13,7 @@
 #' the calling function.
 #' 
 #' @param report_id Numeric, length == 1
-#' @param batch.size Numeric, length == 1
+#' @param batch_size Numeric, length == 1
 #' @param sd_threshold Numeric, length == 1
 #' 
 #' @param url Character, length == 1
@@ -61,7 +61,7 @@
 #' @param strip Logical, length == 1
 #' @param event_labels Logical, length == 1
 #' 
-#' @param record_data Data.frame; contains record_id and redcap_event_name columns
+#' @param record_data Data.frame; contains record_id column
 #' @param data_dict Data.frame, ncol == 18
 #' @param users Data.frame
 #' @param form_perm Data.frame
@@ -83,7 +83,7 @@ validate_args <- function(required = NULL,
                           
                           # Numerical, len=1
                           report_id = NULL,
-                          batch.size = NULL,
+                          batch_size = NULL,
                           sd_threshold = NULL,
                           
                           # Character, len=1
@@ -169,7 +169,7 @@ validate_args <- function(required = NULL,
 # Numerical, len=1-------------------------------------------------------------------------
 
   # Input vars
-  vars = c('report_id','batch.size','sd_threshold')
+  vars = c('report_id','batch_size','sd_threshold')
 		
 		# Make formula
 		massert_formula = stats::formula(paste('~',paste(vars,collapse = ' + ')))
@@ -357,6 +357,9 @@ validate_args <- function(required = NULL,
   
 ##--- record_data
   if (!is.null(record_data)) {
+    # print('getID call from validate args')
+    # print(record_data)
+    # stop()
     id_field = suppressWarnings(getID(record_data))
     if (!id_field %in% names(record_data))# |
         # !'redcap_event_name' %in% names(record_data)) This makes non-longitudinal projects incompatible

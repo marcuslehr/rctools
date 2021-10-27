@@ -7,7 +7,7 @@
 exportPdf(
   url = getOption("redcap_bundle")$redcap_url,
   token = getOption("redcap_token"),
-  dir,
+  dir = getwd(),
   filename = "redcap_forms_download",
   record = NULL,
   events = NULL,

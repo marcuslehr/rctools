@@ -7,7 +7,7 @@
 validate_args(
   required = NULL,
   report_id = NULL,
-  batch.size = NULL,
+  batch_size = NULL,
   sd_threshold = NULL,
   url = NULL,
   token = NULL,
@@ -71,7 +71,7 @@ the calling function.}
 
 \item{report_id}{Numeric, length == 1}
 
-\item{batch.size}{Numeric, length == 1}
+\item{batch_size}{Numeric, length == 1}
 
 \item{sd_threshold}{Numeric, length == 1}
 

@@ -117,7 +117,7 @@ rc_bundle <- function(url,token,
 	if (users) {
     
 	  # Return data as raw bc type_convert() can't do it's job after the fact
-	  user_data = rc_api_call(url,token, 'user', content_as = 'raw')
+	  user_data = rc_api_call(url,token, 'user', return_as = 'raw')
     
     # Specify column types
 	  col_types <- readr::cols(
@@ -156,7 +156,7 @@ rc_bundle <- function(url,token,
 	  )
 	  
 	  # Convert data to data.frame and remove spec attritube as it may cause issues
-    user_data = readr::read_csv(user_data, col_types = col_types)
+    user_data = suppressMessages(readr::read_csv(user_data, col_types = col_types))
     attr(user_data, "spec") <- NULL
     
     # Restructure form permission data
@@ -208,8 +208,6 @@ rc_bundle <- function(url,token,
       ),
       class = c("redcapBundle", "list")
     )
-  
-  rc_api_call(url,token, 'version')
   
   # Save the data to options
   if (create_options) {

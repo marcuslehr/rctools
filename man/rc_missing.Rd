@@ -8,7 +8,6 @@ rc_missing(
   record_data,
   completion_field = NULL,
   repeats = NULL,
-  bundle = getOption("redcap_bundle"),
   data_dict = getOption("redcap_bundle")$data_dict,
   events = getOption("redcap_bundle")$event_data$unique_event_name,
   form_perm = getOption("redcap_bundle")$form_perm,
@@ -27,10 +26,6 @@ field in REDCap). If not provided, some missing data may be lost.}
 ONLY be used for repeat instruments which are expected to have a consistent number of occurrences
 per each event/ID combination. All repeat instruments not supplied here will be removed to avoid
 excessive false positives.}
-
-\item{bundle}{List. A project metadata bundle as created by \code{rc_bundle}. By default, the
-bundle is expected in the option "redcap_bundle". This option exists so that all of the required
-metadata can be supplied in a single argument.}
 
 \item{data_dict}{Dataframe. REDCap project data data_dictionary. By default,
 $data_dict is expected in a REDCap bundle object, as created by \code{rc_bundle}. Otherwise, an

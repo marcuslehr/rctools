@@ -24,7 +24,7 @@
 #' @param logfile An optional filepath (preferably .txt) in which to print the
 #'   log of errors and warnings about the data.
 #'   If \code{""}, the log is printed to the console.
-#' @param batch.size Specifies size of batches.  A negative value
+#' @param batch_size Specifies size of batches.  A negative value
 #'   indicates no batching.
 #'
 #' @details
@@ -69,7 +69,7 @@ rc_import <- function(record_data,
                       data_dict = getOption("redcap_bundle")$data_dict,
                       overwriteBehavior = 'normal',
                       returnContent = 'count',
-                      returnData = FALSE, logfile = "", batch.size=-1
+                      returnData = FALSE, logfile = "", batch_size = -1
                       ) {
   
   fields = names(record_data)
@@ -77,7 +77,7 @@ rc_import <- function(record_data,
   validate_args(required = c('url','token','record_data','data_dict'),
                 record_data = record_data, url = url, token = token,
                 overwriteBehavior = overwriteBehavior, returnContent = returnContent,
-                logfile = logfile, data_dict = data_dict, batch.size = batch.size,
+                logfile = logfile, data_dict = data_dict, batch_size = batch_size,
                 fields = fields)
   
   
@@ -152,22 +152,22 @@ rc_import <- function(record_data,
   else 
     write(msg, logfile)
   
+  
+  #** Format the data for REDCap import
+  #** Thanks go to:
+  #**   https://github.com/etb/my-R-code/blob/master/R-pull-and-push-from-and-to-REDCap.R
+  #**   http://stackoverflow.com/questions/12393004/parsing-back-to-messy-api-strcuture/12435389#12435389
   record_data <- validateImport(data = record_data,
                          data_dict = data_dict,
                          logfile = logfile)
   
   if (returnData) return(record_data)
   
-  #** Format the data for REDCap import
-  #** Thanks go to:
-  #**   https://github.com/etb/my-R-code/blob/master/R-pull-and-push-from-and-to-REDCap.R
-  #**   http://stackoverflow.com/questions/12393004/parsing-back-to-messy-api-strcuture/12435389#12435389
-  
-  if (batch.size > 0) {
+  if (batch_size > 0) {
     import_records_batched(url = url,
 						               token = token, 
                            data = record_data,
-                           batch.size = batch.size,
+                           batch_size = batch_size,
                            overwriteBehavior = overwriteBehavior,
                            returnContent = returnContent)
   }
@@ -186,15 +186,15 @@ rc_import <- function(record_data,
 
 import_records_batched <- function(url = getOption("redcap_bundle")$redcap_url,
                                    token = getOption("redcap_token"),
-                                   data, batch.size, 
+                                   data, batch_size, 
                                    overwriteBehavior,
                                    returnContent) {
-  n.batch <- nrow(data) %/% batch.size + 1
+  n.batch <- nrow(data) %/% batch_size + 1
   
   ID <- data.frame(row = 1:nrow(data))
   
   ID$batch.number <- rep(1:n.batch, 
-                         each = batch.size, 
+                         each = batch_size, 
                          length.out = nrow(data))
   
   data <- split(data, 
