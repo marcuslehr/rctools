@@ -357,9 +357,7 @@ validate_args <- function(required = NULL,
   
 ##--- record_data
   if (!is.null(record_data)) {
-    # print('getID call from validate args')
-    # print(record_data)
-    # stop()
+    # Get ID field and make sure it's in record_data
     id_field = suppressWarnings(getID(record_data))
     if (!id_field %in% names(record_data))# |
         # !'redcap_event_name' %in% names(record_data)) This makes non-longitudinal projects incompatible

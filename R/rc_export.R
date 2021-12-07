@@ -270,8 +270,8 @@ batched_export <- function(url, token,
   for (i in unique(batch.number))
   {
     # Export batch
-    batch_list[[i]] = rc_api_call(url,token,'record',
-                    records = paste0(unique_ids[batch.number == i], collapse = ","))
+    batch_list[[i]] = rc_api_call(url,token,'record', records = unique_ids[batch.number == i])
+    
     # Pause
     Sys.sleep(1)
   }
