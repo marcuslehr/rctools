@@ -24,9 +24,10 @@
 #' @param filtered Logical. Select whether non-outlier values should be returned.
 #' Default is \code{FLASE}.
 #'
-#' @param data_dict Dataframe. REDCap project data dictionary. By default, 
+#' @param data_dict Dataframe. A REDCap project data dictionary. By default, 
 #' $data_dict is expected in the REDCap bundle option, as created by 
 #' \code{rc_bundle}.
+#' @param mappings Dataframe. A REDCap table containing form/event mappings.
 #' @param id_field Character. Field name corresponding to the 'record_id' field.
 #' 
 #' @importFrom magrittr '%>%'

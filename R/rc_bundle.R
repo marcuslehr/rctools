@@ -38,10 +38,6 @@
 #' @param proj_info Logical. Indicates if the project information should be exported.
 #' If the project is not longitudinal, the events, arms, and event-form mappings 
 #' elements will be assigned character vectors instead of data frames.
-#' @param dates Logical. If \code{TRUE} (Default), user expiration dates are converted to 
-#'   \code{POSIXct} objects.
-#' @param labels Logical.  If \code{TRUE} (Default), the user form permissions are 
-#'   converted to labelled factors.
 #'   
 #' @author Marcus Lehr
 #' @author Benjamin Nutter

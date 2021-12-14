@@ -24,8 +24,11 @@ rc_import(
 
 \item{token}{Path to a text file containing your REDCap API token}
 
-\item{data_dict}{A \code{redcapBundle} object as created by
+\item{data_dict}{Dataframe. A REDCap project data dictionary. By default,
+$data_dict is expected in the REDCap bundle option, as created by
 \code{rc_bundle}.}
+
+\item{event_data}{Dataframe. A REDCap event names table.}
 
 \item{overwriteBehavior}{Character string.  'normal' prevents blank
 fields from overwriting populated fields.  'overwrite' causes blanks to

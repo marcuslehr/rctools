@@ -6,8 +6,10 @@
 #' @param url A url address to connect to the REDCap API
 #' @param token Path to a text file containing your REDCap API token
 #' @param record_data A \code{data.frame} to be imported to the REDCap project.
-#' @param data_dict A \code{redcapBundle} object as created by
-#'   \code{rc_bundle}.
+#' @param data_dict Dataframe. A REDCap project data dictionary. By default, 
+#' $data_dict is expected in the REDCap bundle option, as created by 
+#' \code{rc_bundle}.
+#' @param event_data Dataframe. A REDCap event names table.
 #' @param overwriteBehavior Character string.  'normal' prevents blank
 #'   fields from overwriting populated fields.  'overwrite' causes blanks to
 #'   overwrite data in the REDCap database.

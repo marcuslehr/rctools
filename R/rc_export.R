@@ -53,16 +53,10 @@
 #' record_data. See \code{rc_strip} for more information or call seperately for more
 #' options. 
 #' 
-#' @param colClasses A (named) vector of column classes passed to 
-#'   \code{\link[utils]{read.csv}} calls. 
-#'   Useful to force the interpretation of a column in a specific type and 
-#'   avoid an unexpected recast.
 #' @param batch_size Integer.  Specifies the number of subjects to be included 
 #'   in each batch of a batched export.  Non-positive numbers export the 
 #'   entire project in a single batch. Batching the export may be beneficial 
 #'   to prevent tying up smaller servers.  See details for more explanation.
-#' @param error_handling An option for how to handle errors returned by the API.
-#'   see \code{\link{redcap_error}}
 #' 
 #' @details
 #' A record of exports through the API is recorded in the Logging section 

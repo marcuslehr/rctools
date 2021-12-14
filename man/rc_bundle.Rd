@@ -50,12 +50,6 @@ elements will be assigned character vectors instead of data frames.}
 
 \item{version}{Logical. Indicates if the REDCap version number should be exported.
 Only applicable in REDCap 6.0.0 and higher.}
-
-\item{dates}{Logical. If \code{TRUE} (Default), user expiration dates are converted to
-\code{POSIXct} objects.}
-
-\item{labels}{Logical.  If \code{TRUE} (Default), the user form permissions are
-converted to labelled factors.}
 }
 \description{
 This function performs several API calls at once in order

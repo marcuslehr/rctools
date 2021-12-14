@@ -30,7 +30,7 @@ rc_api_call(
   file = "path/to/file",
   forceAutoNumber = "false",
   logtype = "",
-  overwriteBehavior = "normal",
+  overWriteBehavior = "normal",
   rawOrLabel = "raw",
   rawOrLabelHeaders = "raw",
   record = "",
@@ -106,6 +106,11 @@ fields instead of Checked or Unchecked. Requires rawOrLabel to be set to
 
 \item{logtype}{Unknown}
 
+\item{overWriteBehavior}{Determines whether import data will overwrite existing
+data. Options are 'normal or 'overwrite'. Pay careful attention to NA values
+when using this option, as they will overwrite existing values. In normal
+mode, existing values cannot be replaced with another value or NA.}
+
 \item{rawOrLabel}{For choice fields such as radio and drop-down. 'raw' will
 fill the data using the choice numbers while 'label' will use the choice labels.}
 
@@ -135,11 +140,6 @@ appears to be the same as 'count'? 'nothing' returns nothing.}
 
 \item{encode}{Encoding format to be passed to \code{httr::POST()}. Options are
 'form', 'multipart', or 'identity'}
-
-\item{overWriteBehavior}{Determines whether import data will overwrite existing
-data. Options are 'normal or 'overwrite'. Pay careful attention to NA values
-when using this option, as they will overwrite existing values. In normal
-mode, existing values cannot be replaced with another value or NA.}
 }
 \description{
 This is a generic API function. It is intended to provide a more

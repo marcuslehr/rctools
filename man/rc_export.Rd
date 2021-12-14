@@ -86,14 +86,6 @@ entire project in a single batch. Batching the export may be beneficial
 to prevent tying up smaller servers.  See details for more explanation.}
 
 \item{...}{Additional arguments to be passed to \code{rc_format}}
-
-\item{colClasses}{A (named) vector of column classes passed to
-\code{\link[utils]{read.csv}} calls.
-Useful to force the interpretation of a column in a specific type and
-avoid an unexpected recast.}
-
-\item{error_handling}{An option for how to handle errors returned by the API.
-see \code{\link{redcap_error}}}
 }
 \description{
 Exports records from a REDCap Database, allowing for
