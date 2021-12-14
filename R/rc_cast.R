@@ -66,8 +66,7 @@ rc_cast <- function(record_data,
   
   
   # Coalesce wide vars into single row/subject
-  wvars = select(data, 1, all_of(setdiff(names(data),names(agg_vars))), 
-                 -contains('bp'), -redcap_event_name)
+  wvars = select(data, 1, all_of(setdiff(names(data),names(agg_vars))), -redcap_event_name)
   wvars = mutate_all(wvars, as.character)
   # wvars = wvars %>% group_by(hnrcid) %>% summarise_all(~coalesce(!!!as.list(.)))
   wvars[is.na(wvars)] = ''
