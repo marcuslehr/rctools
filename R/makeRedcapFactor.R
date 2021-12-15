@@ -6,12 +6,14 @@ makeRedcapFactor <- function(x, coding, factor_labels, var_name, checkbox = F, s
   }
   
   # Check if checkbox field condensed is condensed
-  if (checkbox & identical(suffix,var_name)) 
-    suffix = NULL
-    
-    # If not true it's wide format
-    else x[x==0] = NA # Not reinstating 0's will cause import issues
-
+  if (checkbox) {
+    if (identical(suffix,var_name)) suffix = NULL
+      
+      # If not true it's wide format
+      else x[x==0] = NA # Not reinstating 0's will cause import issues
+  }
+  
+  
   coding = parse_field_choices(coding, suffix)
   
   if (nrow(coding) > 0) { # Don't remember why this is here

@@ -541,6 +541,10 @@ validate_import_time_mm_ss <- function(x, field_name, field_min, field_max, logf
 
 validate_import_numeric <- function(x, field_name, field_min, field_max, logfile)
 {
+  # Attempt to remove non-numeric data
+  x = stringr::str_extract(x, "\\d+\\.?\\d*")
+  
+  # Check for values not coercible to numeric
   suppressWarnings(num_check <- as.numeric(x))
   w <- which(is.na(num_check) & !is.na(x))
   
@@ -758,7 +762,7 @@ print_validation_message <- function(field_name, indices, message, logfile)
     message <- 
       paste0("------------------------------------\n",
              "Field Name: `", field_name, "`\n",
-             "Indices: ", paste0(indices, collapse = ", "), "\n",
+             "Row Indices: ", paste0(indices, collapse = ", "), "\n",
              message, "\n\n")
     
     if (logfile == "")

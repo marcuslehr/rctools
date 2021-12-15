@@ -8,6 +8,7 @@ rc_strip(
   record_data,
   columns = TRUE,
   rows = TRUE,
+  factor_cols = NULL,
   id_field = getOption("redcap_bundle")$id_field
 )
 }
@@ -18,6 +19,9 @@ rc_strip(
 be removed.}
 
 \item{rows}{Logical. When \code{TRUE}, empty rows will be removed.}
+
+\item{factor_cols}{Character. Column names to ignore when looking for empty rows.
+By default, the id_field and the REDCap event/repeat columns will be used.}
 
 \item{id_field}{Character. The name of the record_id field for your REDCap project.}
 }

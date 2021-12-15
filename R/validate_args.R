@@ -35,6 +35,7 @@
 #' @param group_by Character vector
 #' @param var_roots Character vector
 #' @param repeats Character vector
+#' @param factor_cols Character vector
 #' 
 #' @param overwriteBehavior Character, defined inputs, length == 1
 #' @param returnContent Character, defined inputs, length == 1
@@ -107,6 +108,7 @@ validate_args <- function(required = NULL,
                           group_by = NULL,
                           var_roots = NULL,
 													repeats = NULL,
+													factor_cols = NULL,
                           
                           # Match Args
                           overwriteBehavior = NULL,
@@ -209,7 +211,7 @@ validate_args <- function(required = NULL,
   
   # Generate var list
   vars = c('records','fields','forms','events','colClasses','group_by','var_roots',
-						'repeats')
+						'repeats','factor_cols')
 		
 		# Make formula
 		massert_formula = stats::formula(paste('~',paste(vars,collapse = ' + ')))
