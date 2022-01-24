@@ -541,8 +541,9 @@ validate_import_time_mm_ss <- function(x, field_name, field_min, field_max, logf
 
 validate_import_numeric <- function(x, field_name, field_min, field_max, logfile)
 {
-  # Attempt to remove non-numeric data
-  x = stringr::str_extract(x, "\\d+\\.?\\d*")
+  ## It's probably better to do this manually
+  # # Attempt to remove non-numeric data
+  # x = stringr::str_extract(x, "\\d+\\.?\\d*")
   
   # Check for values not coercible to numeric
   suppressWarnings(num_check <- as.numeric(x))

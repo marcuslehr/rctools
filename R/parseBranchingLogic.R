@@ -21,32 +21,36 @@
 #' @return Returns a list of unevaluated expressions.
 #' 
 #' @author Benjamin Nutter
-#' 
+
 
 parseBranchingLogic <- function(l){
   l <- tolower(l)
   l <- gsub("\\n", " ", l)
   
   # Format operators
-  logic <- gsub(" or ", " | ", logic)
-  logic <- gsub(" and ", " & ", logic)
-  logic <- gsub("[=]", " == ", logic)
-  logic <- gsub("[!] [=]", " !", logic)
-  logic <- gsub("[<] [=]", " <", logic)
-  logic <- gsub("[>] [=]", " >", logic)
-  logic <- gsub("[<][>]", "!=", logic)
+  l <- gsub(" or ", " | ", l)
+  l <- gsub(" and ", " & ", l)
+  l <- gsub("[=]", " == ", l)
+  l <- gsub("[!] [=]", " !", l)
+  l <- gsub("[<] [=]", " <", l)
+  l <- gsub("[>] [=]", " >", l)
+  l <- gsub("[<][>]", "!=", l)
   
   # Format checkbox names
-  logic <- gsub("([a-z,0-9,_])\\((?<=\\()(.*?)(?=\\))\\)",
+  l <- gsub("([a-z,0-9,_])\\((?<=\\()(.*?)(?=\\))\\)",
                 "\\1___\\2",
-                logic,
+                l,
                 perl = TRUE)
   
   # Need to format smart variables here
   
   # Remove brackets
-  logic <- gsub("([[]|[]])", "", logic)
+  l <- gsub("([[]|[]])", "", l)
   
   # Create list of expressions
   lapply(l, function(x) ifelse(x=="", NA, parse(text=x)))
+  
+  # library(magrittr)
+  # record_data %>% dplyr::group_by(!!id_field) %>% 
+  #   mutate()
 }

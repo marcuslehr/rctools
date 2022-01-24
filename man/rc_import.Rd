@@ -30,9 +30,9 @@ $data_dict is expected in the REDCap bundle option, as created by
 
 \item{event_data}{Dataframe. A REDCap event names table.}
 
-\item{overwriteBehavior}{Character string.  'normal' prevents blank
-fields from overwriting populated fields.  'overwrite' causes blanks to
-overwrite data in the REDCap database.}
+\item{overwriteBehavior}{Character string.  'normal' prevents existing
+data in REDCap from being altered. Note that when set to 'overwrite',
+blank values (NAs) will replace existing data.}
 
 \item{returnContent}{Character string.  'count' returns the number of
 records imported; 'ids' returns a list of record ids imported;
