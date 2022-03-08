@@ -28,6 +28,8 @@ rc_logic_check <- function(data_dict = getOption("redcap_bundle")$data_dict,
     validate_events(branching_logic, events, fields)
     validate_variables(branching_logic, fields)
     validate_event_logic(branching_logic, fields)
+    
+    # Probably only needed for =/!= 0 logic
     validate_value_logic(branching_logic, fields)
 }
 
@@ -140,16 +142,15 @@ validate_event_logic <- function(branching_logic, fields) {
 validate_value_logic <- function(branching_logic, fields) {
   
   # Find logic matching the pattern [variable] = digits, without quotes surrounding digits
-	# I believe this only relevant when evaluating yes/no fields? Or _complete fields that default to 0
   invalidIndex = which(
                     stringr::str_detect(branching_logic, "\\[\\w+\\]\\s?(=|!=)\\s?\\d+")
                   )
   
   # Print results
   if (length(invalidIndex)) {
-    message("\nNumeric values must be quoted to work properly. Errors were found in the following fields:")
+    message("\nNumerical coding values must be quoted to work properly. Errors were found in the following fields:")
     print(fields[invalidIndex])
   } else {
-    message("\nNo invalid numeric value logic was found.")
+    message("\nNo invalid numerical coding logic was found.")
   }
 }

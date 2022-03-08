@@ -66,7 +66,7 @@ rc_plot <- function(long_data,
                   # dplyr::select_at(stats::na.omit(c(x, y, wrap_var, outlier_var))) %>%
                   dplyr::filter(!is.na(!!dplyr::sym(y))) # Remove NAs to avoid issues with mean/sd functions
   
-  # Change NAs to FALSE in outlier columns. Otherwise points won't be plotted
+  # Change NAs to FALSE in outlier columns. Otherwise those points won't be plotted
   if (!is.na(outlier_var) & plot_type!='hist')
     long_data = long_data %>% dplyr::mutate_at(outlier_var, ~ ifelse(is.na(.),F,.)) %>% # Substitute any NAs with F
                     dplyr::arrange_at(outlier_var) # Make sure outlier points are plotted on top
@@ -98,7 +98,7 @@ rc_plot <- function(long_data,
                                   # norm_quants = stats::qnorm(probs, mean(!!dplyr::sym(y)), stats::sd(!!dplyr::sym(y)))
                                    )
     long_data$norm_quants = NA
-    for (v in vars) {
+    for (v in unique(long_data[[wrap_var]])) {
       sel_vector = long_data[[wrap_var]]==v
       
       long_data$norm_quants[sel_vector] = 

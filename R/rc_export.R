@@ -138,7 +138,7 @@ rc_export <- function(report_id = NULL,
                        records = NULL, fields = NULL, forms = NULL,
                        events = NULL, survey = TRUE, dag = TRUE,
                        form_complete_auto = FALSE, format = FALSE,
-                       strip = ifelse(!is.null(report_id)|!is.null(fields),F,T),
+                       strip = ifelse(is.null(report_id)&is.null(fields),T,F),
                        batch_size = -1, ...
                        ) {
 
