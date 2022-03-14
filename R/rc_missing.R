@@ -223,8 +223,8 @@ rc_missing <- function(record_data,
       # Remove data from forms where no users have access
       if (!is.null(form_perm)) {
         
-        forms_hidden = setdiff(unique(subset(form_perm, permission == 'No access')$form_name),
-                               unique(subset(form_perm, permission != 'No access')$form_name))
+        forms_hidden = setdiff(unique(subset(form_perm, view == 'No access')$form_name),
+                               unique(subset(form_perm, view != 'No access')$form_name))
         
         if (any(forms_hidden %in% missing_data$form_name)) {
           message("The following forms will be removed as no users have access to them: ", 

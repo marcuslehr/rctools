@@ -110,79 +110,7 @@ rc_bundle <- function(url,token,
   # The dictionary and user data are used for 2 bundle objects.
   # Exporting them first avoids duplicate API calls
   if (data_dict) meta_data = rc_api_call(url,token, 'metadata')
-	if (users) {
-    
-	  # Return data as raw bc type_convert() can't do it's job after the fact
-	  user_data = rc_api_call(url,token, 'user', return_as = 'raw')
-    
-    # Specify column types
-	  col_types <- readr::cols(
-	    username                      = readr::col_character(),
-	    email                         = readr::col_character(),
-	    firstname                     = readr::col_character(),
-	    lastname                      = readr::col_character(),
-	    expiration                    = readr::col_date(),
-	    data_access_group             = readr::col_character(),
-	    data_access_group_id          = readr::col_character(),
-	    design                        = readr::col_logical(),
-	    user_rights                   = readr::col_logical(),
-	    data_access_groups            = readr::col_logical(),
-	    data_export                   = readr::col_character(),
-	    reports                       = readr::col_logical(),
-	    stats_and_charts              = readr::col_logical(),
-	    manage_survey_participants    = readr::col_logical(),
-	    calendar                      = readr::col_logical(),
-	    data_import_tool              = readr::col_logical(),
-	    data_comparison_tool          = readr::col_logical(),
-	    logging                       = readr::col_logical(),
-	    file_repository               = readr::col_logical(),
-	    data_quality_create           = readr::col_logical(),
-	    data_quality_execute          = readr::col_logical(),
-	    api_export                    = readr::col_logical(),
-	    api_import                    = readr::col_logical(),
-	    mobile_app                    = readr::col_logical(),
-	    mobile_app_download_data      = readr::col_logical(),
-	    record_create                 = readr::col_logical(),
-	    record_rename                 = readr::col_logical(),
-	    record_delete                 = readr::col_logical(),
-	    lock_records_all_forms        = readr::col_logical(),
-	    lock_records                  = readr::col_logical(),
-	    lock_records_customization    = readr::col_logical(),
-	    forms                         = readr::col_character()
-	  )
-	  
-	  # Convert data to data.frame and remove spec attritube as it may cause issues
-    user_data = suppressMessages(readr::read_csv(user_data, col_types = col_types))
-    attr(user_data, "spec") <- NULL
-    
-    # Restructure form permission data
-    FormPerm <- user_data %>%
-                  dplyr::select(username, forms) %>%
-                  tidyr::separate_rows(forms, sep = ",") %>%
-                  tidyr::separate(
-                    col     = forms,
-                    into    = c("form_name", "permission"),
-                    sep     = ":",
-                    convert = FALSE
-                  )
-    
-    # Remove forms column and format dates
-    user_data <- dplyr::select(user_data, -forms)
-    user_data$expiration <- as.POSIXct(user_data$expiration, format="%Y-%m-%d")
-    
-    # Apply labels to factors
-    user_data$data_export <- 
-      factor(user_data$data_export, 
-             levels = c(0, 2, 1), 
-             labels = c("No access", "De-identified", "Full data set")
-      )
-    FormPerm$permission <- 
-      factor(FormPerm$permission, 
-             levels = c(0, 2, 1, 3), 
-             labels = c("No access", "Read only", 
-                        "Edit records", "Edit survey responses")
-      )
-	}
+	if (users) user_data = export_users(url,token)
 
 # Assemble bundle ---------------------------------------------------------
   
@@ -193,8 +121,8 @@ rc_bundle <- function(url,token,
     		redcap_url = url,
         data_dict = if (data_dict) meta_data else NULL,
     		id_field = if(data_dict) meta_data$field_name[1] else NULL,
-        users = if (users) user_data else NULL,
-        form_perm = if (users) FormPerm else NULL,
+        users = if (users) user_data[[1]] else NULL,
+        form_perm = if (users) user_data[[2]] else NULL,
         instruments = if (instruments) rc_api_call(url,token, 'instrument') else NULL,
         event_data = if (event_data) rc_api_call(url,token, 'event') else NULL,
         arms = if (arms) rc_api_call(url,token, 'arm') else NULL,
@@ -218,4 +146,90 @@ rc_bundle <- function(url,token,
   }
   
   if (return_object==T) return(bundle)
+}
+
+
+# Unexported functions ----------------------------------------------------
+
+export_users = function(url,token) {
+  # Return data as raw bc type_convert() can't do it's job after the fact
+  user_data = rc_api_call(url,token, 'user', return_as = 'raw')
+  
+  # Specify column types
+  col_types <- readr::cols(
+    username                      = readr::col_character(),
+    email                         = readr::col_character(),
+    firstname                     = readr::col_character(),
+    lastname                      = readr::col_character(),
+    expiration                    = readr::col_date(),
+    data_access_group             = readr::col_character(),
+    data_access_group_id          = readr::col_character(),
+    design                        = readr::col_logical(),
+    user_rights                   = readr::col_logical(),
+    data_access_groups            = readr::col_logical(),
+    reports                       = readr::col_logical(),
+    stats_and_charts              = readr::col_logical(),
+    manage_survey_participants    = readr::col_logical(),
+    calendar                      = readr::col_logical(),
+    data_import_tool              = readr::col_logical(),
+    data_comparison_tool          = readr::col_logical(),
+    logging                       = readr::col_logical(),
+    file_repository               = readr::col_logical(),
+    data_quality_create           = readr::col_logical(),
+    data_quality_execute          = readr::col_logical(),
+    api_export                    = readr::col_logical(),
+    api_import                    = readr::col_logical(),
+    mobile_app                    = readr::col_logical(),
+    mobile_app_download_data      = readr::col_logical(),
+    record_create                 = readr::col_logical(),
+    record_rename                 = readr::col_logical(),
+    record_delete                 = readr::col_logical(),
+    lock_records_all_forms        = readr::col_logical(),
+    lock_records                  = readr::col_logical(),
+    lock_records_customization    = readr::col_logical(),
+    forms                         = readr::col_character()
+  )
+  
+  # Convert data to data.frame and remove spec attritube as it may cause issues
+  user_data = suppressMessages(readr::read_csv(user_data, col_types = col_types))
+  attr(user_data, "spec") <- NULL
+  
+  # Restructure forms data
+  FormPerm <- user_data %>%
+    dplyr::select(username, forms) %>%
+    tidyr::separate_rows(forms, sep = ",") %>%
+    tidyr::separate(
+      col     = forms,
+      into    = c("form_name", "view"),
+      sep     = ":",
+      convert = FALSE
+    )
+  FormPerm <- user_data %>%
+    dplyr::select(username, forms_export) %>%
+    tidyr::separate_rows(forms_export, sep = ",") %>%
+    tidyr::separate(
+      col     = forms_export,
+      into    = c("form_name", "export"),
+      sep     = ":",
+      convert = FALSE
+    ) %>% dplyr::full_join(FormPerm,., by = c("username", "form_name"))
+  
+  user_data <- dplyr::select(user_data, -forms, -forms_export)
+  
+  
+  # Format and label
+  user_data$expiration <- as.POSIXct(user_data$expiration, format="%Y-%m-%d")
+  FormPerm$view <- 
+    factor(FormPerm$view, 
+           levels = c(0, 2, 1, 3), 
+           labels = c("No access", "Read only", 
+                      "Edit records", "Edit survey responses")
+    )
+  FormPerm$export <- 
+    factor(FormPerm$export, 
+           levels = c(0, 2, 1), 
+           labels = c("No access", "De-identified", "Full data set")
+    )
+  
+  return(list(user_data,FormPerm))
 }
