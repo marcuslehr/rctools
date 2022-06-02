@@ -113,7 +113,7 @@ rc_api_call <- function(url = getOption("redcap_bundle")$redcap_url,
 # Construct body for POST() -----------------------------------------------
 
   # Check for directionality conflict
-  if (action=='export' & !is.null(data)) stop('Error: Data supplied export call')
+  if (action=='export' & !is.null(data)) stop('Error: Data supplied to export call')
   
   # Perform token coercion.
   validate_args(c('url','token'), url=url, token=token)
