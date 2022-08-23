@@ -69,7 +69,7 @@ rc_format <- function(record_data, data_dict = getOption("redcap_bundle")$data_d
     
     # Currently generating labels for all fields
     column_labels = checkbox_suffixes(field_names = data_dict$field_name,
-                                   data_dict = data_dict)
+                                      data_dict = data_dict)
     
     # Apply column labels
     Hmisc::label(record_data) = as.list(column_labels[match(names(record_data),names(column_labels))])
@@ -89,7 +89,7 @@ rc_format <- function(record_data, data_dict = getOption("redcap_bundle")$data_d
     }
   }
   
-  if (!is.null(event_labels)) {
+  if (!is.null(report_data[['redcap_event_name']])) {
     # Move check to beginning of function?
     if (is.null(event_data)) 
       stop("bundle$event_data must be provided to label redcap_event_name")
