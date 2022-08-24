@@ -365,6 +365,7 @@ validate_args <- function(required = NULL,
         # !'redcap_event_name' %in% names(record_data)) This makes non-longitudinal projects incompatible
       coll$push("Record_data must contain the record_id column.")
   }
+		
   
 ##--- data_dict validations
   if (!is.null(data_dict)) {
@@ -402,7 +403,7 @@ validate_args <- function(required = NULL,
 		  data_dict = as.data.frame(data_dict)
 		  
 		  # Update object in parent env
-			data_dict <<- data_dict
+		  assign('data_dict', data_dict, env = parent.frame())
 		}
 		# Make sure all columns are in data_dict
 		else if (any(!data_dict_api_names %in% names(data_dict)))
