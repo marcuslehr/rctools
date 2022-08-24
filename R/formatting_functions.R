@@ -1,7 +1,7 @@
 
-# fieldToVar --------------------------------------------------------------
+# format_variables --------------------------------------------------------------
 
-#' @name fieldToVar
+#' @name format_variables
 #' @importFrom chron times
 #' 
 #' @title Convert a REDCap Data Field to an R Vector
@@ -16,7 +16,7 @@
 #'   
 #' @author Jeffrey Horner
 
-fieldToVar <- function(records, data_dict, factor_labels = TRUE, 
+format_variables <- function(records, data_dict, factor_labels = TRUE, 
                        dates = TRUE)
 { 
   for (i in seq_along(records))
@@ -144,7 +144,7 @@ fieldToVar <- function(records, data_dict, factor_labels = TRUE,
                                     checkbox = T,
                                     suffix = suffix)
                  else
-                   condensed_checkbox_to_factor(x = records[[i]],
+                   combined_checkbox_to_factor(x = records[[i]],
                                                 coding = data_dict$select_choices_or_calculations[data_dict$field_name == field_base],
                                                 factor_labels = factor_labels,
                                                 var_name = var_name)
@@ -247,9 +247,9 @@ parse_field_choices = function(coding, suffix=NULL) {
   return(coding)
 }
 
-# condensed_checkbox_to_factor --------------------------------------------
+# combined_checkbox_to_factor --------------------------------------------
 
-condensed_checkbox_to_factor = function(x, coding, factor_labels, var_name, checkbox = T) {
+combined_checkbox_to_factor = function(x, coding, factor_labels, var_name, checkbox = T) {
   
   # Split on commas for previously formatted cols. Would be better to check attributes if possible
   if (any(grepl(',',x))) x = stringr::str_split(x, ',')
@@ -298,9 +298,9 @@ list2df = function(list) {
   as.data.frame(mat)
 }
 
-# checkbox_suffixes -------------------------------------------------------
+# get_column_labels -------------------------------------------------------
 
-#' @name checkbox_suffixes 
+#' @name get_column_labels 
 #' @title Checkbox Suffixes
 #' 
 #' @description Checkbox variables return one vector of data for each option defined
@@ -311,7 +311,7 @@ list2df = function(list) {
 #' @param field_names The current field names of interest
 #' @param data_dict The meta data data frame.
 
-checkbox_suffixes <- function(field_names, data_dict)
+get_column_labels <- function(field_names, data_dict)
 {
   name_suffix <- sapply(X = field_names, 
                         FUN = expand_checkbox_names, 

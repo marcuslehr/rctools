@@ -415,7 +415,7 @@ validate_args <- function(required = NULL,
 		##--- Check field names against data_dict
 		if (!is.null(fields)){
       # Generate list of fields plus checkbox fields
-			fields_valid = names(checkbox_suffixes(field_names = data_dict$field_name,
+			fields_valid = names(get_column_labels(field_names = data_dict$field_name,
 																						 data_dict = data_dict))
 			
 			# Add redcap and _complete fields

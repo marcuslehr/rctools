@@ -185,7 +185,7 @@ rc_export <- function(report_id = NULL,
         
         #* for purposes of the export, we don't need the descriptive fields.
         #* Including them makes the process more error prone, so we'll ignore them.
-        ## I believe this only affected checkbox_suffixes (no longer used here)
+        ## I believe this only affected get_column_labels (no longer used here)
         data_dict <- data_dict[!data_dict$field_type %in% "descriptive",]
         
         # Auto append complete fields if desired. Auto only useful when manually selecting fields

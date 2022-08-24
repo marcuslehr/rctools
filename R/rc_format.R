@@ -48,11 +48,11 @@ rc_format <- function(record_data, data_dict = getOption("redcap_bundle")$data_d
 
   
   #* for purposes of the export, we don't need the descriptive fields. 
-  #* Including them causes errors in checkbox_suffixes
+  #* Including them causes errors in get_column_labels
   data_dict <- data_dict[!data_dict$field_type %in% "descriptive",]
   
   # Apply formatting/type conversions
-  record_data <- fieldToVar(records = record_data, 
+  record_data <- format_variables(records = record_data, 
                             data_dict = data_dict, 
                             factor_labels = factor_labels, 
                             dates = dates)
@@ -68,7 +68,7 @@ rc_format <- function(record_data, data_dict = getOption("redcap_bundle")$data_d
     fields = names(record_data)[names(record_data) %in% data_dict$field_name]
     
     # Currently generating labels for all fields
-    column_labels = checkbox_suffixes(field_names = data_dict$field_name,
+    column_labels = get_column_labels(field_names = data_dict$field_name,
                                       data_dict = data_dict)
     
     # Apply column labels
