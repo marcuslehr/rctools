@@ -52,10 +52,10 @@ rc_format <- function(record_data, data_dict = getOption("redcap_bundle")$data_d
   data_dict <- data_dict[!data_dict$field_type %in% "descriptive",]
   
   # Apply formatting/type conversions
-  record_data <- format_variables(records = record_data, 
-                            data_dict = data_dict, 
-                            factor_labels = factor_labels, 
-                            dates = dates)
+  record_data <- format_variables(record_data = record_data, 
+                                  data_dict = data_dict, 
+                                  factor_labels = factor_labels, 
+                                  dates = dates)
   
   # All NA cols are formatted as logical and cause join issues
   if ('redcap_repeat_instrument' %in% names(record_data))
@@ -89,7 +89,7 @@ rc_format <- function(record_data, data_dict = getOption("redcap_bundle")$data_d
     }
   }
   
-  if (!is.null(report_data[['redcap_event_name']])) {
+  if (!is.null(record_data[['redcap_event_name']])) {
     # Move check to beginning of function?
     if (is.null(event_data)) 
       stop("bundle$event_data must be provided to label redcap_event_name")

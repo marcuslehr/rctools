@@ -7,7 +7,7 @@
 #' @title Convert a REDCap Data Field to an R Vector
 #' @description Converts a field exported from REDCap into a valid R vector
 #' 
-#' @param records A data frame of records returned by \code{rc_export} 
+#' @param record_data A data frame of records returned by \code{rc_export} 
 #' @param data_dict A data frame giving the data data_dictionary, as returned 
 #'   by \code{exportMetaData}
 #' @param factor_labels Logical, determines if checkbox, radio button, dropdown and yesno
@@ -16,14 +16,14 @@
 #'   
 #' @author Jeffrey Horner
 
-format_variables <- function(records, data_dict, factor_labels = TRUE, 
+format_variables <- function(record_data, data_dict, factor_labels = TRUE, 
                        dates = TRUE)
 { 
-  for (i in seq_along(records))
+  for (i in seq_along(record_data))
   {
     field_base <- gsub(pattern = "___.+$",
                        replacement = "",
-                       x = names(records)[i])
+                       x = names(record_data)[i])
     
     
     
@@ -56,110 +56,110 @@ format_variables <- function(records, data_dict, factor_labels = TRUE,
                        x = field_type)
     
     
-    records[[i]] <- 
+    record_data[[i]] <- 
       switch(field_type,
              "date_" = 
                {
                  if (dates) 
-                   as.POSIXct(records[[i]], format = "%Y-%m-%d") 
+                   as.POSIXct(record_data[[i]], format = "%Y-%m-%d") 
                  else 
-                   records[[i]]
+                   record_data[[i]]
                },
              "datetime_" = 
                {
                  if (dates) 
-                   as.POSIXct(records[[i]], format = "%Y-%m-%d %H:%M") 
+                   as.POSIXct(record_data[[i]], format = "%Y-%m-%d %H:%M") 
                  else 
-                   records[[i]]
+                   record_data[[i]]
                },
              "datetime_seconds_" = 
                {
                  if (dates) 
-                   as.POSIXct(records[[i]], format = "%Y-%m-%d %H:%M:%S") 
+                   as.POSIXct(record_data[[i]], format = "%Y-%m-%d %H:%M:%S") 
                  else 
-                   records[[i]]
+                   record_data[[i]]
                },
              "time_mm_ss" = 
                {
                  if (dates) 
-                   chron::times(ifelse(!is.na(records[[i]]), 
-                                       paste0("00:", records[[i]]), 
-                                       records[[i]]), 
+                   chron::times(ifelse(!is.na(record_data[[i]]), 
+                                       paste0("00:", record_data[[i]]), 
+                                       record_data[[i]]), 
                                 format=c(times="h:m:s"))
                  else 
-                   records[[i]]
+                   record_data[[i]]
                },
              "time" = 
                {
                  if (dates)
-                   chron::times(gsub("(^\\d{2}:\\d{2}$)", "\\1:00", records[[i]]), 
+                   chron::times(gsub("(^\\d{2}:\\d{2}$)", "\\1:00", record_data[[i]]), 
                                 format=c(times="h:m:s"))
                  else 
-                   records[[i]]
+                   record_data[[i]]
                },
-             "float" = suppressWarnings(as.numeric(records[[i]])),
-             "number" = suppressWarnings(as.numeric(records[[i]])),
-             "calc" = suppressWarnings(as.numeric(records[[i]])),
-             "int" = suppressWarnings(as.integer(records[[i]])), # I think this is a legacy option
-             "integer" = suppressWarnings(as.integer(records[[i]])),
+             "float" = suppressWarnings(as.numeric(record_data[[i]])),
+             "number" = suppressWarnings(as.numeric(record_data[[i]])),
+             "calc" = suppressWarnings(as.numeric(record_data[[i]])),
+             "int" = suppressWarnings(as.integer(record_data[[i]])), # I think this is a legacy option
+             "integer" = suppressWarnings(as.integer(record_data[[i]])),
              "select" = 
-               makeRedcapFactor(x = records[[i]],
+               makeRedcapFactor(x = record_data[[i]],
                                 coding = data_dict$select_choices_or_calculations[data_dict$field_name == field_base],
                                 factor_labels = factor_labels, 
                                 var_name = data_dict$field_name[data_dict$field_name == field_base]),
              "radio" = 
-               makeRedcapFactor(x = records[[i]],
+               makeRedcapFactor(x = record_data[[i]],
                                 coding = data_dict$select_choices_or_calculations[data_dict$field_name == field_base],
                                 factor_labels = factor_labels, 
                                 var_name = data_dict$field_name[data_dict$field_name == field_base]),
              "dropdown" = 
-               makeRedcapFactor(x = records[[i]],
+               makeRedcapFactor(x = record_data[[i]],
                                 coding = data_dict$select_choices_or_calculations[data_dict$field_name == field_base],
                                 factor_labels = factor_labels, 
                                 var_name = data_dict$field_name[data_dict$field_name == field_base]),
-             "yesno" = makeRedcapFactor(x = records[[i]],
+             "yesno" = makeRedcapFactor(x = record_data[[i]],
                                         coding = '1, Yes | 0, No',
                                         factor_labels = factor_labels, 
                                         var_name = data_dict$field_name[data_dict$field_name == field_base]),
              "truefalse" = 
                {
                  if (factor_labels) 
-                   as.logical(records[[i]])
+                   as.logical(record_data[[i]])
                  else
-                   makeRedcapFactor(x = records[[i]],
+                   makeRedcapFactor(x = record_data[[i]],
                                     coding = '1, TRUE | 0, FALSE',
                                     factor_labels = factor_labels, 
                                     var_name = data_dict$field_name[data_dict$field_name == field_base])
                },
              "checkbox" = 
                {
-                 var_name = names(records)[i]
+                 var_name = names(record_data)[i]
                  suffix = gsub("^.+___", "", var_name)
                  
                  if (!suffix == var_name) # Checkbox is in wide-format
-                   makeRedcapFactor(x = records[[i]],
+                   makeRedcapFactor(x = record_data[[i]],
                                     coding = data_dict$select_choices_or_calculations[data_dict$field_name == field_base],
                                     factor_labels = factor_labels,
                                     var_name = var_name,
                                     checkbox = T,
                                     suffix = suffix)
                  else
-                   combined_checkbox_to_factor(x = records[[i]],
+                   combined_checkbox_to_factor(x = record_data[[i]],
                                                 coding = data_dict$select_choices_or_calculations[data_dict$field_name == field_base],
                                                 factor_labels = factor_labels,
                                                 var_name = var_name)
                },
              "form_complete" = 
                {
-                 makeRedcapFactor(x = records[[i]],
+                 makeRedcapFactor(x = record_data[[i]],
                                   coding = "0, Incomplete | 1, Unverified | 2, Complete",
                                   factor_labels, 
                                   var_name = field_base)
                },
-             records[[i]]
+             record_data[[i]]
       ) # End switch
   } # End for loop
-  records
+  record_data
 }    
 
 # makeRedcapFactor --------------------------------------------------------
@@ -251,29 +251,38 @@ parse_field_choices = function(coding, suffix=NULL) {
 
 combined_checkbox_to_factor = function(x, coding, factor_labels, var_name, checkbox = T) {
   
-  # Split on commas for previously formatted cols. Would be better to check attributes if possible
-  if (any(grepl(',',x))) x = stringr::str_split(x, ',')
-  else x = stringr::str_split(x, '')
-  
+  # Check if data has previously been formatted and split values as appropriate
+  # Note attributes can be dropped easily. It's using and always splitting on commas would be more robust
+  if ( 'redcapLabels' %in% names(attributes(x)) ) column_values = stringr::str_split(x, ';') 
+    else column_values = stringr::str_split(x, ',')
+    
   # convert to df
-  x = list2df(x)
+  column_values = list2df(column_values)
   
-  # Pass cols through makeRedcapFactor
-  x = apply(x, 1, function(x) makeRedcapFactor(x, coding, factor_labels, var_name, checkbox)) %>%
-    # Paste all options together
-        as.data.frame() %>% apply(1, function(x) {paste(na.omit(x),collapse = ',')})
-  
-  # The above method adds blanks. Remove them
-  x[x==''] = NA
-  
-  # Apply attributes
-  coding = parse_field_choices(coding)
-  attr(x,'redcapLabels') <- coding$labels
-  attr(x,'redcapLevels') <- 
-    suppressWarnings(tryCatch(as.integer(coding$numbers),
-                              warning = function(cond) coding$numbers))
-  
-  return(x)
+  parsed_coding = parse_field_choices(coding)
+  # Secondary validation to ensure choices match data_dict
+  if ( all(unique(na.omit(column_values)) %in% parsed_coding$numbers) |
+       all(unique(na.omit(column_values)) %in% parsed_coding$labels) ) {
+    # Pass cols through makeRedcapFactor
+    column_values = apply(column_values, 2, function(x) makeRedcapFactor(x, coding, factor_labels, var_name, checkbox)) %>%
+      # Paste all options together
+          as.data.frame() %>% apply(1, function(x) {paste(na.omit(x),collapse = ';')}) # Using semicolon as it's less common and should be more reliable when string splitting
+    
+    # The above method adds blanks, convert them back to NAs
+    column_values[column_values==''] = NA
+    
+    # Apply attributes
+    attr(column_values,'redcapLabels') <- parsed_coding$labels
+    attr(column_values,'redcapLevels') <- 
+      suppressWarnings(tryCatch(as.integer(parsed_coding$numbers),
+                                warning = function(cond) parsed_coding$numbers))
+    return(column_values)
+    
+  } else {
+    warning(paste0(var_name, ' cannot be formatted because the factors do not match the data dictionary.
+                   Note that labelling of combined checkbox variables is not fully reversible.'))
+    return(x)
+  }
 }
 
 # list2df -----------------------------------------------------------------
