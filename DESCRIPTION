@@ -1,25 +1,21 @@
 Package: rctools
 Type: Package
 Title: Tools for REDCap API and data manipulation
-Version: 0.5.1
+Version: 0.5.2
 Authors@R: c(
     person("Marcus", "Lehr", email = "marcus.j.lehr@gmail.com", 
            role = c("aut","cre","ctb")),
-    person("Benjamin", "Nutter", email = "benjamin.nutter@gmail.com", 
-           role = "ctb"),
+    person("Benjamin", "Nutter", role = "ctb"),
     person("Stephen", "Lane", role = "ctb"),
     person("Will", "Beasley", role = "ctb"),
     person("Jeffrey", "Horner", role = "ctb"),
     person("Will", "Gray", role = "ctb"),
     person("Jeremy", "Stephens", role = "ctb"))   
 Maintainer: Marcus Lehr <marcus.j.lehr@gmail.com>
-Description: Access data stored in 'REDCap' databases via API and perform common
-    data manipulations. 'REDCap' (Research Electronic Data CAPture;
-    <https://projectredcap.org>) is a web application for building and managing 
-    online surveys and databases developed at Vanderbilt University.
-License: GPL-2
+Description: Import, export, and data manipulation functions for REDCap databases via API. REDCap is a secure web application for building and managing online surveys and databases (<https://projectredcap.org>). It is specifically geared to support online and offline data capture for research studies and operations.
+License: GPL-3
 Depends:
-    R (>= 3.6.1)
+    R (>= 4.0.0)
 Imports:
     checkmate,
 		httr,
@@ -31,11 +27,13 @@ Imports:
     dplyr,
     stringr,
     tidyr,
-    magrittr,
     reshape2,
     ggplot2
 LazyLoad: no
-URL: https://github.com/chillywings/rctools
-RoxygenNote: 7.1.1
+URL: https://github.com/marcuslehr/rctools
+RoxygenNote: 7.2.1
 Roxygen: list(markdown = TRUE)
 Encoding: UTF-8
+Suggests: 
+    testthat (>= 3.0.0)
+Config/testthat/edition: 3

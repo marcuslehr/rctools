@@ -3,13 +3,16 @@ rctools
 
 The goal of this package is to provide simple, streamlined functions for interfacing with the REDCap API (http://www.project-redcap.org/) and working with REDCap data sets. rctools is a heavily modified fork of the [redcapAPI](https://github.com/nutterb/redcapAPI) package.
 
-This package is not yet on [CRAN](https://cran.r-project.org/), however it can be easily installed by downloading the .tar.gz file in the main directory of this repository and running:
+This package is not yet on [CRAN](https://cran.r-project.org/), however it can be easily installed from GitHub or by downloading the .tar.gz file in the main directory of this repository:
 ```r
 # First install package dependencies from CRAN
 install.packages(c('checkmate','httr','chron','lubridate','labelVector','Hmisc',
                    'readr','dplyr','stringr','tidyr','magrittr','reshape2','ggplot2'))
+									 
+# Install rctools from GitHub
+devtools::install_github('https://github.com/marcuslehr/rctools', upgrade = F, quiet = T)
 
-# Install rctools
+# Install rctools from local download
 install.packages("Path/to/rctools_0.4.9.tar.gz", repos = NULL, type = "source", quiet = T)
 
 # You may now load the package with the normal library() syntax

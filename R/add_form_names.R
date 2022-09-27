@@ -62,7 +62,7 @@ add_form_names <- function(long_data, pooled_vars = NULL,
     id_field = getID(long_data, data_dict, id_field)
     rc_fields = c('redcap_event_name','redcap_repeat_instrument','redcap_repeat_instance')
     rc_factors = intersect(c(id_field, rc_fields), names(long_data))
-    long_data = long_data %>% select(all_of(rc_factors), form_name, dplyr::everything())
+    long_data = long_data %>% dplyr::select(dplyr::all_of(rc_factors), form_name, dplyr::everything())
   }
   else message("Form names cannot be added unless data_dict is supplied.")
   

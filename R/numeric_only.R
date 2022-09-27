@@ -23,7 +23,6 @@
 #' @param drop_message Logical. Determine if a message is shown to the user about
 #' dropping non-numerical data
 #' 
-#' @importFrom magrittr '%>%'
 #' 
 #' @author Marcus Lehr
 

@@ -2,7 +2,6 @@
 # format_variables --------------------------------------------------------------
 
 #' @name format_variables
-#' @importFrom chron times
 #' 
 #' @title Convert a REDCap Data Field to an R Vector
 #' @description Converts a field exported from REDCap into a valid R vector
@@ -185,8 +184,8 @@ makeRedcapFactor <- function(x, coding, factor_labels, var_name, checkbox = F, s
   if (nrow(coding) > 0) { # Don't remember why this is here
     
     # Determine data format
-    if ( all(unique(na.omit(x)) %in% coding$numbers) ) raw = T else raw = F
-    if ( all(unique(na.omit(x)) %in% coding$labels) ) labeled = T else labeled = F
+    if ( all(unique(stats::na.omit(x)) %in% coding$numbers) ) raw = T else raw = F
+    if ( all(unique(stats::na.omit(x)) %in% coding$labels) ) labeled = T else labeled = F
     
     # Set factor codings
     if (factor_labels) labels = coding$labels
@@ -261,12 +260,12 @@ combined_checkbox_to_factor = function(x, coding, factor_labels, var_name, check
   
   parsed_coding = parse_field_choices(coding)
   # Secondary validation to ensure choices match data_dict
-  if ( all(unique(na.omit(column_values)) %in% parsed_coding$numbers) |
-       all(unique(na.omit(column_values)) %in% parsed_coding$labels) ) {
+  if ( all(unique(stats::na.omit(column_values)) %in% parsed_coding$numbers) |
+       all(unique(stats::na.omit(column_values)) %in% parsed_coding$labels) ) {
     # Pass cols through makeRedcapFactor
     column_values = apply(column_values, 2, function(x) makeRedcapFactor(x, coding, factor_labels, var_name, checkbox)) %>%
       # Paste all options together
-          as.data.frame() %>% apply(1, function(x) {paste(na.omit(x),collapse = ';')}) # Using semicolon as it's less common and should be more reliable when string splitting
+          as.data.frame() %>% apply(1, function(x) {paste(stats::na.omit(x),collapse = ';')}) # Using semicolon as it's less common and should be more reliable when string splitting
     
     # The above method adds blanks, convert them back to NAs
     column_values[column_values==''] = NA

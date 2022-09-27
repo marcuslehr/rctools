@@ -334,7 +334,7 @@ validate_args <- function(required = NULL,
 		# Format is valid, therefore string is a valid token. 
 		# Edge case of 32 character invalid path could make it here also
 		else
-		  assign('token', token, env = parent.frame())
+		  assign('token', token, envir = parent.frame())
   }
   
 ##--- sex_var
@@ -378,7 +378,7 @@ validate_args <- function(required = NULL,
 			'text_validation_min', 'text_validation_max', 'identifier','branching_logic', 'required_field',
 			'custom_alignment','question_number', 'matrix_group_name', 'matrix_ranking','field_annotation')
 												
-		data_dict_read.csv_names = c("ï..Variable...Field.Name","Form.Name","Section.Header",
+		data_dict_read.csv_names = c("\u00EF..Variable...Field.Name","Form.Name","Section.Header",
 			"Field.Type","Field.Label","Choices..Calculations..OR.Slider.Labels","Field.Note",
 			"Text.Validation.Type.OR.Show.Slider.Number","Text.Validation.Min","Text.Validation.Max",
 			"Identifier.","Branching.Logic..Show.field.only.if....","Required.Field.","Custom.Alignment",
@@ -391,19 +391,19 @@ validate_args <- function(required = NULL,
 			"Question Number (surveys only)","Matrix Group Name","Matrix Ranking?","Field Annotation")
 		
 		# Check names and coerce if necessary
-		if (identical(names(data_dict)[2:18], 
-		              data_dict_read.csv_names[2:18]) # For some reason the first field breaks this condition when
-																									# calling from the function envir. Removing just the 'ï' 
-																									# doesn't work
-				| identical(names(data_dict), data_dict_read_csv_names)
-				& length(data_dict) == 18) {
+		if (
+		    identical(names(data_dict), data_dict_read.csv_names) | 
+		    identical(names(data_dict), data_dict_read_csv_names) & 
+		    length(data_dict) == 18
+				) {
+		  # Rename columns using API names
 		  names(data_dict) = data_dict_api_names
 		  
 		  # Coerce format. Tibbles will cause errors downstream
 		  data_dict = as.data.frame(data_dict)
 		  
 		  # Update object in parent env
-		  assign('data_dict', data_dict, env = parent.frame())
+		  assign('data_dict', data_dict, envir = parent.frame())
 		}
 		# Make sure all columns are in data_dict
 		else if (any(!data_dict_api_names %in% names(data_dict)))

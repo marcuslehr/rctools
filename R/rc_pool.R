@@ -41,7 +41,6 @@
 #' will be implemented automatically on an as-needed basis.
 #' @param id_field Character. Field name corresponding to the 'record_id' field.
 #' 
-#' @importFrom magrittr '%>%'
 #' 
 #' @author Marcus Lehr
 #' 
@@ -101,11 +100,11 @@ rc_pool <- function(record_data, var_roots = NULL, fields_list = NULL,
     if (!all(rc_fields %in% names(record_data))) {
       rc_cols = matrix(ncol = length(setdiff(rc_fields,names(record_data)))) %>% as.data.frame()
       names(rc_cols) = setdiff(rc_fields,names(record_data))
-      record_data = cbind(record_data,rc_cols) %>% dplyr::select(all_of(rc_factors),dplyr::everything())
+      record_data = cbind(record_data,rc_cols) %>% dplyr::select(dplyr::all_of(rc_factors),dplyr::everything())
     }
     
     # Empty columns will be of type logical and cause join conflicts
-      record_data = dplyr::mutate_at(record_data, dplyr::vars(contains('repeat')), as.character)
+      record_data = dplyr::mutate_at(record_data, dplyr::vars(dplyr::contains('repeat')), as.character)
     
     if (!is.null(fields_list)) {
       
@@ -251,7 +250,7 @@ rc_pool <- function(record_data, var_roots = NULL, fields_list = NULL,
           
           # Remove old columns. Explicitly add new col at end to prevent accident removal 
           # (ie when contained within 'cols')
-          record_data = dplyr::select(record_data, -all_of(cols), all_of(f))
+          record_data = dplyr::select(record_data, -dplyr::all_of(cols), dplyr::all_of(f))
         }
         else if (length(cols)==1) warning("Only a single column was found for field '", paste(f), "'. Please ensure that all names in the
                                           fields_list match a column name.") 
@@ -294,7 +293,7 @@ rc_pool <- function(record_data, var_roots = NULL, fields_list = NULL,
           
           # Remove old columns. Explicitly add new col at end to prevent accident removal 
           # (ie when contained within 'cols')
-          record_data = dplyr::select(record_data, -all_of(cols), all_of(r))
+          record_data = dplyr::select(record_data, -dplyr::all_of(cols), dplyr::all_of(r))
         }
         else if (length(cols)==1) warning("Only a single column containing root '", paste(r), "' was found- no pooling was performed.") 
         else if (length(cols)==0) warning("No columns containing root '", paste(r), "' were found.")

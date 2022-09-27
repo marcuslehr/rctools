@@ -33,12 +33,12 @@ rc_rep_diff = function(record_data, var_roots) {
 
     for (r in 1:(ncol(currentRep)-1)) {
       # Move through columns sequentially creating a subtraction for each pair
-      currentRep = mutate(currentRep, !!paste0(var_roots[v],'_diff',r) := currentRep[,r+1]-currentRep[,r])
+      currentRep = dplyr::mutate(currentRep, !!paste0(var_roots[v],'_diff',r) := currentRep[,r+1]-currentRep[,r])
       # Label new columns
       attr(currentRep[,ncol(currentRep)], "label") =
         paste0(colnames(currentRep)[r],' - ',colnames(currentRep)[r+1])
     }
-    diffData = cbind(diffData, select(currentRep, contains('_diff')))
+    diffData = cbind(diffData, dplyr::select(currentRep, dplyr::contains('_diff')))
   }
 
   record_data = dplyr::left_join(record_data, diffData, by = c(id_field,'redcap_event_name'))

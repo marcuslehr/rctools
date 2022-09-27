@@ -27,7 +27,6 @@
 #' record_data. See \code{rc_strip} for more information or call separately for more
 #' options. 
 #' 
-#' @importFrom magrittr '%>%'
 #' 
 #' @author Marcus Lehr
 #' @author Benjamin Nutter

@@ -30,7 +30,6 @@
 #' @param mappings Dataframe. A REDCap table containing form/event mappings.
 #' @param id_field Character. Field name corresponding to the 'record_id' field.
 #' 
-#' @importFrom magrittr '%>%'
 #' 
 #' @author Marcus Lehr
 #' 

@@ -11,7 +11,6 @@
 #' @param group_by Variable(s) to group data by. The project's record_id field
 #' is used by default. 
 #' 
-#' @importFrom magrittr '%>%'
 #' 
 #' @author Marcus Lehr
 #' 

@@ -34,7 +34,6 @@
 #' @param mappings Dataframe. Redcap metadata that maps forms to events.
 #' @param id_field Character. The name of the record_id field for your REDCap project.
 #'
-#' @importFrom magrittr '%>%'
 #'
 #' @author Marcus Lehr
 #' 
@@ -56,7 +55,6 @@ rc_missing <- function(record_data,
                 record_data = record_data,
                 completion_field = completion_field,
                 repeats = repeats,
-                bundle = bundle,
                 data_dict = data_dict,
                 events = events,
                 form_perm = form_perm
@@ -105,8 +103,8 @@ rc_missing <- function(record_data,
             or calculated fields. All such data will be dropped.")
 
     record_data = dplyr::select(record_data, 
-                                -all_of(fields_calc),
-                                -all_of(fields_hidden), 
+                                -dplyr::all_of(fields_calc),
+                                -dplyr::all_of(fields_hidden), 
 											          -dplyr::contains('___')) 
   }
   
@@ -186,7 +184,7 @@ rc_missing <- function(record_data,
     # Filter variables from empty events unless there is data in a following event or the participant as completed the study
     if (!is.null(completion_field)) {
       logic = data_wide_full %>%
-                dplyr::mutate(row_sums = rowSums(!is.na(dplyr::select(.,-all_of(rc_factors))))) %>% 
+                dplyr::mutate(row_sums = rowSums(!is.na(dplyr::select(.,-dplyr::all_of(rc_factors))))) %>% 
                 dplyr::group_by_at(rc_factors[1:2]) %>% # Removing repeats to look at entire event. Including would break data_following
                 dplyr::summarise(var_count = sum(row_sums)) %>%
                 dplyr::mutate(data_following = !sum(var_count) == cumsum(var_count)) %>% 
@@ -196,13 +194,13 @@ rc_missing <- function(record_data,
       missing_data = suppressWarnings(
                       dplyr::left_join(missing_data_all, logic, by = rc_factors[1:2]) %>% # Logic has no repeats
                         dplyr::filter(var_count > 0 | data_following == T | !!dplyr::sym(completion_field) == 'Yes|1') %>% 
-                        dplyr::select(all_of(rc_factors), variable)
+                        dplyr::select(dplyr::all_of(rc_factors), variable)
                       )
     }
     # Perform above filtering without completion_field if not provided
     else {
       logic = data_wide_full %>%
-                dplyr::mutate(row_sums = rowSums(!is.na(dplyr::select(.,-all_of(rc_factors))))) %>% 
+                dplyr::mutate(row_sums = rowSums(!is.na(dplyr::select(.,-dplyr::all_of(rc_factors))))) %>% 
                 dplyr::group_by_at(rc_factors[1:2]) %>% 
                 dplyr::summarise(var_count = sum(row_sums)) %>% 
                 dplyr::mutate(data_following = !sum(var_count) == cumsum(var_count))
@@ -210,7 +208,7 @@ rc_missing <- function(record_data,
       missing_data = suppressWarnings(
                       dplyr::left_join(missing_data_all, logic, by = rc_factors[1:2]) %>% 
                         dplyr::filter(var_count > 0 | data_following == T) %>% 
-                        dplyr::select(all_of(rc_factors), variable)
+                        dplyr::select(dplyr::all_of(rc_factors), variable)
                       )
     }
     
@@ -245,96 +243,3 @@ rc_missing <- function(record_data,
     return(missing_data_all)
   }
 }
-  
-  
-# Deprecating table to simplify function. Need to create rc_missing_summary()
-# Table function --------------------------------------------------------
-
-#   if (nrow(missing_data)/nrow(record_data) > .1 & table == F)
-#     warning("More than 10% of the data appears to be missing. Manual review for false positives is recommended,
-#             consider using the 'table' argument or rc_missing_plot().")
-#   
-#   ## This has now been exported as an independent function
-#   # if (plot == T) plot_missing(missing_data)
-#   
-#   
-#   if (table) {
-#     return_data = list(missing_data = missing_data)
-#     tables = table_missing(missing_data, IDs, logic, id_field)
-#     return_data = c(return_data, tables)
-#     
-#     message("List object returned. Use '[' indexing to view formatted tables.")
-#     return(return_data)
-#   } 
-#   else return(missing_data)
-# } 
-
-# table_missing <- function(missing_data, IDs, logic, id_field = getOption("redcap_bundle")$id_field) {
-#   
-#   # Tally IDs
-#   tally = dplyr::count(missing_data, redcap_event_name, variable)
-#   tally$pct_missing = tally$n/length(IDs)*100
-#   tally = reshape2::dcast(tally, variable~redcap_event_name, value.var = 'pct_missing')
-#   tally[is.na(tally)] = 0
-#   
-#   ## This will return an unsaved table in the source viewer
-#   # table_ids = tally
-#   # View(table_ids)
-#   
-# ### Formatted tables are not exporting properly :'(
-#   
-#   # Create attr list for table
-#   table_attr = list('variable' = formattable::formatter("span", style = ~ formattable::style(color = "grey",font.weight = "bold")))
-# 
-#   for (e in names(tally)[-1]) {
-#     table_attr[[e]] = formattable::color_tile('white','red')
-#   }
-# 
-#   tables = list(IDs_table = formattable::formattable(tally,table_attr, 
-#                                                caption = paste0('Percent of IDs Missing (n = ',length(IDs),')'))
-#             )
-#     
-#   
-#   # Tally vars
-#   var_maxes = logic %>% dplyr::group_by(redcap_event_name) %>% dplyr::summarise(max = max(var_count))
-#   
-#   tally = dplyr::count(missing_data, redcap_event_name, !!dplyr::sym(id_field))
-#   tally = dplyr::left_join(tally, var_maxes, by = 'redcap_event_name')
-#   tally$pct_missing = tally$n/tally$max*100
-#   
-#   cast_formula = paste(id_field,'~ redcap_event_name')
-#   tally = reshape2::dcast(tally, cast_formula, value.var = 'pct_missing')
-#   tally[is.na(tally)] = 0
-#   
-#   # table_vars = tally
-#   # View(table_vars)
-#   
-#   # Create attr list for table
-#   table_attr = list()
-#   table_attr[[id_field]] = formattable::formatter("span", style = ~ formattable::style(color = "grey",font.weight = "bold"))
-# 
-#   for (e in names(tally)[-1]) {
-#     table_attr[[e]] = formattable::color_tile('white','red')
-#   }
-# 
-#   tables[['variables_table']] = formattable::formattable(tally,table_attr, caption = paste('Percent of Variables Missing.
-#                                                                Totals: ', paste(var_maxes$max, collapse = ',')))
-# 
-#   return(tables)
-# }
-
-## Event data ---
-
-# This is dangerous. If event order hasn't been preserved errors will result
-# 	# Collect event list from record_data if not supplied
-#   if (is.null(events)) {
-# 	
-# 		if (!is.null(record_data$redcap_event_name)) {
-# 			#Collect list of events present in data, ensuring event order is preserved
-# 			events = as.character(unique(record_data$redcap_event_name))
-# 			message("Event list not found in REDCap bundle- it will be captured from record data.")
-# 		} else {
-# 			stop("Event data could not be found. Please supply event metadata from Redcap or ensure that your 
-# 					 data contains the 'redcap_event_name' column.")
-# 			}
-#   }

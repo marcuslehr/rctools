@@ -13,7 +13,6 @@
 #'   By default, the id_field and the REDCap event/repeat columns will be used.
 #' @param id_field Character. The name of the record_id field for your REDCap project.
 #' 
-#' @importFrom magrittr '%>%'
 #' 
 #' @author Marcus Lehr
 #' 

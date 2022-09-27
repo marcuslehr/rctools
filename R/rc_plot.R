@@ -170,7 +170,7 @@ rc_plot <- function(long_data,
       std_devs = suppressMessages(
                 long_data %>% dplyr::group_by_at(wrap_var) %>% 
                 dplyr::summarize(mean = mean(!!dplyr::sym(y)), 
-                                 sd = sd(!!dplyr::sym(y)))
+                                 sd = stats::sd(!!dplyr::sym(y)))
                 )
       
       plot = plot +
