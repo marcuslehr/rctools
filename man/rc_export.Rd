@@ -18,6 +18,7 @@ rc_export(
   dag = TRUE,
   form_complete_auto = FALSE,
   format = FALSE,
+  filter_logic = "",
   strip = ifelse(is.null(report_id) & is.null(fields), T, F),
   batch_size = -1,
   ...
@@ -74,7 +75,10 @@ from which at least one variable is requested will automatically be
 retrieved.}
 
 \item{format}{Logical.  Determines whether the data will be formatted with
-\code{rc_format} (Default = FALSE)}
+\code{rc_format} using the default options (Default = FALSE)}
+
+\item{filter_logic}{Character. Optional logic filter for record exports. Use REDCap
+style syntax- ie. similar to branching logic, calculations, etc.}
 
 \item{strip}{Logical. If \code{TRUE}, empty rows and columns will be removed from
 record_data. See \code{rc_strip} for more information or call seperately for more
@@ -85,7 +89,8 @@ in each batch of a batched export.  Non-positive numbers export the
 entire project in a single batch. Batching the export may be beneficial
 to prevent tying up smaller servers.  See details for more explanation.}
 
-\item{...}{Additional arguments to be passed to \code{rc_format}}
+\item{...}{Additional arguments to be passed to \code{rc_api_call}. Any arguments
+accepted by the API may be passed, even if not pre-coded by this function.}
 }
 \description{
 Exports records from a REDCap Database, allowing for

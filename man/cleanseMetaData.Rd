@@ -29,3 +29,6 @@ downloaded through the user interface, purge it of any UTF-8 characters,
 and write an alternate data data_dictionary that contains only ASCII
 characters.
 }
+\author{
+Benjamin Nutter
+}

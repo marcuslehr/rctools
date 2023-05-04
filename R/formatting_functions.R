@@ -260,8 +260,9 @@ combined_checkbox_to_factor = function(x, coding, factor_labels, var_name, check
   
   parsed_coding = parse_field_choices(coding)
   # Secondary validation to ensure choices match data_dict
-  if ( all(unique(stats::na.omit(column_values)) %in% parsed_coding$numbers) |
-       all(unique(stats::na.omit(column_values)) %in% parsed_coding$labels) ) {
+  if ( all(unique(as.vector(t(stats::na.omit(column_values)))) %in% parsed_coding$numbers) |
+       all(unique(as.vector(t(stats::na.omit(column_values)))) %in% parsed_coding$labels) 
+       ) {
     # Pass cols through makeRedcapFactor
     column_values = apply(column_values, 2, function(x) makeRedcapFactor(x, coding, factor_labels, var_name, checkbox)) %>%
       # Paste all options together

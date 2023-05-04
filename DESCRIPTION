@@ -1,10 +1,10 @@
 Package: rctools
 Type: Package
 Title: Tools for REDCap API and data manipulation
-Version: 0.5.2
+Version: 0.5.3
 Authors@R: c(
     person("Marcus", "Lehr", email = "marcus.j.lehr@gmail.com", 
-           role = c("aut","cre","ctb")),
+           role = c("aut","cre")),
     person("Benjamin", "Nutter", role = "ctb"),
     person("Stephen", "Lane", role = "ctb"),
     person("Will", "Beasley", role = "ctb"),
@@ -17,18 +17,19 @@ License: GPL-3
 Depends:
     R (>= 4.0.0)
 Imports:
-    checkmate,
+		rlang,
+		checkmate,
 		httr,
-    chron,
-    lubridate,
-    labelVector,
-    Hmisc,
-    readr,
-    dplyr,
-    stringr,
-    tidyr,
-    reshape2,
-    ggplot2
+		chron,
+		lubridate,
+		labelVector,
+		Hmisc,
+		readr,
+		dplyr,
+		stringr,
+		tidyr,
+		reshape2,
+		ggplot2
 LazyLoad: no
 URL: https://github.com/marcuslehr/rctools
 RoxygenNote: 7.2.1

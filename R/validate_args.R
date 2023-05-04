@@ -36,6 +36,7 @@
 #' @param var_roots Character vector
 #' @param repeats Character vector
 #' @param factor_cols Character vector
+#' @param filter_logic Character vector
 #' 
 #' @param overwriteBehavior Character, defined inputs, length == 1
 #' @param returnContent Character, defined inputs, length == 1
@@ -109,6 +110,7 @@ validate_args <- function(required = NULL,
                           var_roots = NULL,
 													repeats = NULL,
 													factor_cols = NULL,
+													filter_logic = NULL,
                           
                           # Match Args
                           overwriteBehavior = NULL,
@@ -211,7 +213,7 @@ validate_args <- function(required = NULL,
   
   # Generate var list
   vars = c('records','fields','forms','events','colClasses','group_by','var_roots',
-						'repeats','factor_cols')
+						'repeats','factor_cols','filter_logic')
 		
 		# Make formula
 		massert_formula = stats::formula(paste('~',paste(vars,collapse = ' + ')))
@@ -439,15 +441,7 @@ validate_args <- function(required = NULL,
               coll$push(paste0("The following are not valid form names: ",
                           paste0(forms_bad, collapse = ", ")))
           }
-    
-    ## These are the col names exported from RC, changing shouldn't be necessary.
-		## Also, changing from here would require exporting to the parent environment
-    # names(data_dict) <- data_dict_names
   }
-	else if (!is.null(fields) | !is.null(forms))
-		warning("The supplied fields or forms cannot be validated without the project
-		data dictionary. Please supply it directly or via a REDCap bundle, as created by
-		rc_bundle()")
 	
 	
 ##--- event_data validations

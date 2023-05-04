@@ -36,14 +36,18 @@
 #'   and reports. Options are ',', 'tab', ';', '|', and '^'
 #' @param dag Specifies a data access group to switch to
 #' @param data Data to import
+#' @param dateRangeBegin Optional date filter for records exports. Use format 'YYYY-MM-DD HH:MM:SS'
+#' @param dateRangeEnd Optional date filter for records exports. Use format 'YYYY-MM-DD HH:MM:SS'
 #' @param event Event name. For file import/export
 #' @param exportCheckboxLabel Logical. Will use the choice label or NA to fill 
 #'   fields instead of Checked or Unchecked. Requires rawOrLabel to be set to 
 #'   'true', otherwise does nothing.
 #' @param exportDataAccessGroups Logical
 #' @param exportSurveyFields Logical
-#' @param field Field name for file import/export
+#' @param file_field Field name for file import/export
 #' @param file Path to file for import
+#' @param filterLogic Optional logic filter for record exports. Use REDCap
+#'  style syntax- ie. similar to branching logic, calculations, etc.
 #' @param forceAutoNumber Logical. For importing records
 #' @param logtype Unknown
 #' @param overWriteBehavior Determines whether import data will overwrite existing
@@ -71,6 +75,7 @@
 #'   'form', 'multipart', or 'identity'
 #' 
 #' @author Marcus Lehr
+#' @export
 
 
 rc_api_call <- function(url = getOption("redcap_bundle")$redcap_url,
@@ -86,13 +91,16 @@ rc_api_call <- function(url = getOption("redcap_bundle")$redcap_url,
                         csvDelimiter='',
                         dag='',
                         data=NULL, # Cannot use '' default. Empty frames will be imported even when action='export'
+                        dateRangeBegin='',
+                        dateRangeEnd='',
                         endTime='',
                         event='',
                         exportCheckboxLabel='false',
                         exportDataAccessGroups='false',
                         exportSurveyFields='false',
-                        field='',
+                        file_field='',
                         file='path/to/file',
+                        filterLogic='',
                         forceAutoNumber='false',
                         logtype='',
                         overWriteBehavior='normal',
@@ -125,12 +133,15 @@ rc_api_call <- function(url = getOption("redcap_bundle")$redcap_url,
               csvDelimiter=csvDelimiter,
               dag=dag,
               data=data,
+              dateRangeBegin=dateRangeBegin,
+              dateRangeEnd=dateRangeEnd,
               endTime=endTime,
               event=event,
               exportCheckboxLabel=exportCheckboxLabel,
               exportDataAccessGroups=exportDataAccessGroups,
               exportSurveyFields=exportSurveyFields,
-              field=field,
+              field=file_field,
+              filterLogic=filterLogic,
               forceAutoNumber=forceAutoNumber,
               format=format,
               logtype=logtype,
@@ -164,10 +175,10 @@ rc_api_call <- function(url = getOption("redcap_bundle")$redcap_url,
              },
            'project' = {content = 'project_settings'},
            'record' = {
-             if (is.null(data)) 
-               stop("ERROR: No data was provided.")
-             else if ('data.frame' %in% class(data)) 
-               body[['data']] = data_frame_to_string(data)
+						 if ('data.frame' %in% class(data)) 
+							 body[['data']] = data_frame_to_string(data)
+						 else
+							 stop("Error: Please provide records in the form of a data.frame") 
              }
            )
   }
@@ -209,4 +220,20 @@ rc_api_call <- function(url = getOption("redcap_bundle")$redcap_url,
         # suppressMessages(as.data.frame( httr::content(response,content_as)))
         else stop("Argument return_as must be one of 'raw', 'text', or 'dataframe'")
     }
+}
+
+# Unexported functions --------------------------------------
+
+# Dataframes need to be converted to a csv string for import
+data_frame_to_string <- function(data) {
+  paste0(
+    utils::capture.output(
+      utils::write.table(data, 
+                         sep = ",",
+                         col.names = TRUE,
+                         row.names = FALSE,
+                         na = '') # Need to double check how RC interprets this vs NA
+    ),
+    collapse = "\n"
+  )
 }

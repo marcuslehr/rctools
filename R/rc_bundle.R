@@ -107,10 +107,23 @@ rc_bundle <- function(url,token,
     version=TRUE
   }
   
+  # If the project isn't longitudinal, RC will throw an error when exporting events
+  if (event_data) {
+    project_info = rc_api_call(url,token, 'project')
+    if (!project_info$is_longitudinal)
+      event_data = F
+  }
+  
   # The dictionary and user data are used for 2 bundle objects.
   # Exporting them first avoids duplicate API calls
   if (data_dict) meta_data = rc_api_call(url,token, 'metadata')
 	if (users) user_data = export_users(url,token)
+  
+  # Check for corrupted data dictionaries
+  if (!nrow(data_dict)) 
+    warning("Data dictionary is corrupted. This is typically caused by non-ASCII 
+            characters. It can be remedied by exporting the data dictionary from 
+            the Redcap GUI and running cleanseMetaData()")
 
 # Assemble bundle ---------------------------------------------------------
   
@@ -127,7 +140,7 @@ rc_bundle <- function(url,token,
         event_data = if (event_data) rc_api_call(url,token, 'event') else NULL,
         arms = if (arms) rc_api_call(url,token, 'arm') else NULL,
         mappings = if (mappings) rc_api_call(url,token, 'formEventMapping') else NULL,
-        proj_info = if (proj_info) rc_api_call(url,token, 'project') else NULL,
+        proj_info = if (exists('project_info')) project_info else if (proj_info) rc_api_call(url,token, 'project') else NULL,
         version = if (version) rc_api_call(url,token, 'version') else NULL
       ),
       class = c("redcapBundle", "list")

@@ -21,13 +21,16 @@ rc_api_call(
   csvDelimiter = "",
   dag = "",
   data = NULL,
+  dateRangeBegin = "",
+  dateRangeEnd = "",
   endTime = "",
   event = "",
   exportCheckboxLabel = "false",
   exportDataAccessGroups = "false",
   exportSurveyFields = "false",
-  field = "",
+  file_field = "",
   file = "path/to/file",
+  filterLogic = "",
   forceAutoNumber = "false",
   logtype = "",
   overWriteBehavior = "normal",
@@ -86,6 +89,10 @@ and reports. Options are ',', 'tab', ';', '|', and '^'}
 
 \item{data}{Data to import}
 
+\item{dateRangeBegin}{Optional date filter for records exports. Use format 'YYYY-MM-DD HH:MM:SS'}
+
+\item{dateRangeEnd}{Optional date filter for records exports. Use format 'YYYY-MM-DD HH:MM:SS'}
+
 \item{endTime}{Filter for log exports. Format is 'YYYY-MM-DD HH:MM'}
 
 \item{event}{Event name. For file import/export}
@@ -98,9 +105,12 @@ fields instead of Checked or Unchecked. Requires rawOrLabel to be set to
 
 \item{exportSurveyFields}{Logical}
 
-\item{field}{Field name for file import/export}
+\item{file_field}{Field name for file import/export}
 
 \item{file}{Path to file for import}
+
+\item{filterLogic}{Optional logic filter for record exports. Use REDCap
+style syntax- ie. similar to branching logic, calculations, etc.}
 
 \item{forceAutoNumber}{Logical. For importing records}
 

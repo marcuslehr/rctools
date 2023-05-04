@@ -3,8 +3,11 @@
 #' @title Check branching logic for errors
 #' @description  Check branching logic for common errors
 #' @details This function will verify that all event and variable names used in the
-#' branching logic exist in the project metadata. It will also warn of faulty logic
-#' concerning \code{[event-name] = 'event_name'} conditions.
+#' branching logic exist in the project metadata. 
+#' 
+#' Warnings will be shown for faulty event logic in the format 
+#' \code{[event-name] = 'event_name' AND [event-name] = 'event_name'} (field always hidden) or
+#' \code{[event-name] != 'event_name' OR [event-name] != 'event_name'} (field never hidden).
 #'
 #' @param data_dict REDCap project data data_dictionary. By default, 
 #' $data_dict is expected in the REDCap bundle option, as created by \code{rc_bundle}.

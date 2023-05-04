@@ -28,6 +28,7 @@ validate_args(
   var_roots = NULL,
   repeats = NULL,
   factor_cols = NULL,
+  filter_logic = NULL,
   overwriteBehavior = NULL,
   returnContent = NULL,
   error_handling = NULL,
@@ -113,6 +114,8 @@ the calling function.}
 \item{repeats}{Character vector}
 
 \item{factor_cols}{Character vector}
+
+\item{filter_logic}{Character vector}
 
 \item{overwriteBehavior}{Character, defined inputs, length == 1}
 

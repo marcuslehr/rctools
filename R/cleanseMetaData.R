@@ -20,6 +20,8 @@
 #' @param overwrite \code{logical(1)} Permit the new file to overwrite an 
 #'   existing file
 #'
+#' @author Benjamin Nutter
+#' @export
 
 cleanseMetaData <- function(data_dict_file, data_dict_clean,
                             overwrite = FALSE)

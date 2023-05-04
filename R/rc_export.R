@@ -24,6 +24,8 @@
 #'   all forms are returned.
 #' @param events Character. A vector of events to be returned from a longitudinal database.
 #'   If \code{NULL}, all events are returned.
+#' @param filter_logic Character. Optional logic filter for record exports. Use REDCap
+#'  style syntax- ie. similar to branching logic, calculations, etc.
 #' @param survey Logical. Specifies whether or not to export the survey identifier field 
 #'   (e.g., "redcap_survey_identifier") or survey timestamp fields 
 #'   (e.g., form_name+"_timestamp") when surveys are utilized in the project. 
@@ -47,8 +49,9 @@
 #' retrieved.
 #'   
 #' @param format Logical.  Determines whether the data will be formatted with
-#' \code{rc_format} (Default = FALSE)
-#' @param ... Additional arguments to be passed to \code{rc_format}
+#' \code{rc_format} using the default options (Default = FALSE)
+#' @param ... Additional arguments to be passed to \code{rc_api_call}. Any arguments
+#'   accepted by the API may be passed, even if not pre-coded by this function.
 #' @param strip Logical. If \code{TRUE}, empty rows and columns will be removed from
 #' record_data. See \code{rc_strip} for more information or call seperately for more
 #' options. 
@@ -138,6 +141,7 @@ rc_export <- function(report_id = NULL,
                        records = NULL, fields = NULL, forms = NULL,
                        events = NULL, survey = TRUE, dag = TRUE,
                        form_complete_auto = FALSE, format = FALSE,
+                       filter_logic = '',
                        strip = ifelse(is.null(report_id)&is.null(fields),T,F),
                        batch_size = -1, ...
                        ) {
@@ -164,7 +168,7 @@ rc_export <- function(report_id = NULL,
                 fields = fields, forms = forms, events = events,
                 records = records, survey = survey, dag = dag,
                 form_complete_auto = form_complete_auto, format = format,
-                batch_size = batch_size, strip = strip)
+                filter_logic = filter_logic, batch_size = batch_size, strip = strip)
 
   # If a report ID is provided, export the report
   if (!is.null(report_id)) x = rc_api_call(url,token,'report', report_id = report_id)
@@ -176,7 +180,9 @@ rc_export <- function(report_id = NULL,
       if (!is.null(fields)|!is.null(forms))
         # Append default fields
         fields <- unique(c(id_field,
-                           "redcap_event_name","redcap_repeat_instrument","redcap_repeat_instance",
+                           # As of > v13.3 the redcap fields return an error. 
+                           # They are automatically added to the export so long as the record_id field is requested
+                           # "redcap_event_name","redcap_repeat_instrument","redcap_repeat_instance",
                            fields))
       
       
@@ -198,9 +204,10 @@ rc_export <- function(report_id = NULL,
       
       # Call API
       if (batch_size < 1) {
-        x = rc_api_call(url,token,'record',
+        x = rc_api_call(url,token,'record', ...,
                          fields = fields, forms = forms, 
                          events = events, records = records,
+                         filterLogic = filter_logic,
                          exportSurveyFields = tolower(survey),
                          exportDataAccessGroups = tolower(dag))
       } else {
@@ -213,7 +220,7 @@ rc_export <- function(report_id = NULL,
 # Formatting ------------------------------------------------------------------
 
     
-  if (format) x = rc_format(x, data_dict = data_dict, ...)
+  if (format) x = rc_format(x, data_dict = data_dict)
   
   if (strip) x = rc_strip(x, id_field = id_field)
   
@@ -237,7 +244,8 @@ batched_export <- function(url, token,
   
   
   #* 1. Get the IDs column
-  IDs = rc_api_call(url,token,'record', fields = id_field)
+  IDs = rc_api_call(url,token,'record', fields = id_field, 
+                    filterLogic = filter_logic, ...)
   
   #* 2. Restrict to unique IDs
   unique_ids <- unique(IDs[[id_field]])
@@ -264,7 +272,12 @@ batched_export <- function(url, token,
   for (i in unique(batch.number))
   {
     # Export batch
-    batch_list[[i]] = rc_api_call(url,token,'record', records = unique_ids[batch.number == i])
+    batch_list[[i]] = rc_api_call(url,token,'record', 
+                                  records = unique_ids[batch.number == i],
+                                  fields = fields, forms = forms, events = events,
+                                  filterLogic = filter_logic, ...,
+                                  exportSurveyFields = tolower(survey),
+                                  exportDataAccessGroups = tolower(dag))
     
     # Pause
     Sys.sleep(1)
