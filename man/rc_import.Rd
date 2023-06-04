@@ -9,7 +9,6 @@ rc_import(
   url = getOption("redcap_bundle")$redcap_url,
   token = getOption("redcap_token"),
   data_dict = getOption("redcap_bundle")$data_dict,
-  event_data = getOption("redcap_bundle")$event_data,
   overwriteBehavior = "normal",
   returnContent = "count",
   returnData = FALSE,
@@ -27,8 +26,6 @@ rc_import(
 \item{data_dict}{Dataframe. A REDCap project data dictionary. By default,
 $data_dict is expected in the REDCap bundle option, as created by
 \code{rc_bundle}.}
-
-\item{event_data}{Dataframe. A REDCap event names table.}
 
 \item{overwriteBehavior}{Character string.  'normal' prevents existing
 data in REDCap from being altered. Note that when set to 'overwrite',

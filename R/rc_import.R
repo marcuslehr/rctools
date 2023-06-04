@@ -9,7 +9,6 @@
 #' @param data_dict Dataframe. A REDCap project data dictionary. By default, 
 #' $data_dict is expected in the REDCap bundle option, as created by 
 #' \code{rc_bundle}.
-#' @param event_data Dataframe. A REDCap event names table.
 #' @param overwriteBehavior Character string.  'normal' prevents existing
 #'   data in REDCap from being altered. Note that when set to 'overwrite',
 #'   blank values (NAs) will replace existing data.
@@ -69,7 +68,6 @@ rc_import <- function(record_data,
                       url = getOption("redcap_bundle")$redcap_url,
                       token = getOption("redcap_token"),
                       data_dict = getOption("redcap_bundle")$data_dict,
-                      event_data = getOption("redcap_bundle")$event_data,
                       overwriteBehavior = 'normal',
                       returnContent = 'count',
                       returnData = FALSE, logfile = "", batch_size = -1
@@ -79,12 +77,12 @@ rc_import <- function(record_data,
 
   fields = names(record_data)
   
-  validate_args(required = c('url','token','record_data','data_dict','event_data'),
+  validate_args(required = c('url','token','record_data','data_dict'),
                 record_data = record_data, url = url, token = token,
-                data_dict = data_dict, event_data = event_data,
+                data_dict = data_dict, fields = fields,
                 overwriteBehavior = overwriteBehavior, returnContent = returnContent,
-                logfile = logfile, batch_size = batch_size,
-                fields = fields)
+                logfile = logfile, batch_size = batch_size
+                )
   
   
   #** Remove survey identifiers and data access group fields from data
@@ -167,10 +165,6 @@ rc_import <- function(record_data,
                          data_dict = data_dict,
                          logfile = logfile)
   
-  # Undo any record data formatting
-  record_data = rc_format(record_data, data_dict = data_dict, event_data = event_data,
-                            factor_labels = F, col_labels = F, event_labels = F)
-
 # Import ------------------------------------------------------------------
 
   # Return data if requested. For testing/diagnostics. Data will not be uploaded

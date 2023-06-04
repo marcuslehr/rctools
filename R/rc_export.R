@@ -150,18 +150,24 @@ rc_export <- function(report_id = NULL,
   
   required = c('url','token')
   
+  # Add data dict to requirements if needed
   if (format | form_complete_auto) {
     if (is.null(data_dict)) 
       stop("data_dict must be supplied when the 'format' or 'form_complete_auto' arguments are TRUE.")
     required = c(required,'data_dict')
   }
   
+  # Add ID field to requirements if needed
   if ((!is.null(fields)|!is.null(forms)|batch_size>0) & is.null(report_id)) {
     # Get record_id field names
     id_field = getID(id_field = id_field,
                      data_dict = data_dict)
     required = c(required,'id_field')
   }
+  
+  # IDs are generally integers. Convert to character if passed
+  if (is.numeric(records)) records = as.character(records)
+  
   
   validate_args(required = required, record_data = NULL,
                 url = url, token = token, data_dict = data_dict, id_field = id_field,
