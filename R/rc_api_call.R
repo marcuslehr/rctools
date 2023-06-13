@@ -17,7 +17,7 @@
 #' 'surveyQueueLink', 'user', 'userDagMapping', 'userRole', 'userRoleMapping', and 'version'
 #' @param action Action to perform when calling the endpoint. Either 'import',
 #' 'export', 'delete', 'rename', or 'switch'
-#' @param return_as Determines how the server reponse will be returned from this 
+#' @param return_as Determines how the server response will be returned from this 
 #' function. This is mostly useful for returning the raw response when needed. 
 #' Options are 'raw', 'text', and 'dataframe'. 'raw' returns raw byte data, 'text' 
 #' converts it to character, and 'dataframe' returns a data.frame.
@@ -62,9 +62,11 @@
 #' @param report_id ID number of report for export. May be supplied as either 
 #'   character or numeric.
 #' @param returnContent Specify response type when importing records. Options are
-#'   'count', 'ids', 'auto_ids', and 'nothing'. 'count' returns the number of 
+#'   'count', 'ids', 'auto_ids', 'raw', and 'nothing'. 'count' returns the number of 
 #'   records which were updated. 'ids' returns a list of updated IDs. 'auto_ids'
-#'   appears to be the same as 'count'? 'nothing' returns nothing.
+#'   is not properly supported yet and currently is the same as 'count'? 
+#'   'raw' returns the response object as recieved from the server for debugging. 
+#'   'nothing' returns NULL.
 #' @param returnMetadataOnly Logical. For 'project_xml' export.
 #' @param type For record imports/exports. Options are 'flat' and 'eav'
 #' @param user Specify a user for log exports
@@ -196,12 +198,11 @@ rc_api_call <- function(url = getOption("redcap_bundle")$redcap_url,
   if (action=='import') { 
     if (content=='file') return("Upload successful") # NULL returned for content in this case
     if (content=='record') switch(returnContent,
-           'count' = message(paste0('Number of records updated: ', as.character(response))),
-           'auto_ids' = message(paste0('Number of records updated: ', as.character(response))),
+           'count' = {print('Number of records updated:'); print(as.integer(as.character(response)))}, # Avoiding messages() bc it goes to stderr. Resulting is returned when capturing a variable and printed to console
+           'auto_ids' = {print('Number of records updated:'); print(as.integer(as.character(response)))}, # This option returns automatically assigned IDs. Probably need to handle like 'ids'
            'nothing' = return(), 
-           'ids' = message(paste0("Records updated: ", 
-                          paste(utils::read.csv(text=as.character(response))$id,
-                                collapse=', ')))
+           'ids' = {cat("Records updated: \n"); print(utils::read.csv(text=as.character(response))$id)},
+           'raw' = return(response)
            )
   }
     else if (action=='export') {

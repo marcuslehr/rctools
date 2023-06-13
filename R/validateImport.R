@@ -739,14 +739,16 @@ validate_import_phone <- function(x, field_name, logfile)
     field_name = field_name,
     indices = w_long,
     message = paste0("Value(s) are not 10 digit phone numbers.\n",
-                     "Values not imported.")
+                     "Values not imported."),
+    logfile = logfile
   )
   
   print_validation_message(
     field_name = field_name,
     indices = w_long,
     message = paste0("Value(s) are not valid North American phone numbers.\n",
-                     "Values not imported.")
+                     "Values not imported."),
+    logfile = logfile
   )
   
   x[w_long | w_invalid] <- NA
@@ -755,7 +757,7 @@ validate_import_phone <- function(x, field_name, logfile)
 
 # print_validation_message ------------------------------------------
 
-print_validation_message <- function(field_name, indices, message, logfile)
+print_validation_message <- function(field_name, indices, message, logfile = '')
 {
   if (length(indices))
   {

@@ -61,7 +61,7 @@ rc_api_call(
 \item{action}{Action to perform when calling the endpoint. Either 'import',
 'export', 'delete', 'rename', or 'switch'}
 
-\item{return_as}{Determines how the server reponse will be returned from this
+\item{return_as}{Determines how the server response will be returned from this
 function. This is mostly useful for returning the raw response when needed.
 Options are 'raw', 'text', and 'dataframe'. 'raw' returns raw byte data, 'text'
 converts it to character, and 'dataframe' returns a data.frame.}
@@ -133,9 +133,11 @@ for column names}
 character or numeric.}
 
 \item{returnContent}{Specify response type when importing records. Options are
-'count', 'ids', 'auto_ids', and 'nothing'. 'count' returns the number of
+'count', 'ids', 'auto_ids', 'raw', and 'nothing'. 'count' returns the number of
 records which were updated. 'ids' returns a list of updated IDs. 'auto_ids'
-appears to be the same as 'count'? 'nothing' returns nothing.}
+is not properly supported yet and currently is the same as 'count'?
+'raw' returns the response object as recieved from the server for debugging.
+'nothing' returns NULL.}
 
 \item{returnMetadataOnly}{Logical. For 'project_xml' export.}
 
