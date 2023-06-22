@@ -33,7 +33,7 @@ rc_logic_check <- function(data_dict = getOption("redcap_bundle")$data_dict,
     validate_event_logic(branching_logic, fields)
     
     # Probably only needed for =/!= 0 logic
-    validate_value_logic(branching_logic, fields)
+    # validate_value_logic(branching_logic, fields)
 }
 
 # Validate event names --------------------------------------------------------------------
@@ -60,7 +60,7 @@ validate_events <- function(branching_logic, events, fields) {
   if (length(invalidEvents) > 0) {
 
     # Locate invalid events in data
-    invalidIndex = stringr::str_detect(branching_logic, invalidEvents)
+    invalidIndex = stringr::str_detect(branching_logic, paste(invalidEvents, collapse = '|'))
     invalidIndex[is.na(invalidIndex)] = FALSE
 
     # Print results

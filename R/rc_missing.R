@@ -160,7 +160,7 @@ rc_missing <- function(record_data,
   }
   
   # Fill in existing data for logic
-  cast_formula = paste(paste(rc_factors,collapse = ' + '),"~ variable")
+  cast_formula = paste(paste(rc_factors,collapse = ' + '), "~ variable")
   data_wide_full = dplyr::full_join(expected_data, record_data, by = c(rc_factors, 'variable')) %>% 
                           reshape2::dcast(., cast_formula)
   
@@ -183,31 +183,31 @@ rc_missing <- function(record_data,
   
     # Filter variables from empty events unless there is data in a following event or the participant as completed the study
     if (!is.null(completion_field)) {
-      logic = data_wide_full %>%
-                dplyr::mutate(row_sums = rowSums(!is.na(dplyr::select(.,-dplyr::all_of(rc_factors))))) %>% 
+      visit_data_summary = data_wide_full %>%
+                dplyr::mutate(row_sums = rowSums(!is.na(dplyr::select(.,-dplyr::all_of(rc_factors))))) %>% # Count variables with data. Incompatible with checkbox fields
                 dplyr::group_by_at(rc_factors[1:2]) %>% # Removing repeats to look at entire event. Including would break data_following
-                dplyr::summarise(var_count = sum(row_sums)) %>%
-                dplyr::mutate(data_following = !sum(var_count) == cumsum(var_count)) %>% 
-                dplyr::left_join(., completion_data, by = id_field)
+                dplyr::summarise(var_count = sum(row_sums)) %>% # I think sum() is only relevant when repeats are present
+                dplyr::mutate(data_following = cumsum(var_count) != sum(var_count)) %>% # If total sum per ID is == cumsum, then all following visits must be empty (if any)
+                dplyr::left_join(., completion_data, by = id_field) # Add completion field for next step
                 
       
       missing_data = suppressWarnings(
-                      dplyr::left_join(missing_data_all, logic, by = rc_factors[1:2]) %>% # Logic has no repeats
-                        dplyr::filter(var_count > 0 | data_following == T | !!dplyr::sym(completion_field) == 'Yes|1') %>% 
+                      dplyr::left_join(missing_data_all, visit_data_summary, by = rc_factors[1:2]) %>% # Logic has no repeats
+                        dplyr::filter(var_count > 0 | data_following | !!dplyr::sym(completion_field) == 'Yes|1') %>% 
                         dplyr::select(dplyr::all_of(rc_factors), variable)
                       )
     }
     # Perform above filtering without completion_field if not provided
     else {
-      logic = data_wide_full %>%
+      visit_data_summary = data_wide_full %>%
                 dplyr::mutate(row_sums = rowSums(!is.na(dplyr::select(.,-dplyr::all_of(rc_factors))))) %>% 
                 dplyr::group_by_at(rc_factors[1:2]) %>% 
                 dplyr::summarise(var_count = sum(row_sums)) %>% 
                 dplyr::mutate(data_following = !sum(var_count) == cumsum(var_count))
       
       missing_data = suppressWarnings(
-                      dplyr::left_join(missing_data_all, logic, by = rc_factors[1:2]) %>% 
-                        dplyr::filter(var_count > 0 | data_following == T) %>% 
+                      dplyr::left_join(missing_data_all, visit_data_summary, by = rc_factors[1:2]) %>% 
+                        dplyr::filter(var_count > 0 | data_following) %>% 
                         dplyr::select(dplyr::all_of(rc_factors), variable)
                       )
     }
@@ -231,6 +231,14 @@ rc_missing <- function(record_data,
         }
       }
     }
+    
+    # Ignore fields dependent on other fields. Event dependencies are handled via event_var_combos
+    # Implementing branching logic eval would be quite the endeavor. Preferably RC will implement data quality API methods. Their missing data method takes branching logic into account
+      field_dependent_fields = data_dict$field_name[which(stringr::str_detect(data_dict$branching_logic, paste(data_dict$field_name,collapse='|')))]
+      if (any(field_dependent_fields %in% missing_data$variable)) {
+        message("Fields with branching logic dependent on other fields will be removed as their presence in the data are not consistent.")
+        missing_data = missing_data %>% dplyr::filter(!variable %in% field_dependent_fields)
+      } 
     
     # Notify user if no data remains
     if (nrow(missing_data) == 0) message("No missing data were found.")
