@@ -12,7 +12,8 @@
 #'
 #' The logic of this function does not extend to repeat instruments or checkbox, calculated,
 #' or hidden fields. If present in the record data, they will be dropped. Additionally, this function
-#' does not yet support branching logic. It will be implemented in a future version.
+#' does not yet support branching logic. Any field with logic dependent on another field will be removed.
+#' Fields with other logic, ie event based logic, will remain.
 #'
 #' @param record_data Record data export from REDCap
 #' @param completion_field Character. The REDCap variable which indicates whether or not a subject
@@ -84,8 +85,7 @@ rc_missing <- function(record_data,
         any repeat instruments, please supply the `repeats` argument. This should
         only be done for instruments where a consistent number of repeat instances are expected.")
     
-      record_data = dplyr::filter(record_data, is.na(redcap_repeat_instrument)) #%>% # Repeat rows
-                      # dplyr::select(-dplyr::contains('redcap_repeat')) # Repeat ID columns
+      record_data = record_data %>% dplyr::filter(is.na(redcap_repeat_instrument) | redcap_repeat_instrument == '')
     }
    } # No data exists in repeat cols, go ahead and remove them if present
   # else if (any(grepl('redcap_repeat', names(record_data)))) 
@@ -121,8 +121,10 @@ rc_missing <- function(record_data,
   else message("Completion field not found. Some missing data may not be captured.")
   
 	# Remove _complete fields
-  if (any(grepl('_complete',names(record_data))))
-    record_data = dplyr::select(record_data, -dplyr::contains('_complete'))
+  # if (any(grepl('_complete',names(record_data))))
+    # record_data = dplyr::select(record_data, -dplyr::contains('_complete'))
+	form_complete_fields = data_dict$form_name %>% unique() %>% paste0('_complete')
+	record_data[!names(record_data) %in% form_complete_fields]
 
 
 # Collect missing data ----------------------------------------------------  
@@ -148,7 +150,7 @@ rc_missing <- function(record_data,
   # IDs = as.character(unique(record_data[[id_field]]))
   IDs = unique(record_data[[id_field]])
 
-  # Create a frame of all event/variable combos for each ID
+  # Create a frame of all event/variable combos for each ID. Tidyr might have a function for this
   event_var_combos = dplyr::select(record_data, dplyr::contains('redcap'), variable) %>% dplyr::distinct() %>% 
                       dplyr::arrange_at(c('redcap_event_name', 'variable'))
   expected_data = data.frame()

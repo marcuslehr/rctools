@@ -170,7 +170,7 @@ makeRedcapFactor <- function(x, coding, factor_labels, var_name, checkbox = F, s
     return(x)
   }
   
-  # Check if checkbox field condensed is condensed
+  # Check if checkbox field is condensed
   if (checkbox) {
     if (identical(suffix,var_name)) suffix = NULL
       
@@ -181,7 +181,7 @@ makeRedcapFactor <- function(x, coding, factor_labels, var_name, checkbox = F, s
   
   coding = parse_field_choices(coding, suffix)
   
-  if (nrow(coding) > 0) { # Don't remember why this is here
+  if (nrow(coding) > 0) { # Don't remember why this check is here
     
     # Determine data format
     if ( all(unique(stats::na.omit(x)) %in% coding$numbers) ) raw = T else raw = F

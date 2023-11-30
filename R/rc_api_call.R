@@ -207,7 +207,7 @@ rc_api_call <- function(url = getOption("redcap_bundle")$redcap_url,
   }
     else if (action=='export') {
       # Check for data
-      if (length(response$content)<=1) stop("No data were returned.")
+      if (length(response$content)<=1) stop("No data returned.")
   
       # Extract data
       if (content=='version') return_as = 'text'
