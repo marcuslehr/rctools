@@ -27,8 +27,8 @@
 #' @param data_dict Dataframe. REDCap project data data_dictionary. By default, 
 #' $data_dict is expected in a REDCap bundle object, as created by \code{rc_bundle}. Otherwise, an 
 #' equivalent data.frame containing the project data dictionary must be supplied.
-#' @param events Character. Vector of REDCap event names. If supplying manually, chronological
-#' ordering of events must be ensured. 
+#' @param events Character. Vector of REDCap event names. Events not included in this list will
+#' not be considered. If supplying manually, chronological ordering of events must be ensured. 
 #' @param form_perm Dataframe. User access permissions for REDCap forms. By default, $form_perm
 #' is expected in the REDCap bundle, as created by \code{rc_bundle}. Otherwise, an equivalent 
 #' data.frame containing form permission data must be supplied.
@@ -76,6 +76,7 @@ rc_missing <- function(record_data,
   }
   
   # Remove repeat instrument data unless specified in repeats
+	record_data$redcap_repeat_instrument[record_data$redcap_repeat_instrument==''] = NA # GUI exports blanks as ''
   if (any(!is.na(record_data[['redcap_repeat_instrument']]))) { # Check if col exists and contains data
     if (any(repeats %in% record_data$redcap_repeat_instrument)) # Check if values are contained in 'repeats'
       record_data = dplyr::filter(record_data, redcap_repeat_instrument %in% repeats |
@@ -85,7 +86,7 @@ rc_missing <- function(record_data,
         any repeat instruments, please supply the `repeats` argument. This should
         only be done for instruments where a consistent number of repeat instances are expected.")
     
-      record_data = record_data %>% dplyr::filter(is.na(redcap_repeat_instrument) | redcap_repeat_instrument == '')
+      record_data = record_data %>% dplyr::filter(is.na(redcap_repeat_instrument))
     }
    } # No data exists in repeat cols, go ahead and remove them if present
   # else if (any(grepl('redcap_repeat', names(record_data)))) 
@@ -93,7 +94,7 @@ rc_missing <- function(record_data,
   
   # Remove other unwanted fields
   fields_calc = intersect(data_dict$field_name[data_dict$field_type == 'calc'], names(record_data))
-  fields_hidden = intersect(data_dict$field_name[data_dict$field_annotation == '@HIDDEN'], names(record_data))
+  fields_hidden = intersect(data_dict$field_name[grepl('@HIDDEN',data_dict$field_annotation)], names(record_data))
   
   if (length(fields_calc)>0 |
       length(fields_hidden)>0 |
@@ -124,7 +125,7 @@ rc_missing <- function(record_data,
   # if (any(grepl('_complete',names(record_data))))
     # record_data = dplyr::select(record_data, -dplyr::contains('_complete'))
 	form_complete_fields = data_dict$form_name %>% unique() %>% paste0('_complete')
-	record_data[!names(record_data) %in% form_complete_fields]
+	record_data = record_data[!names(record_data) %in% form_complete_fields]
 
 
 # Collect missing data ----------------------------------------------------  
@@ -150,7 +151,7 @@ rc_missing <- function(record_data,
   # IDs = as.character(unique(record_data[[id_field]]))
   IDs = unique(record_data[[id_field]])
 
-  # Create a frame of all event/variable combos for each ID. Tidyr might have a function for this
+  # Create a frame of all event/variable combos for each ID. Tidyr has a function for this but programming is difficult
   event_var_combos = dplyr::select(record_data, dplyr::contains('redcap'), variable) %>% dplyr::distinct() %>% 
                       dplyr::arrange_at(c('redcap_event_name', 'variable'))
   expected_data = data.frame()
@@ -160,35 +161,35 @@ rc_missing <- function(record_data,
     x = dplyr::select(x, !!id_field, dplyr::everything())
     expected_data = rbind(expected_data, x)
   }
-  
-  # Fill in existing data for logic
-  cast_formula = paste(paste(rc_factors,collapse = ' + '), "~ variable")
-  data_wide_full = dplyr::full_join(expected_data, record_data, by = c(rc_factors, 'variable')) %>% 
-                          reshape2::dcast(., cast_formula)
-  
-  # Filter events for those remaining in the data
-  events = events[events %in% record_data$redcap_event_name]
-  if (!length(events)) stop("Events in data do not match supplied events")
-  
-  # Ensure proper event ordering for logic
-  data_wide_full$redcap_event_name = factor(data_wide_full$redcap_event_name, levels = events)
-  data_wide_full = dplyr::arrange_at(data_wide_full, c(id_field,'redcap_event_name'))
-  
+
   # Capture all expected data points not present in record_data
   missing_data_all = dplyr::anti_join(expected_data, dplyr::select(record_data, -value), by = c(rc_factors, 'variable'))
   missing_data_all$variable = as.character(missing_data_all$variable)
 
+  
 # Filter data -------------------------------------------------------------
 
-  # Continue if missing data are found
   if (nrow(missing_data_all) > 0) {
-  
+    
+    # Convert expected data to wide format and fill in values from data
+    cast_formula = paste(paste(rc_factors,collapse = ' + '), "~ variable")
+    data_wide_full = dplyr::full_join(expected_data, record_data, by = c(rc_factors, 'variable')) %>% 
+                            reshape2::dcast(., cast_formula)
+    
+    # Ensure proper event ordering for logic
+    events = events[events %in% record_data$redcap_event_name]
+    if (!length(events)) stop("Events in data do not match supplied events")    
+    data_wide_full$redcap_event_name = factor(data_wide_full$redcap_event_name, levels = events)
+    data_wide_full = data_wide_full %>% dplyr::arrange_at(c(id_field,'redcap_event_name')) %>% 
+                        dplyr::filter(!is.na(redcap_event_name)) # Events outside the events list will be converted to NA
+                        
+    
     # Filter variables from empty events unless there is data in a following event or the participant as completed the study
     if (!is.null(completion_field)) {
       visit_data_summary = data_wide_full %>%
                 dplyr::mutate(row_sums = rowSums(!is.na(dplyr::select(.,-dplyr::all_of(rc_factors))))) %>% # Count variables with data. Incompatible with checkbox fields
                 dplyr::group_by_at(rc_factors[1:2]) %>% # Removing repeats to look at entire event. Including would break data_following
-                dplyr::summarise(var_count = sum(row_sums)) %>% # I think sum() is only relevant when repeats are present
+                dplyr::summarise(var_count = sum(row_sums)) %>% # sum() required for repeats
                 dplyr::mutate(data_following = cumsum(var_count) != sum(var_count)) %>% # If total sum per ID is == cumsum, then all following visits must be empty (if any)
                 dplyr::left_join(., completion_data, by = id_field) # Add completion field for next step
                 
