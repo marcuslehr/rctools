@@ -51,7 +51,7 @@ rc_outliers <- function(record_data, sex_var = NA, sd_threshold = 3,
 								)
   
   # Get ID column name
-  id_field = getID(record_data, data_dict)
+  id_field = getID(record_data, data_dict, id_field)
   rc_fields = intersect(c('redcap_event_name','redcap_repeat_instrument','redcap_repeat_instance'),
                         names(record_data))
 	

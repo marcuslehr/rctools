@@ -96,7 +96,7 @@ rc_import <- function(record_data,
   
   
   #** If the study id is not in the the first column, move it and print a warning
-  id_field = getID(data_dict = data_dict, id_field = NULL)
+  id_field = getID(data_dict = data_dict)
   
   if (id_field != names(record_data)[1]) {
     

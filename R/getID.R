@@ -13,7 +13,7 @@
 
 getID <- function(record_data = NULL, 
                   data_dict = getOption("redcap_bundle")$data_dict, 
-                  id_field = getOption("redcap_bundle")$id_field) {
+                  id_field = NULL) {
   
   if (!is.null(id_field)) return(id_field)
   

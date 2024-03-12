@@ -362,7 +362,7 @@ validate_args <- function(required = NULL,
 ##--- record_data
   if (!is.null(record_data)) {
     # Get ID field and make sure it's in record_data
-    id_field = suppressWarnings(getID(record_data))
+    id_field = suppressWarnings(getID(record_data=record_data, id_field=id_field))
     if (!id_field %in% names(record_data))# |
         # !'redcap_event_name' %in% names(record_data)) This makes non-longitudinal projects incompatible
       coll$push("Record_data must contain the record_id column.")
