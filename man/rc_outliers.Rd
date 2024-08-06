@@ -28,8 +28,8 @@ deviations from the mean a value can be before being flagged as an outlier.}
 \item{fields}{Character. A vector of field/variable names to be analyzed
 may be passed manually.}
 
-\item{filtered}{Logical. Select whether non-outlier values should be returned.
-Default is \code{FLASE}.}
+\item{filtered}{Logical. When \code{TRUE}, only outlier values will be returned.
+Default is \code{FALSE}.}
 
 \item{data_dict}{Dataframe. A REDCap project data dictionary. By default,
 $data_dict is expected in the REDCap bundle option, as created by

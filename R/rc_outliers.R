@@ -21,8 +21,8 @@
 #' deviations from the mean a value can be before being flagged as an outlier.
 #' @param fields Character. A vector of field/variable names to be analyzed
 #' may be passed manually. 
-#' @param filtered Logical. Select whether non-outlier values should be returned.
-#' Default is \code{FLASE}.
+#' @param filtered Logical. When \code{TRUE}, only outlier values will be returned.
+#' Default is \code{FALSE}.
 #'
 #' @param data_dict Dataframe. A REDCap project data dictionary. By default, 
 #' $data_dict is expected in the REDCap bundle option, as created by 
@@ -35,6 +35,8 @@
 #' 
 #' @export
 
+
+# A detection function argument should be added.
 rc_outliers <- function(record_data, sex_var = NA, sd_threshold = 3,
                         fields = NULL, filtered = FALSE,
                         data_dict = getOption("redcap_bundle")$data_dict,
@@ -59,7 +61,7 @@ rc_outliers <- function(record_data, sex_var = NA, sd_threshold = 3,
   pooled_vars = attributes(record_data)$pooled_vars
   # Attempt to grab from options? Supply argument to user?
   
-	# Retrieve numeric data from records
+	# Attempt to isolate numeric fields. This converts the data to long format.
   record_data = numeric_only(record_data, data_dict, sex_var, fields)
   
   # Add form names

@@ -31,8 +31,8 @@ excessive false positives.}
 $data_dict is expected in a REDCap bundle object, as created by \code{rc_bundle}. Otherwise, an
 equivalent data.frame containing the project data dictionary must be supplied.}
 
-\item{events}{Character. Vector of REDCap event names. If supplying manually, chronological
-ordering of events must be ensured.}
+\item{events}{Character. Vector of REDCap event names. Events not included in this list will
+not be considered. If supplying manually, chronological ordering of events must be ensured.}
 
 \item{form_perm}{Dataframe. User access permissions for REDCap forms. By default, $form_perm
 is expected in the REDCap bundle, as created by \code{rc_bundle}. Otherwise, an equivalent
@@ -54,7 +54,8 @@ Additionally, if the subject is marked as having completed the study (i.e. \code
 
 The logic of this function does not extend to repeat instruments or checkbox, calculated,
 or hidden fields. If present in the record data, they will be dropped. Additionally, this function
-does not yet support branching logic. It will be implemented in a future version.
+does not yet support branching logic. Any field with logic dependent on another field will be removed.
+Fields with other logic, ie event based logic, will remain.
 }
 \author{
 Marcus Lehr
