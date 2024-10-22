@@ -67,15 +67,16 @@ rc_bundle <- function(url,token,
   else invalid_format = F
   
   
-  # File doesn't exist and the string isn't a token
-  if (invalid_path & invalid_format) 
+  if (invalid_path & invalid_format) # File doesn't exist and the string isn't a token
     coll$push("Please provide a valid path to the token file.")
-  # File exists but doesn't contain a token
-  else if (invalid_format)
-    coll$push("REDCap tokens must be exactly 32 alpha-numeric characters.")
   
-  # If pass then the string is a token. No else statement/assignment needed here
-  # Edge case of 32 character invalid path could make it here also
+  else if (invalid_format) # File exists but doesn't contain a token
+    coll$push("REDCap tokens must be exactly 32 alpha-numeric characters.")
+	
+	else if (invalid_path) # No file but format is valid.
+		warning("Token string passed directly. Consider reading your tokens from a private file rather than hardcoding.")
+  
+  # Edge case of 32 character invalid path would pass this logic, but will RC will return an error once the API is called.
   
   
   massert(~ url + token,
