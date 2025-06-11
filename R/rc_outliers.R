@@ -10,26 +10,28 @@
 #' \code{fields} argument, the fields to be analyzed will be guessed based on
 #' column type. All non-numeric data will be removed before analysis.
 #' If mixed numeric/non-numeric data (e.g. "160 cm") are passed, the first numerical
-#' instance will be extracted from the data. If a sex variable is provided, then
-#' variables will be grouped by sex for outlier analysis.
+#' instance will be extracted from the data. If a grouping variable is provided, then
+#' outliers will be evaluated per group.
 #' 
 #' @param record_data Dataframe. Records data export from REDCap. For the
 #' purposes of this function, only quantitative data will be kept. 
-#' @param sex_var String. Name of variable indicating the sex of subjects. If
-#' included, variables will be grouped by sex when determining outliers.
-#' @param sd_threshold Integer. Threshold value for the number of standard
-#' deviations from the mean a value can be before being flagged as an outlier.
+#' @param fun Function. The outlier detection function to be applied to the data.
+#' This function will be called inside of a dplyr::mutate command, 
+#' ie \code{record_data %>% mutate(outlier = fun(value))}.
+#' The function should return a logical (or coercible to logical) vector of 
+#' the same length as the input. \code{NA} values will be interpreted as \code{FALSE}.
+#' Currently, additional arguments cannot be passed to the function. 
+#' @param grouping_variable String. Name of a grouping variable. If
+#' included, outliers will be determined separately for each group.
 #' @param fields Character. A vector of field/variable names to be analyzed
 #' may be passed manually. 
 #' @param filtered Logical. When \code{TRUE}, only outlier values will be returned.
 #' Default is \code{FALSE}.
-#'
 #' @param data_dict Dataframe. A REDCap project data dictionary. By default, 
 #' $data_dict is expected in the REDCap bundle option, as created by 
 #' \code{rc_bundle}.
 #' @param mappings Dataframe. A REDCap table containing form/event mappings.
 #' @param id_field Character. Field name corresponding to the 'record_id' field.
-#' 
 #' 
 #' @author Marcus Lehr
 #' 
@@ -37,19 +39,25 @@
 
 
 # A detection function argument should be added.
-rc_outliers <- function(record_data, sex_var = NA, sd_threshold = 3,
-                        fields = NULL, filtered = FALSE,
+rc_outliers <- function(record_data, 
+                        fun = function(x) abs(scale(x)) > 3, 
+                        grouping_variable = NULL,
+                        fields = NULL, 
+                        filtered = FALSE,
                         data_dict = getOption("redcap_bundle")$data_dict,
                         mappings = getOption("redcap_bundle")$mappings,
-                        id_field = getOption("redcap_bundle")$id_field) {
+                        id_field = getOption("redcap_bundle")$id_field,
+                        ... = NULL
+                        ) {
   
-  validate_args(required = c('record_data'),
-								record_data = record_data, 
-								sex_var = sex_var,
-                sd_threshold = sd_threshold, 
+  validate_args(required = c('record_data','fun'),
+								record_data = record_data,
+								fun = fun,
+								grouping_variable = grouping_variable,
+                fields = fields,
+								filtered = filtered,
 								data_dict = data_dict,
-                fields = fields, 
-								filtered = filtered
+                mappings = mappings
 								)
   
   # Get ID column name
@@ -62,15 +70,15 @@ rc_outliers <- function(record_data, sex_var = NA, sd_threshold = 3,
   # Attempt to grab from options? Supply argument to user?
   
 	# Attempt to isolate numeric fields. This converts the data to long format.
-  record_data = numeric_only(record_data, data_dict, sex_var, fields)
+  record_data = numeric_only(record_data, data_dict, grouping_variable, fields)
   
   # Add form names
   record_data = add_form_names(record_data, pooled_vars, data_dict, mappings, id_field)
   
   # Identify outliers for each variable
-  groups = c(sex_var, 'variable') %>% stats::na.omit()
+  groups = c(grouping_variable, 'variable')
   record_data = record_data %>% dplyr::group_by_at(groups) %>% 
-                  dplyr::mutate(outlier = abs(scale(value))>sd_threshold) %>%
+                  dplyr::mutate(outlier = fun(value)) %>%
                   dplyr::ungroup() %>% dplyr::arrange_at(c(id_field,'redcap_event_name','variable'))
   
   # NAs result from single values and (I think) standard deviations of 0. Replace them with FALSE

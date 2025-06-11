@@ -6,24 +6,22 @@
 \usage{
 rc_outliers(
   record_data,
-  sex_var = NA,
-  sd_threshold = 3,
+  fun = function(x) abs(scale(x)) > 3,
+  grouping_variable = NULL,
   fields = NULL,
   filtered = FALSE,
   data_dict = getOption("redcap_bundle")$data_dict,
   mappings = getOption("redcap_bundle")$mappings,
-  id_field = getOption("redcap_bundle")$id_field
+  id_field = getOption("redcap_bundle")$id_field,
+  ... = NULL
 )
 }
 \arguments{
 \item{record_data}{Dataframe. Records data export from REDCap. For the
 purposes of this function, only quantitative data will be kept.}
 
-\item{sex_var}{String. Name of variable indicating the sex of subjects. If
-included, variables will be grouped by sex when determining outliers.}
-
-\item{sd_threshold}{Integer. Threshold value for the number of standard
-deviations from the mean a value can be before being flagged as an outlier.}
+\item{grouping_variable}{String. Name of a grouping variable. If
+included, outliers will be determined separately for each group.}
 
 \item{fields}{Character. A vector of field/variable names to be analyzed
 may be passed manually.}
@@ -51,8 +49,8 @@ Unless a vector of variables/field names is passed to the
 \code{fields} argument, the fields to be analyzed will be guessed based on
 column type. All non-numeric data will be removed before analysis.
 If mixed numeric/non-numeric data (e.g. "160 cm") are passed, the first numerical
-instance will be extracted from the data. If a sex variable is provided, then
-variables will be grouped by sex for outlier analysis.
+instance will be extracted from the data. If a grouping variable is provided, then
+outliers will be evaluated per group.
 }
 \author{
 Marcus Lehr

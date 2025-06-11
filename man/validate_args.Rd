@@ -29,6 +29,7 @@ validate_args(
   repeats = NULL,
   factor_cols = NULL,
   filter_logic = NULL,
+  grouping_variable = NULL,
   overwriteBehavior = NULL,
   returnContent = NULL,
   error_handling = NULL,
@@ -64,7 +65,7 @@ validate_args(
   event_data = NULL,
   bundle = NULL,
   fields_list = NULL,
-  sex_var = NULL
+  fun = NULL
 )
 }
 \arguments{
@@ -116,6 +117,8 @@ the calling function.}
 \item{factor_cols}{Character vector}
 
 \item{filter_logic}{Character vector}
+
+\item{grouping_variable}{Character vector}
 
 \item{overwriteBehavior}{Character, defined inputs, length == 1}
 
@@ -187,7 +190,7 @@ the calling function.}
 
 \item{fields_list}{List}
 
-\item{sex_var}{Character (length == 1) or NA}
+\item{fun}{Function}
 }
 \description{
 This will validate all supplied function arguments using the

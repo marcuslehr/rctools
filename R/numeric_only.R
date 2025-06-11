@@ -14,7 +14,7 @@
 #' @param data_dict Dataframe. REDCap project data data_dictionary. By default, 
 #' $data_dict is expected in the REDCap bundle option, as created by 
 #' \code{rc_bundle}.
-#' @param sex_var String. Name of variable indicating the sex of subjects. If
+#' @param grouping_variable String. Name of a variable to group records by. If
 #' included, it will be used as one of the melting factors.
 #' @param fields Character. A vector of field/variable names to be analyzed
 #' may be passed manually. 
@@ -28,7 +28,7 @@
 
 numeric_only <- function(record_data, 
                          data_dict = getOption("redcap_bundle")$data_dict, 
-                         sex_var = NA, fields = NULL, 
+                         grouping_variable = NULL, fields = NULL, 
                          long_format = TRUE, drop_message = TRUE) {
   
   # Notify user
@@ -76,19 +76,19 @@ numeric_only <- function(record_data,
   }
   
   # Create melting variables and add to fields list
-  rc_factors = c(id_field, sex_var, rc_fields) %>% stats::na.omit()
+  rc_factors = c(id_field, grouping_variable, rc_fields)
   rc_factors = rc_factors[rc_factors %in% names(record_data)]
   fields = c(rc_factors, fields) %>% unique()
   
   # Subset data
   record_data = record_data[fields]
   
-  # Fill sex variable before melt, if applicable
-  if (!is.na(sex_var))
-    if(any(is.na(record_data[sex_var]))) # This condition is an attempt to avoid an error when the
+  # Fill grouping variable before melt, if applicable
+  if (!is.null(grouping_variable))
+    if(any(is.na(record_data[grouping_variable]))) # This condition is an attempt to avoid an error when the
                                         # var has already been filled. An error will still be thrown
 																				# for an incomplete fill
-    record_data = rc_fill(record_data, sex_var)
+    record_data = rc_fill(record_data, grouping_variable)
   
   # Convert to long format. Dates get destroyed by melt()
   record_data = suppressWarnings(

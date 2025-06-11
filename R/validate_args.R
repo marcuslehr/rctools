@@ -37,6 +37,7 @@
 #' @param repeats Character vector
 #' @param factor_cols Character vector
 #' @param filter_logic Character vector
+#' @param grouping_variable Character vector
 #' 
 #' @param overwriteBehavior Character, defined inputs, length == 1
 #' @param returnContent Character, defined inputs, length == 1
@@ -77,7 +78,7 @@
 #' @param bundle List; redcapBundle
 #' @param fields_list List
 #' 
-#' @param sex_var Character (length == 1) or NA
+#' @param fun Function
 #' 
 #' @author Marcus Lehr
 
@@ -111,6 +112,7 @@ validate_args <- function(required = NULL,
 													repeats = NULL,
 													factor_cols = NULL,
 													filter_logic = NULL,
+													grouping_variable = NULL,
                           
                           # Match Args
                           overwriteBehavior = NULL,
@@ -155,8 +157,8 @@ validate_args <- function(required = NULL,
                           bundle = NULL,
                           fields_list = NULL,
                           
-                          # Special
-                          sex_var = NULL
+                          # Function
+                          fun = NULL
 ) {
 
 # Self Checks -------------------------------------------------------------
@@ -213,7 +215,7 @@ validate_args <- function(required = NULL,
   
   # Generate var list
   vars = c('records','fields','forms','events','colClasses','group_by','var_roots',
-						'repeats','factor_cols','filter_logic')
+						'repeats','factor_cols','filter_logic','grouping_variable')
 		
 		# Make formula
 		massert_formula = stats::formula(paste('~',paste(vars,collapse = ' + ')))
@@ -312,6 +314,24 @@ validate_args <- function(required = NULL,
 						null.ok = null.ok,
 						fixed = list(add = coll))
 
+# Function ----------------------------------------------------------------
+
+		# Generate var list
+		vars = c('fun')
+		
+  		# Make formula
+  		massert_formula = stats::formula(paste('~',paste(vars,collapse = ' + ')))
+  		
+  		# Generate null.ok list
+  		null.ok = as.list(!vars %in% required)
+  		names(null.ok) = vars
+  		
+  		# Assert
+  		massert(massert_formula,
+  		        checkmate::assert_function,
+  		        null.ok = null.ok,
+  		        fixed = list(add = coll))
+
 # Special Checks ----------------------------------------------------------
 
 ##--- token
@@ -339,13 +359,6 @@ validate_args <- function(required = NULL,
 		  assign('token', token, envir = parent.frame())
   }
   
-##--- sex_var
-	if (!is.null(sex_var))
-		if (!is.na(sex_var))
-			checkmate::assert_character(sex_var,
-																	len = 1,
-																	null.ok = !sex_var %in% required,
-																	add = coll)
   
 ##--- bundle
   if (!is.null(bundle)) {

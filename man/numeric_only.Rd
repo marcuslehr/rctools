@@ -7,7 +7,7 @@
 numeric_only(
   record_data,
   data_dict = getOption("redcap_bundle")$data_dict,
-  sex_var = NA,
+  grouping_variable = NULL,
   fields = NULL,
   long_format = TRUE,
   drop_message = TRUE
@@ -21,7 +21,7 @@ purposes of this function, only quantitative data will be kept.}
 $data_dict is expected in the REDCap bundle option, as created by
 \code{rc_bundle}.}
 
-\item{sex_var}{String. Name of variable indicating the sex of subjects. If
+\item{grouping_variable}{String. Name of a variable to group records by. If
 included, it will be used as one of the melting factors.}
 
 \item{fields}{Character. A vector of field/variable names to be analyzed
