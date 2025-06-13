@@ -11,6 +11,7 @@ rc_import(
   data_dict = getOption("redcap_bundle")$data_dict,
   overwriteBehavior = "normal",
   returnContent = "count",
+  validate_fields = FALSE,
   returnData = FALSE,
   logfile = "",
   batch_size = -1
@@ -34,6 +35,13 @@ blank values (NAs) will replace existing data.}
 \item{returnContent}{Character string.  'count' returns the number of
 records imported; 'ids' returns a list of record ids imported;
 'nothing' returns no message.}
+
+\item{validate_fields}{Logical.  If \code{TRUE}, data for each field will be
+validated against the data dictionary before import. Default is \code{FALSE}
+because this currently leads to partial imports after expunging invalid data,
+both across and within records. REDCap does its own field validation and will
+abort the entire import on errors, which is generally preferable. This
+functionality will be revised and updated in the future.}
 
 \item{returnData}{Logical.  Prevents the REDCap import and instead
 returns the data frame that would have been given

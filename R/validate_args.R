@@ -45,8 +45,8 @@
 #' @param plot_type Character, defined inputs, length == 1
 #' @param legend_position Character, defined inputs, length == 1
 #' 
-#' @param survey Logical, length == 1 
-#' @param dag Logical, length == 1
+#' @param survey_fields Logical, length == 1 
+#' @param dag_field Logical, length == 1
 #' @param form_complete_auto Logical, length == 1
 #' @param format Logical, length == 1
 #' @param factor_labels Logical, length == 1
@@ -122,8 +122,8 @@ validate_args <- function(required = NULL,
 													legend_position = NULL,
                           
                           # Logical, len=1
-                          survey = NULL,
-                          dag = NULL,
+                          survey_fields = NULL,
+                          dag_field = NULL,
                           form_complete_auto = NULL,
                           format = NULL,
                           factor_labels = NULL,
@@ -258,7 +258,7 @@ validate_args <- function(required = NULL,
 # Logical, len=1 ------------------------------------------------------------------
 
   # Generate var list
-  vars = c('survey','dag','form_complete_auto','format','factor_labels','labels','dates',
+  vars = c('survey_fields','dag_field','form_complete_auto','format','factor_labels','labels','dates',
            'returnData','plot','filtered','long_format','make_repeat','columns',
 					 'rows','sd_guides','strip','col_labels','event_labels')
 		

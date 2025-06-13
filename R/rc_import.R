@@ -15,6 +15,13 @@
 #' @param returnContent Character string.  'count' returns the number of
 #'   records imported; 'ids' returns a list of record ids imported;
 #'   'nothing' returns no message.
+#' @param validate_fields Logical.  If \code{TRUE}, data for each field will be 
+#'  validated against the data dictionary before import. Default is \code{FALSE}
+#'  because this currently leads to partial imports after expunging invalid data,
+#'  both across and within records. REDCap does its own field validation and will
+#'  abort the entire import on errors, which is generally preferable. This 
+#'  functionality will be revised and updated in the future.
+#'  
 #' @param returnData Logical.  Prevents the REDCap import and instead
 #'   returns the data frame that would have been given
 #'   for import.  This is sometimes helpful if the API import fails without
@@ -70,7 +77,10 @@ rc_import <- function(record_data,
                       data_dict = getOption("redcap_bundle")$data_dict,
                       overwriteBehavior = 'normal',
                       returnContent = 'count',
-                      returnData = FALSE, logfile = "", batch_size = -1
+                      validate_fields = FALSE,
+                      returnData = FALSE, 
+                      logfile = "", 
+                      batch_size = -1
                       ) {
 
 # Validations -------------------------------------------------------------
@@ -85,16 +95,6 @@ rc_import <- function(record_data,
                 )
   
   
-  #** Remove survey identifiers and data access group fields from data
-  # Is survey data not uploadable? Need to test
-  w.remove <- 
-    which(names(record_data) %in% 
-            c("redcap_survey_identifier",
-              paste0(unique(data_dict$form_name), "_timestamp"),
-              "redcap_data_access_group"))
-  if (length(w.remove)) record_data <- record_data[-w.remove]
-  
-  
   #** If the study id is not in the the first column, move it and print a warning
   id_field = getID(data_dict = data_dict)
   
@@ -107,63 +107,89 @@ rc_import <- function(record_data,
             "It has been moved to the first column.")
   }
   
+
+  #** Remove survey identifiers
+  # timestamp fields are ignored, so probably unnecessary. Not sure about identifier field
+  fields_survey = 
+    names(record_data)[names(record_data) %in% 
+                        c("redcap_survey_identifier", 
+                          paste0(unique(data_dict$form_name), "_timestamp"))
+                      ]
+  
+  if (length(fields_survey)) {
+    record_data <- record_data[!names(record_data) %in% fields_survey]
+    
+    message("The following survey variable(s) were dropped because they are not importable: ",
+            paste(fields_survey, collapse=", "))
+  }
+  
+  
   #*** Remove calculated fields
   fields_calc <- data_dict$field_name[data_dict$field_type == "calc"]
   fields_calc = fields_calc[fields_calc %in% names(record_data)]
   
-  if (length(fields_calc) > 0) {
+  if (length(fields_calc)) {
     record_data <- record_data[!names(record_data) %in% fields_calc]
     
-    message("The variable(s) '", 
-            paste(fields_calc, collapse="', '"),
-            "' are calculated fields and cannot be imported. ",
-            "They have been removed from the imported data frame.")
+    message("The following calculated variable(s) were dropped because they are not importable: ", 
+            paste(fields_calc, collapse="', '")
+            )
   }
   
-  # Remove descriptive fields
+  
+  # Remove descriptive fields. RC server will return an error.
   fields_descr <- data_dict$field_name[data_dict$field_type == "descriptive"]
   fields_descr = fields_descr[fields_descr %in% names(record_data)]
   
   if (length(fields_descr) > 0) {
     record_data <- record_data[!names(record_data) %in% fields_descr]
     
-    message("The variable(s) '", 
-            paste(fields_descr, collapse="', '"),
-            "' are descriptive fields and cannot be imported. ",
-            "They have been removed from the imported data frame.")
+    message("The following descriptive variable(s) were dropped because they are not importable: ", 
+            paste(fields_descr, collapse="', '")
+            )
   }
   
-  #** Confirm that date fields are either character, Date class, or POSIXct
-  date_vars <- data_dict$field_name[grepl("date_", data_dict$text_validation_type_or_show_slider_number)]
-  date_vars = date_vars[date_vars %in% names(record_data)]
+  ## Dates must be in YYYY-MM-DD format. The server will reject otherwise, so this check is unnecessary.
+  # #** Confirm that date fields are either character, Date class, or POSIXct
+  # date_vars <- data_dict$field_name[grepl("date_", data_dict$text_validation_type_or_show_slider_number)]
+  # date_vars = date_vars[date_vars %in% names(record_data)]
   
-  bad_date_fmt <- 
-    !vapply(X = record_data[date_vars], 
-            FUN = function(x) is.character(x) | "Date" %in% class(x) | "POSIXct" %in% class(x),
-            FUN.VALUE = logical(1))
+  # bad_date_fmt <- 
+  #   !vapply(X = record_data[date_vars], 
+  #           FUN = function(x) is.character(x) | "Date" %in% class(x) | "POSIXct" %in% class(x),
+  #           FUN.VALUE = logical(1))
   
-  if (any(bad_date_fmt)) {
-    stop(paste0("The variables '", 
-                     paste(date_vars[bad_date_fmt], collapse="', '"),
-                     "' must have class Date, POSIXct, or character."))
-  }
+  # if (any(bad_date_fmt)) {
+  #   stop(paste0("The variables '", 
+  #                    paste(date_vars[bad_date_fmt], collapse="', '"),
+  #                    "' must have class Date, POSIXct, or character."))
+  # }
   
-  msg <- paste0("REDCap Data Import Log: ", Sys.time(),
-                "\nThe following (if any) conditions were noted about the data.\n\n")
+  # msg <- paste0("REDCap Data Import Log: ", Sys.time(),
+  #               "\nThe following (if any) conditions were noted about the data.\n\n")
   
-  if (is.null(logfile)) 
-    message(msg) 
-  else 
-    write(msg, logfile)
+  # if (is.null(logfile)) 
+  #   message(msg) 
+  # else 
+  #   write(msg, logfile)
   
   
   #** Format the data for REDCap import
   #** Thanks go to:
   #**   https://github.com/etb/my-R-code/blob/master/R-pull-and-push-from-and-to-REDCap.R
   #**   http://stackoverflow.com/questions/12393004/parsing-back-to-messy-api-strcuture/12435389#12435389
-  record_data <- validateImport(data = record_data,
-                         data_dict = data_dict,
-                         logfile = logfile)
+  
+  # Skipping by default because I don't like the behavior. Drops invalid data and imports the rest.
+  # Partial imports are a headache, especially within a record.
+  # The RC server will abort the entire import when it finds an issue, which is preferable.
+  # I do like the idea of range enforcement and coercion where possible (eg dates). 
+  # But the function needs an overhaul and validation should be left to the server for things it already handles
+  if (validate_fields) { 
+    record_data <- validateImport(data = record_data,
+                                  data_dict = data_dict,
+                                  logfile = logfile)
+  }
+  
   
 # Import ------------------------------------------------------------------
 

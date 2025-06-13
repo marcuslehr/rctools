@@ -35,8 +35,8 @@ validate_args(
   error_handling = NULL,
   plot_type = NULL,
   legend_position = NULL,
-  survey = NULL,
-  dag = NULL,
+  survey_fields = NULL,
+  dag_field = NULL,
   form_complete_auto = NULL,
   format = NULL,
   factor_labels = NULL,
@@ -130,9 +130,9 @@ the calling function.}
 
 \item{legend_position}{Character, defined inputs, length == 1}
 
-\item{survey}{Logical, length == 1}
+\item{survey_fields}{Logical, length == 1}
 
-\item{dag}{Logical, length == 1}
+\item{dag_field}{Logical, length == 1}
 
 \item{form_complete_auto}{Logical, length == 1}
 

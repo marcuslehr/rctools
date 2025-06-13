@@ -14,11 +14,13 @@ rc_export(
   fields = NULL,
   forms = NULL,
   events = NULL,
-  survey = TRUE,
-  dag = TRUE,
+  survey_fields = TRUE,
+  dag_field = TRUE,
   form_complete_auto = FALSE,
   format = FALSE,
   filter_logic = "",
+  modified_after = "",
+  modified_before = "",
   strip = ifelse(is.null(report_id) & is.null(fields), T, F),
   batch_size = -1,
   ...
@@ -50,23 +52,13 @@ all forms are returned.}
 \item{events}{Character. A vector of events to be returned from a longitudinal database.
 If \code{NULL}, all events are returned.}
 
-\item{survey}{Logical. Specifies whether or not to export the survey identifier field
-(e.g., "redcap_survey_identifier") or survey timestamp fields
-(e.g., form_name+"_timestamp") when surveys are utilized in the project.
-If you do not pass in this flag, it will default to "false". If set to
-"true", it will return the redcap_survey_identifier field and also the
-survey timestamp field for a particular survey when at least
-one field from that survey is being exported. NOTE: If the survey
-identifier field or survey timestamp fields are imported via API data
-import, they will simply be ignored since they are not real fields in
-the project but rather are pseudo-fields.}
+\item{survey_fields}{Logical. Specifies whether or not to export survey specific
+fields. (e.g., "redcap_survey_identifier" and form_name+"_timestamp"). Only
+relevant when survey fields are being exported. Default is \code{TRUE}.}
 
-\item{dag}{Logical. Specifies whether or not to export the "redcap_data_access_group"
-field when data access groups are utilized in the project. If you do not
-pass in this flag, it will default to "false". NOTE: This flag is only
-viable if the user whose token is being used to make the API request is
-\emph{not} in a data access group. If the user is in a group, then this
-flag will revert to its default value.}
+\item{dag_field}{Logical. Specifies whether or not to export the
+"redcap_data_access_group" field. This will only appear if DAGs are setup in
+the project and you have access to more than one. Default is \code{TRUE}.}
 
 \item{form_complete_auto}{Logical. If \code{fields} are passed,
 REDCap does not return form complete fields unless specifically requested.
@@ -79,6 +71,14 @@ retrieved.}
 
 \item{filter_logic}{Character. Optional logic filter for record exports. Use REDCap
 style syntax- ie. similar to branching logic, calculations, etc.}
+
+\item{modified_after}{Character. A date string in the format "YYYY-MM-DD HH:MM:SS"
+to specify the earliest data modification date to include in the export. In other
+words, only data entered into REDCap after this date will be returned.}
+
+\item{modified_before}{Character. A date string in the format "YYYY-MM-DD HH:MM:SS"
+to specify the latest data modification date to include in the export. In other
+words, only data entered into REDCap before this date will be returned.}
 
 \item{strip}{Logical. If \code{TRUE}, empty rows and columns will be removed from
 record_data. See \code{rc_strip} for more information or call seperately for more
