@@ -44,6 +44,8 @@
 #' @param error_handling Character, defined inputs, length == 1
 #' @param plot_type Character, defined inputs, length == 1
 #' @param legend_position Character, defined inputs, length == 1
+#' @param action Character, defined inputs, length == 1
+#' @param return_as Character, defined inputs, length == 1
 #' 
 #' @param survey_fields Logical, length == 1 
 #' @param dag_field Logical, length == 1
@@ -120,6 +122,8 @@ validate_args <- function(required = NULL,
 													error_handling = NULL,
 													plot_type = NULL,
 													legend_position = NULL,
+													action = NULL,
+													return_as = NULL,
                           
                           # Logical, len=1
                           survey_fields = NULL,
@@ -164,12 +168,12 @@ validate_args <- function(required = NULL,
 # Self Checks -------------------------------------------------------------
   
   # Create error collection object
-  coll <- checkmate::makeAssertCollection()
+  collection <- checkmate::makeAssertCollection()
   
-  checkmate::assert_character(required, null.ok = T, add = coll)
+  checkmate::assert_character(required, null.ok = T, add = collection)
   
   # Report
-  checkmate::reportAssertions(coll)
+  checkmate::reportAssertions(collection)
   
 
 # Numerical, len=1-------------------------------------------------------------------------
@@ -189,7 +193,7 @@ validate_args <- function(required = NULL,
 						checkmate::assert_numeric,
 						null.ok = null.ok,
 						fixed = list(len = 1,
-												 add = coll))
+												 add = collection))
 
 # Character, len=1 -------------------------------------------------------------------------
 
@@ -209,7 +213,7 @@ validate_args <- function(required = NULL,
 						checkmate::assert_character,
 						null.ok = null.ok,
 						fixed = list(len = 1,
-												 add = coll))
+												 add = collection))
 
 # Character ---------------------------------------------------------------
   
@@ -228,13 +232,13 @@ validate_args <- function(required = NULL,
 		massert(massert_formula,
 						checkmate::assert_character,
 						null.ok = null.ok,
-						fixed = list(add = coll))
+						fixed = list(add = collection))
 
 # Match Args ------------------------------------------------------
 
   # Generate var list
   vars = c('overwriteBehavior','returnContent','error_handling','plot_type',
-           'legend_position')
+           'legend_position','action','return_as')
 	
 	if (any(vars %in% required)) {
 	
@@ -249,10 +253,12 @@ validate_args <- function(required = NULL,
 													 error_handling = c('null','error'),
 													 plot_type = c('standard','qq','hist'),
 													 legend_position = c('none','top','bottom','left','right'),
-													 event_names = c('label','raw')
+													 action = c('import','export'),
+													 return_as = c('raw','text','dataframe'),
+													 event_names = c('label','raw') # not documented?
 													 ),
 						fixed = list(several.ok = F,
-												 add = coll))
+												 add = collection))
 	}
 
 # Logical, len=1 ------------------------------------------------------------------
@@ -274,7 +280,7 @@ validate_args <- function(required = NULL,
 						checkmate::assert_logical,
 						null.ok = null.ok,
 						fixed = list(len = 1,
-												 add = coll))  
+												 add = collection))  
 
 # Data.frame --------------------------------------------------------------
 
@@ -294,7 +300,7 @@ validate_args <- function(required = NULL,
 						checkmate::assert_class,
 						null.ok = null.ok,
 						fixed = list(classes = 'data.frame',
-												 add = coll))
+												 add = collection))
 
 # List --------------------------------------------------------------------
 
@@ -312,7 +318,7 @@ validate_args <- function(required = NULL,
 		massert(massert_formula,
 						checkmate::assert_list,
 						null.ok = null.ok,
-						fixed = list(add = coll))
+						fixed = list(add = collection))
 
 # Function ----------------------------------------------------------------
 
@@ -330,7 +336,7 @@ validate_args <- function(required = NULL,
   		massert(massert_formula,
   		        checkmate::assert_function,
   		        null.ok = null.ok,
-  		        fixed = list(add = coll))
+  		        fixed = list(add = collection))
 
 # Special Checks ----------------------------------------------------------
 
@@ -349,10 +355,10 @@ validate_args <- function(required = NULL,
 		
 		# File doesn't exist and the string isn't a token
 		if (invalid_path & invalid_format) 
-		  coll$push("Please provide a valid path to the token file.")
+		  collection$push("Please provide a valid path to the token file.")
 		# File exists but doesn't contain a token
 		else if (invalid_format)
-		  coll$push("REDCap tokens must be exactly 32 alpha-numeric characters.")
+		  collection$push("REDCap tokens must be exactly 32 alpha-numeric characters.")
 		# Format is valid, therefore string is a valid token. 
 		# Edge case of 32 character invalid path could make it here also
 		else
@@ -362,7 +368,7 @@ validate_args <- function(required = NULL,
   
 ##--- bundle
   if (!is.null(bundle)) {
-    checkmate::assert_class(bundle, classes = 'redcapBundle', add = coll)
+    checkmate::assert_class(bundle, classes = 'redcapBundle', add = collection)
 		
 		bundle_names = c("redcap_url","data_dict","id_field","users","form_perm","instruments",
 										 "event_data","arms","mappings","proj_info","version")
@@ -378,7 +384,7 @@ validate_args <- function(required = NULL,
     id_field = suppressWarnings(getID(record_data=record_data, id_field=id_field))
     if (!id_field %in% names(record_data))# |
         # !'redcap_event_name' %in% names(record_data)) This makes non-longitudinal projects incompatible
-      coll$push("Record_data must contain the record_id column.")
+      collection$push("Record_data must contain the record_id column.")
   }
 		
   
@@ -422,7 +428,7 @@ validate_args <- function(required = NULL,
 		}
 		# Make sure all columns are in data_dict
 		else if (any(!data_dict_api_names %in% names(data_dict)))
-      coll$push("Please supply a data dictionary exactly as produced by REDCap
+      collection$push("Please supply a data dictionary exactly as produced by REDCap
 			or via a REDCap bundle, as created by rc_bundle()")
 			
 		
@@ -443,7 +449,7 @@ validate_args <- function(required = NULL,
       fields_bad = setdiff(fields, fields_valid)
       
       if (length(fields_bad) > 0)
-        coll$push(paste0("The following are not valid field names: ",
+        collection$push(paste0("The following are not valid field names: ",
                     paste0(fields_bad, collapse = ", ")))
     }
 		
@@ -451,7 +457,7 @@ validate_args <- function(required = NULL,
 		if (!is.null(forms)) {
             forms_bad <- forms[!forms %in% data_dict$form_name]
             if (length(forms_bad) > 0)
-              coll$push(paste0("The following are not valid form names: ",
+              collection$push(paste0("The following are not valid form names: ",
                           paste0(forms_bad, collapse = ", ")))
           }
   }
@@ -466,7 +472,7 @@ validate_args <- function(required = NULL,
 		if (!is.null(event_data)) {
       events_bad <- events[!events %in% event_data$unique_event_name]
       if (length(events_bad) > 0)
-        coll$push(paste0("The following are not valid event names: ",
+        collection$push(paste0("The following are not valid event names: ",
                     paste0(events_bad, collapse = ", ")))
 		} else
     		warning("The supplied events list cannot be validated without the project
@@ -477,6 +483,6 @@ validate_args <- function(required = NULL,
 # Report ------------------------------------------------------------------
 
   # Final report
-  checkmate::reportAssertions(coll)
+  checkmate::reportAssertions(collection)
 }
 

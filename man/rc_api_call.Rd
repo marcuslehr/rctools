@@ -63,8 +63,8 @@ rc_api_call(
 
 \item{return_as}{Determines how the server response will be returned from this
 function. This is mostly useful for returning the raw response when needed.
-Options are 'raw', 'text', and 'dataframe'. 'raw' returns raw byte data, 'text'
-converts it to character, and 'dataframe' returns a data.frame.}
+'raw' returns raw byte data, 'text' converts it to character, and
+'dataframe' returns a data.frame (default).}
 
 \item{...}{Additional arguments to be passed to the API}
 

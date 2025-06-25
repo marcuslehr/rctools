@@ -19,8 +19,8 @@
 #' 'export', 'delete', 'rename', or 'switch'
 #' @param return_as Determines how the server response will be returned from this 
 #' function. This is mostly useful for returning the raw response when needed. 
-#' Options are 'raw', 'text', and 'dataframe'. 'raw' returns raw byte data, 'text' 
-#' converts it to character, and 'dataframe' returns a data.frame.
+#' 'raw' returns raw byte data, 'text' converts it to character, and 
+#' 'dataframe' returns a data.frame (default).
 #' @param ... Additional arguments to be passed to the API
 #' 
 #' @param arms Vector of arm numbers
@@ -125,8 +125,12 @@ rc_api_call <- function(url = getOption("redcap_bundle")$redcap_url,
   # Check for directionality conflict
   if (action=='export' & !is.null(data)) stop('Error: Data supplied to export call')
   
-  # Perform token coercion.
-  validate_args(c('url','token'), url=url, token=token)
+  validate_args(required = c('url','token'), 
+								url=url, 
+								token=token,
+								action=action,
+								return_as=return_as
+								)
   
   # Initial assembly of body args
   body = list(content=content, token=token,
@@ -196,8 +200,14 @@ rc_api_call <- function(url = getOption("redcap_bundle")$redcap_url,
   
   # Parse response
   if (action=='import') { 
-    if (content=='file') return("Upload successful") # NULL returned for content in this case
-    if (content=='record') switch(returnContent,
+    
+		if (content=='file') {
+		  # NULL returned for content in this case
+		  message("Upload successful")
+		  return() 
+		  } 
+    
+		if (content=='record') switch(returnContent,
            'count' = {print('Number of records updated:'); print(as.integer(as.character(response)))}, # Avoiding messages() bc it goes to stderr. Resulting is returned when capturing a variable and printed to console
            'auto_ids' = {print('Number of records updated:'); print(as.integer(as.character(response)))}, # This option returns automatically assigned IDs. Probably need to handle like 'ids'
            'nothing' = return(), 
@@ -205,22 +215,28 @@ rc_api_call <- function(url = getOption("redcap_bundle")$redcap_url,
            'raw' = return(response)
            )
   }
-    else if (action=='export') {
-      # Check for data
-      if (length(response$content)<=1) stop("No data returned.")
-  
-      # Extract data
-      if (content=='version') return_as = 'text'
-      if (return_as=='text') return(as.character(response)) # httr::content(response,content_as)
-        else if (return_as=='raw') return(response$content)
-        else if (return_as=='dataframe')
-          return(utils::read.csv(text = as.character(response),
-                                 stringsAsFactors = FALSE,
-                                 na.strings = ""))
-        # Using httr::content() returns the blue '0s' text in front of everything, even when using suppressMessages()
-        # suppressMessages(as.data.frame( httr::content(response,content_as)))
-        else stop("Argument return_as must be one of 'raw', 'text', or 'dataframe'")
-    }
+	
+	if (action=='export') {
+		
+		# Adjust for special case
+		if (content=='version') return_as = 'text' 
+		
+		# Using httr::content() returns the blue '0s' text in front of everything, even when using suppressMessages()
+		if (return_as=='text') return(as.character(response))
+		
+		if (return_as=='raw') return(response$content)
+		
+		if (return_as=='dataframe') {
+				# Return empty frame if no data present. read.csv() will throw an error
+				if (length(response$content)<=1) { 
+					message("No data returned")
+					return(data.frame())
+					}
+				return(utils::read.csv(text = as.character(response),
+															 stringsAsFactors = FALSE,
+															 na.strings = ""))
+			}
+	}
 }
 
 # Unexported functions --------------------------------------
