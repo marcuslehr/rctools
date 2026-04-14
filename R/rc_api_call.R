@@ -180,13 +180,16 @@ rc_api_call <- function(url = getOption("redcap_bundle")$redcap_url,
              encode = 'multipart'
              },
            'project' = {content = 'project_settings'},
-           'record' = {
-						 if ('data.frame' %in% class(data)) 
-							 body[['data']] = data_frame_to_string(data)
-						 else
-							 stop("Error: Please provide records in the form of a data.frame") 
+					 'metadata' = {
+						 # Stricter than just checking for class data.frame. Will throw an error if checks aren't met.
+						 validate_args(data_dict = data)
              }
            )
+					 
+		if (format=='csv' & 'data.frame' %in% class(data)) 
+		 body[['data']] = readr::format_csv(data, na = "")
+		else
+		 stop("Error: Data should be provided as a data.frame")
   }
   
 
@@ -208,10 +211,19 @@ rc_api_call <- function(url = getOption("redcap_bundle")$redcap_url,
 		  } 
     
 		if (content=='record') switch(returnContent,
-           'count' = {print('Number of records updated:'); print(as.integer(as.character(response)))}, # Avoiding messages() bc it goes to stderr. Resulting is returned when capturing a variable and printed to console
-           'auto_ids' = {print('Number of records updated:'); print(as.integer(as.character(response)))}, # This option returns automatically assigned IDs. Probably need to handle like 'ids'
+           'count' = {
+					  message('Number of records updated: ', as.integer(as.character(response)))
+					  return(as.integer(as.character(response)))
+					  }, 
+           'auto_ids' = { # This option returns automatically assigned IDs
+					   message('Records updated: ', as.integer(as.character(response)))
+					   return(as.integer(as.character(response)))
+					   }, 
            'nothing' = return(), 
-           'ids' = {cat("Records updated: \n"); print(utils::read.csv(text=as.character(response))$id)},
+           'ids' = {
+				   message("Records updated: \n", utils::read.csv(text=as.character(response))$id)
+				   return(utils::read.csv(text=as.character(response))$id)
+				   },
            'raw' = return(response)
            )
   }
@@ -239,18 +251,3 @@ rc_api_call <- function(url = getOption("redcap_bundle")$redcap_url,
 	}
 }
 
-# Unexported functions --------------------------------------
-
-# Dataframes need to be converted to a csv string for import
-data_frame_to_string <- function(data) {
-  paste0(
-    utils::capture.output(
-      utils::write.table(data, 
-                         sep = ",",
-                         col.names = TRUE,
-                         row.names = FALSE,
-                         na = '') # Need to double check how RC interprets this vs NA
-    ),
-    collapse = "\n"
-  )
-}

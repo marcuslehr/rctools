@@ -3,6 +3,7 @@
 export(cleanseMetaData)
 export(rc_api_call)
 export(rc_bundle)
+export(rc_combine_checkboxes)
 export(rc_export)
 export(rc_fill)
 export(rc_format)
